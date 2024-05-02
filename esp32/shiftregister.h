@@ -37,6 +37,11 @@ namespace shiftregister{
     Reset all pins to LOW
     */
     
+    extern void shift();
+    /*
+    update the register.
+    */
+
     extern bool is_flushed();
     /*
     Wether the Hardware is up to date with the bits

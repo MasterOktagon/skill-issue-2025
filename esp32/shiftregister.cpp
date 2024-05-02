@@ -1,8 +1,6 @@
 
 #include "shiftregister.h"
 
-#define SR_PORTS 24 // number of ports to evaluate
-
 static uint64_t shiftregister_bits; // the current shiftregister pins values are stored here. max 64 ports
 static bool updated; // if the current bits are flushed
 
@@ -56,4 +54,16 @@ bool shiftregister::get(uint8_t pin){
     return shiftregister_bits & (1 << pin);
 }
 
+void shift(){
+    // push the shiftregister
+    digitalWrite(STCP, LOW);
+    for(uint8_t i=(SR_PORTS); i > 0; i--){
+        digitalWrite(SHCP, LOW);
+        digitalWrite(DS, shiftregister_bits & (1 << (i-1))? 1 : 0);
+        digitalWrite(SHCP, HIGH);
+    
+    }
+    digitalWrite(STCP, HIGH);
+    updated = true;
+}
 
