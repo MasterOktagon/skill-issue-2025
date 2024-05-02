@@ -1,4 +1,6 @@
 
+#define BOARD_REVISION 1
+
 #include "shiftregister.h"
 
 void setup(){
