@@ -6,7 +6,7 @@
 #include "shiftregister.h"
 
 #if (BOARD_REVISION > 2)
-    #warn "Controlling single motors is currently not supported"
+    #warning "Controlling single motors is currently not supported"
 #endif
 
 void motor::stop(){
@@ -25,9 +25,13 @@ void motor::stop(motor m){
 
     if (m & motor::A){
         digitalWrite(PWMA, LOW);
+        shiftregister::set(SR_AIN1, LOW, false);
+        shiftregister::set(SR_AIN2, LOW, false);
     }
     else if (m & motor::B){
         digitalWrite(PWMB, LOW);
+        shiftregister::set(SR_BIN1, LOW, false);
+        shiftregister::set(SR_BIN2, LOW, false);
     }
 }
 
