@@ -45,8 +45,9 @@ bool shiftregister::is_flushed(){
 void shiftregister::reset(){
     shiftregister_bits = 0;
     for(int i = 9; i < 6 + 9; i++){
-      set(i, HIGH);
+      set(i, HIGH, false);
     }
+    set(SR_STBY, HIGH);
     Serial.println("SR Reset succesfull");
 }
 
@@ -54,7 +55,7 @@ bool shiftregister::get(uint8_t pin){
     return shiftregister_bits & (1 << pin);
 }
 
-void shift(){
+void shiftregister::shift(){
     // push the shiftregister
     digitalWrite(STCP, LOW);
     for(uint8_t i=(SR_PORTS); i > 0; i--){
