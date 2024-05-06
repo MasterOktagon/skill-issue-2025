@@ -35,6 +35,18 @@ void motor::stop(motor m){
     }
 }
 
+void motor::hardstop(){
+  // reerse all motors
+  shiftregister::set(SR_AIN1, !shiftregister::get(SR_AIN1), false);
+  shiftregister::set(SR_AIN2, !shiftregister::get(SR_AIN2), false);
+  shiftregister::set(SR_BIN1, !shiftregister::get(SR_BIN1), false);
+  shiftregister::set(SR_BIN2, !shiftregister::get(SR_BIN2));
+  
+  delay(25);
+  stop();
+}
+
+
 void motor::fwd(motor m, int16_t v){
   if (v == 0){
     stop(m); return;

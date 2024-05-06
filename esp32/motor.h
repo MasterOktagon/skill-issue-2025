@@ -43,6 +43,11 @@ namespace motor{
     /*
     stop all motors
     */
+
+    extern void hardstop();
+    /*
+    stop all motors hard
+    */
     
     extern void fwd(motor m, int16_t v);
     /*
