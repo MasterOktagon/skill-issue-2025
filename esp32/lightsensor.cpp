@@ -1,11 +1,15 @@
+#include <iterator>
 #include "adc.h"
 
 #include <Arduino.h>
 #include <cstdint>
+#include <initializer_list>
+#include <string>
 
 #include "lightsensor.h"
 #include "shiftregister.h"
 
+using namespace std;
 
 lightSensorArray::lightSensorArray(uint8_t led_pin,
             const uint8_t left_outer,
@@ -54,7 +58,7 @@ inline void read_side(lsData& side){
     
     int16_t a = (adc::read(side.adc_pin) * 100);
     side.value = int16_t(a / (side.max - side.min));
-    
+
 }
 
 void lightSensorArray::read(){
@@ -66,6 +70,17 @@ void lightSensorArray::read(){
     read_side(right);
     read_side(right_outer);
     led_off();
+}
+
+string lightSensorArray::_str(){
+    string s = "LightSensorArray:\t{L_1 ";
+    s += to_string(left_outer.min)  + "/" + to_string(left_outer.max)  + " \tL_0";
+    s += to_string(left.min)        + "/" + to_string(left.max)        + " \tM ";
+    s += to_string(center.min)      + "/" + to_string(center.max)      + " \tR_0 ";
+    s += to_string(right.min)       + "/" + to_string(right.max)       + " \tR_1 ";
+    s += to_string(right_outer.min) + "/" + to_string(right_outer.max) + " \t}" ;
+
+    return s;
 }
 
 namespace ls{
@@ -80,7 +95,38 @@ namespace ls{
         lightSensorArray* all[4] = {&white, &green, &red, back};
     #endif
 
+
 }
+
+
+void ls::read(){
+    white.read();
+    red.read();
+    green.read();
+    #if (BOARD_REVISION > 1)
+        back.read();
+    #endif
+}
+
+void ls::read(initializer_list<lightSensorArray*> ls){
+    for (lightSensorArray* l : ls){
+        l->read();
+    }
+}
+
+void ls::calibrate(uint16_t iterations, uint16_t delay_ms){
+    Serial.print("Calibrating...");
+    for(uint16_t i = 0; i < iterations; i++){
+        for(uint8_t ls = 0; ls < 4; ls++){
+            if (all[ls] != nullptr){
+                all[ls]->calibrate_turn(i);
+            }
+        }
+        delay(delay_ms);
+    }
+    Serial.println("Succes!");
+}
+
 
 
 
