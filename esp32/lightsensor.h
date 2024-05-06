@@ -38,6 +38,7 @@ Base class for all light sensors.
         /*
         update the light values
         */
+        virtual string _str();
 
 };
 
@@ -69,6 +70,7 @@ class that represents all light sensors in a light sensor bar V2 for one led col
         */
         void calibrate_turn(uint16_t i);
         void read();
+        string _str();
 };
 
 namespace ls{
@@ -76,14 +78,32 @@ namespace ls{
 namespace that holds all functions for all light sensors
 */
 
-extern lightSensorArray white, green, red;
-#if (BOARD_REVISION > 1)
-  extern lightSensorArray back;
-#endif
+    extern lightSensorArray white, green, red;
+    #if (BOARD_REVISION > 1)
+      extern lightSensorArray back;
+    #endif
 
-extern void read();
-extern void read(initializer_list<lightSensorArray>);
-extern void calibrate(uint16_t iterations, uint16_t delay=0);
+    extern void read();
+    /*
+    read all lightSensorArrays
+    */
+
+    extern void read(initializer_list<lightSensorArray*> ls);
+    /*
+    read all given lightSensorArrays.
+    
+    !raises! NullptrException/LoadProhibited
+
+    [param ls] all light sensors. may not be nullptr!
+    */
+
+    extern void calibrate(uint16_t iterations, uint16_t delay_ms=0);
+    /*
+    calibrate all light Sensors
+
+    [param iterations] amount to calibrate
+    [param delay_ms] delay between measurements in ms
+    */
 
 }
 
