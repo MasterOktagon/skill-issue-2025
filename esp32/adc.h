@@ -9,6 +9,10 @@ namespace adc{
     /*
     namespace that interacts with the adc
     */
+    
     extern int16_t read(uint8_t pin);
+    /*
+    read out the data of one pin
+    */
 }
 
