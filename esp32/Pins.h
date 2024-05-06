@@ -1,6 +1,8 @@
 #pragma once
 
-#define BOARD_REVISION 1 // which revision of the RoboCore is used
+#ifndef BOARD_REVISION
+  #define BOARD_REVISION 1 // which revision of the RoboCore is used
+#endif
 
 #if (BOARD_REVISION == 1)
   ///////////ADC Multiplexer (CD74HC4067S)////////////
