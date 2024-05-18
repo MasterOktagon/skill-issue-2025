@@ -1,6 +1,6 @@
 import random
 import matplotlib.pyplot as plt
-
+import math
 
 def gui(centroids: list[list], points: list[list]):
     """Show the clusters in a gui."""
@@ -96,9 +96,29 @@ def asign_centroids(
 
 def k_means(points,k: int):
     d = 2
+    
+    points2 = list(points).copy()
+    centroids_old = []
+    centroids_old.append(points2.pop(random.randint(0, len(points2)-1)))
+    #centroids_old.append(points2.pop(random.randint(0, len(points2))))
 
-    centroids_old: list = random_centroids(k, d, (0, 1500))
-    centroids_old = [(400, 600), (500, 600), (1500, 600)][:k]
+    try: 
+        for p in range(k-1):
+            i = 0
+            maxi_idx = 0
+            maxi_val = 0
+            for point in points2:
+                
+                if sum([math.dist(point, c) for c in centroids_old]) > maxi_val:
+                    maxi_val = sum([math.dist(point, c) for c in centroids_old])
+                    maxi_idx = i
+                        
+                i += 1
+            centroids_old.append(points2.pop(maxi_idx))
+
+    except IndexError:
+        pass
+
     i: int = 0
 
     while True:
@@ -129,5 +149,25 @@ def k_means(points,k: int):
 
         print(f"{centroids_new = }")
 
+    # merge near centroids
+    
+    MERGE_THRESHOLD = 60
+    centroids = []
+    
+    for i in range(3):
+        for t in centroids_old:
+            for t2 in centroids_old:
+                if t != t2:
+                    #print(t,t2,math.dist(t, t2))
+                    if math.dist(t, t2) <= MERGE_THRESHOLD:
+                        if not ((t[0]+t2[0])/2, (t[1]+t2[1])/2) in centroids:
+                            centroids.append(((t[0]+t2[0])/2, (t[1]+t2[1])/2))
+                        break
+            else:
+                centroids.append(t)
+        centroids_old = centroids
+        centroids = []
+
+    #print(centroids_old)
     return centroids_old
 
