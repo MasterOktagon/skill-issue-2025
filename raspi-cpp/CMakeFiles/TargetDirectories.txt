@@ -1,3 +1,0 @@
-/home/masteroktagon/Schreibtisch/NochKeinName/skill-issue-2025/raspi-cpp/CMakeFiles/SkillIssue25-Raspi.dir
-/home/masteroktagon/Schreibtisch/NochKeinName/skill-issue-2025/raspi-cpp/CMakeFiles/edit_cache.dir
-/home/masteroktagon/Schreibtisch/NochKeinName/skill-issue-2025/raspi-cpp/CMakeFiles/rebuild_cache.dir
