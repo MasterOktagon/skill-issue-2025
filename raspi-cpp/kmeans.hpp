@@ -7,8 +7,11 @@
 
 using namespace std;
 
+/*
+provides a k-means distribution with special starting points
+*/
 
-#define cluster tuple<cv::Point2f, vector<cv::Point2f>>
+using cluster = tuple<cv::Point2f, vector<cv::Point2i>>;
 
 extern vector<cluster> kmeans(vector<cv::Point2i>, uint8_t k);
 

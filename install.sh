@@ -25,6 +25,6 @@ sudo curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/ins
 pip install esptool
 
 #install c++ opencv and make/cmake
-sudo apt install "libopencv-core4.5d" make cmake
+sudo apt install "libopencv-core4.5d" libopencv-dev make cmake
 
 
