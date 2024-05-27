@@ -19,17 +19,21 @@ using namespace std;
 
 int main(){
     cout << "Hello World!" << endl;
-        
-    auto cap = cv::VideoCapture(0);
+    
+    int camidx;
+    cout << "input camera index: ";
+    cin >> camidx;
+    auto cap = cv::VideoCapture(camidx);
     //for (const auto& dirEntry : filesystem::recursive_directory_iterator("./raspi-cpp/testimages")){
     while(true){
         //cv::Mat frame = cv::imread(dirEntry.path());
         cv::Mat frame;
         cap.read(frame);
+        cv:GaussianBlur(frame,frame, cv::Size(5,3), 1);
         cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
         
         vector<cv::Vec3f> circles;
-        cv::HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, 10, 70, 40, 20, 100);
+        cv::HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, 10, 80, 40, 15, 100);
         
         if (circles.size() > 0){
             vector<cv::Point2i> centers = {};
@@ -77,6 +81,7 @@ int main(){
                 // draw the circle outline
                 cv::circle( frame, p, cluster_radiuses[i++], cv::Scalar(0,255,0), 2, 8, 0 );
             }
+            cout << frame.at(10,10);// = cv::Scalar(0,255,0);
         }
         
         cv::imshow("frame", frame);
