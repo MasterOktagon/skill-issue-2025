@@ -74,7 +74,7 @@ vector<cluster> kmeans(vector<cv::Point2i> points, uint8_t k){
     uint16_t i = 0;
     vector<cluster> clusters_old = {};
     while(true){
-        cout << i++ << ">> clusterpoints: " << clusterpoints << endl;
+        cout << i++ << ">> clusterpoints: " << clusterpoints << "\n";
         vector<cluster> clusters = {};
         
         for(cv::Point2f p : clusterpoints){
@@ -102,7 +102,7 @@ vector<cluster> kmeans(vector<cv::Point2i> points, uint8_t k){
         }
         
         if (clusters_old == clusters){
-            cout << "merging centroids..." << endl;
+            cout << "merging centroids..." << "\n";
             
             for(uint8_t i = 0; i < 3; i++){
                 vector<cv::Point2f> centroids = {};
