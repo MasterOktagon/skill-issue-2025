@@ -21,10 +21,14 @@ fi
 
 # install the arduino CLI
 sudo curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+sudo cp bin/arduino-cli /usr/bin/arduino-cli
+rm bin # remove old bin directory
 # install the ESP32 tool
 pip install esptool
 
 #install c++ opencv and make/cmake
 sudo apt install "libopencv-core4.5d" libopencv-dev make cmake
+#install libi2c and the GPIO interface
+sudo apt install libi2c-dev libpigpiod-if-dev
 
 
