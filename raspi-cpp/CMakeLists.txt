@@ -19,5 +19,7 @@ add_executable (SkillIssue25-Raspi main.cpp kmeans.hpp kmeans.cpp)
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 target_link_libraries( SkillIssue25-Raspi ${OpenCV_LIBS} )
-
+#find_package( i2c REQUIRED )
+#include_directories( ${i2c_INCLUDE_DIRS} )
+target_link_libraries( SkillIssue25-Raspi i2c )
 
