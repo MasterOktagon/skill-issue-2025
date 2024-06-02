@@ -12,6 +12,8 @@
 #include <string>
 #include <tuple>
 #include <cmath>
+#include <numeric>
+
 
 #include "kmeans.hpp"
 
@@ -32,13 +34,49 @@ int main(){
     while(true){
         float correction = 0;
         //cv::Mat frame = cv::imread(dirEntry.path());
-        cv::Mat frame;
+        cv::Mat frame, blurred, entropy;
         cap.read(frame);
         cv:GaussianBlur(frame,frame, cv::Size(3,3), 1);
         cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
         
+        cv::GaussianBlur(frame, blurred, cv::Size(31,31), 2);
+        
+        //cv::Mat f;
+        //cv::inRange(frame, cv::Scalar(0, 0, 0), cv::Scalar(100, 100, 100), f);
+        //f.copyTo(frame(cv::Rect(0,0,f.cols, f.rows)));
+        
+        entropy = frame - blurred;
+        cv::inRange(entropy, cv::Scalar(3, 3, 3), cv::Scalar(255, 255, 255), entropy);
+        cv::rectangle(entropy, cv::Point2i(0,0), cv::Point2i(entropy.cols, int(entropy.rows*2/5)), cv::Scalar(0,0,0), cv::FILLED);
+        
+        cv::erode(entropy, entropy, 2);
+        cv::dilate(entropy, entropy, 2);
+        cv::erode(entropy, entropy, 2);
+        cv::dilate(entropy, entropy, 2);
+        cv::Mat blobs, centroids, stats;
+        cv::connectedComponentsWithStats(entropy, blobs, stats, centroids, 8);
+        
+        // get sizes out of the stats matrix
+        vector<cv::Scalar> sizes{};
+        for(int i = 0; i < stats.rows; i++){
+            sizes.push_back(stats.at<int>(int(i), stats.cols-1));
+        }
+        sizes.erase(sizes.begin()); // avoid the background
+        
+        cv::Mat entropy2(entropy.rows, entropy.cols, CV_8UC1, cv::Scalar(0,0,0));
+        for(int i = 0; i < sizes.size(); i++){
+            if(sizes[i][0] >= 50){
+                cv::Mat m;
+                cv::inRange(blobs, cv::Scalar(i+1), cv::Scalar(i+1), m);
+                entropy2.setTo(cv::Scalar(255,255,255), m);
+            }
+        }
+        //cv::Mat mask;
+        //cv::inRange(frame, cv::Scalar(100, 100, 100), cv::Scalar(255, 255, 255), mask);
+        //entropy.setTo(cv::Scalar(0,0,0), mask);
+        
         vector<cv::Vec3f> circles;
-        cv::HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, 10, 80, 40, 15, 100);
+        cv::HoughCircles(entropy2, circles, cv::HOUGH_GRADIENT, 1, 10, 54, 26, 15, 150);
         cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
         vector<cluster> clusters = {};
         
@@ -51,6 +89,17 @@ int main(){
             }
             clusters = kmeans(centers,3);
             
+            int s = clusters.size();
+            int i = 0;
+            for(int a = 0; a < s; a++){
+                cluster c = clusters[i];
+                if(get<0>(c).y < frame.rows/2){
+                    clusters.erase(clusters.begin() + i);
+                }
+                else{
+                    i++;
+                }
+            }
             
             
             vector<int> cluster_radiuses = {};
@@ -61,7 +110,8 @@ int main(){
                     auto match = find(centers.begin(), centers.end(), p);
                     available_radiuses.push_back(radiuses[distance(centers.begin(),match)]);
                 }
-                cluster_radiuses.push_back(*max_element(available_radiuses.begin(), available_radiuses.end()));
+                //cluster_radiuses.push_back(*(available_radiuses.begin(), available_radiuses.end()));
+                cluster_radiuses.push_back(int(accumulate(available_radiuses.begin(), available_radiuses.end(), 0)/available_radiuses.size()));
             }
             
             for(cv::Vec3f c : circles){
@@ -72,26 +122,18 @@ int main(){
                 cv::circle( frame, p, int(c[2]), cv::Scalar(0,0,0), 2, 8, 0 );
             }
             
+            i = 0;
             for(cluster c : clusters){
                 cv::Point2i p = get<0>(c);
                 // draw the circle center
                 cv::circle( frame, p, 3, cv::Scalar(255,0,0), -1, 8, 0 );
                 // draw the circle outline
-                cv::circle( frame, p, 40, cv::Scalar(255,0,0), 2, 8, 0 );
-            }
-            
-            int i = 0;
-            for(cluster c : clusters){
-                cv::Point2i p = get<0>(c);
-                // draw the circle center
-                cv::circle( frame, p, 3, cv::Scalar(0,255,0), -1, 8, 0 );
-                // draw the circle outline
-                cv::circle( frame, p, cluster_radiuses[i++], cv::Scalar(0,255,0), 2, 8, 0 );
+                cv::circle( frame, p, cluster_radiuses[i++], cv::Scalar(255,0,0), 2, 8, 0 );
             }
         }
         //cv::Mat mask;
         //inRange(frame, cv::Scalar(210, 210, 210), cv::Scalar(255, 255, 255), mask);
-        //frame.setTo(cv::Scalar(0, 255, 0), mask);
+        frame.setTo(cv::Scalar(0, 255, 0), entropy2);
         cv::line(frame, cv::Point2i(0,int(frame.rows / 2)), cv::Point2i(frame.cols,int(frame.rows / 2)), cv::Scalar(0,0,255), 2);
         cv::line(frame, cv::Point2i(int(frame.cols / 2), 0), cv::Point2i(int(frame.cols / 2),frame.rows), cv::Scalar(0,0,255), 2);
         if (clusters.size() > 0){
