@@ -74,7 +74,7 @@ void lightSensorArray::read(){
 
 string lightSensorArray::_str(){
     string s = "LightSensorArray:\t{L_1 ";
-    s += to_string(left_outer.min)  + "/" + to_string(left_outer.max)  + " \tL_0";
+    s += to_string(left_outer.min)  + "/" + to_string(left_outer.max)  + " \tL_0 ";
     s += to_string(left.min)        + "/" + to_string(left.max)        + " \tM ";
     s += to_string(center.min)      + "/" + to_string(center.max)      + " \tR_0 ";
     s += to_string(right.min)       + "/" + to_string(right.max)       + " \tR_1 ";
