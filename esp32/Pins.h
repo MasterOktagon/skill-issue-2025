@@ -1,5 +1,12 @@
 #pragma once
 
+//
+// PINOUT HEADER
+//
+// for Robocore board. Set BOARD_REVISION macro to control the board
+// revision used
+//
+
 #ifndef BOARD_REVISION
   #define BOARD_REVISION 1 // which revision of the RoboCore is used
 #endif
@@ -142,9 +149,9 @@
   #define ADC_PT_BACK_R_0  10
   #define ADC_PT_BACK_R_1  11
   #define MS               12  // T_M on pinout
-  #define ADC_AE1          13  //External Analog Input
-  #define ADC_AE2          14  //External Analog Input
-  #define ADC_AE3          15  //External Analog Input
+  #define ADC_AE1          13  // External Analog Input
+  #define ADC_AE2          14  // External Analog Input
+  #define ADC_AE3          15  // External Analog Input
   #define INT              15  // can be used instead of AE3
 
   /////////////Motor Driver (TB6612FNG)///////////////
