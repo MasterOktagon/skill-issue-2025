@@ -13,6 +13,7 @@
 #include <tuple>
 #include <cmath>
 #include <numeric>
+#include <cmath>
 
 
 #include "kmeans.hpp"
@@ -36,7 +37,7 @@ int main(){
         //cv::Mat frame = cv::imread(dirEntry.path());
         cv::Mat frame, blurred, entropy;
         cap.read(frame);
-        cv:GaussianBlur(frame,frame, cv::Size(3,3), 1);
+        cv::GaussianBlur(frame,frame, cv::Size(3,3), 1);
         cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
         
         cv::GaussianBlur(frame, blurred, cv::Size(31,31), 2);
@@ -64,7 +65,7 @@ int main(){
         sizes.erase(sizes.begin()); // avoid the background
         
         cv::Mat entropy2(entropy.rows, entropy.cols, CV_8UC1, cv::Scalar(0,0,0));
-        for(int i = 0; i < sizes.size(); i++){
+        for(size_t i = 0; i < sizes.size(); i++){
             if(sizes[i][0] >= 50){
                 cv::Mat m;
                 cv::inRange(blobs, cv::Scalar(i+1), cv::Scalar(i+1), m);
@@ -112,6 +113,28 @@ int main(){
                 }
                 //cluster_radiuses.push_back(*(available_radiuses.begin(), available_radiuses.end()));
                 cluster_radiuses.push_back(int(accumulate(available_radiuses.begin(), available_radiuses.end(), 0)/available_radiuses.size()));
+            }
+
+            cout << frame.cols << " " << frame.rows << "\n";
+            for(size_t i = 0; i < clusters.size(); i++){
+                bool valid = 1;
+                const float diff = radiuses[i]/3*2;
+                const int y = get<0>(clusters[i]).y;
+                for(int j = -2; j < 3; j++){
+                    if(j==0){continue;};
+                    const int x = get<0>(clusters[i]).x + copysign(radiuses[i],j) + diff * j;
+                    if(!(frame.cols>x and x>0)){continue;};
+                    if(frame.at<cv::Scalar>(int(x), int(y))[0] > 200){
+                        cv::circle(frame, cv::Point2i(x, y), 3, cv::Scalar(0,0,255), -1, 8, 0);
+                        valid = 0;
+                        break;                    
+                    }
+                    cout << get<0>(clusters[i]).x << " " << get<0>(clusters[i]).y << "\n";
+                    //cout << x << " " << circles[i][1] + radiuses[i]*2 << "\n";
+                }
+                if(!valid){
+                    cout << get<0>(clusters[i]).x << " " << get<0>(clusters[i]).y << "    is not valid" << "\n";
+                };
             }
             
             for(cv::Vec3f c : circles){
