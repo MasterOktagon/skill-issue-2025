@@ -4,11 +4,23 @@
 #include <Arduino.h>
 #include <cstdint>
 #include <initializer_list>
+#include <ArduinoJson.h>
 
 #include "Pins.h"
 #include "shared.h"
 
 using namespace std;
+
+namespace fs{
+/*
+Holds functions general to the filesystem
+*/
+    extern void setup();
+    /*
+    Start SPIFFS filesystem
+    */
+}
+
 
 struct lsData {
 /*
@@ -39,6 +51,10 @@ Base class for all light sensors.
         update the light values
         */
         virtual string _str();
+
+        virtual string save();
+
+        virtual void load(String data);
 
 };
 
@@ -71,6 +87,8 @@ class that represents all light sensors in a light sensor bar V2 for one led col
         void calibrate_turn(uint16_t i);
         void read();
         string _str();
+        string save();
+        void load(String data);
 };
 
 namespace ls{
@@ -78,12 +96,12 @@ namespace ls{
 namespace that holds all functions for all light sensors
 */
 
-    extern lightSensorArray white, green, red;
+    extern lightSensorArray white, green, red; // front light sensors
     #if (BOARD_REVISION > 1)
-      extern lightSensorArray back;
+      extern lightSensorArray back; // back light sensors
     #endif
 
-    extern void read();
+    extern const void read();
     /*
     read all lightSensorArrays
     */
@@ -103,6 +121,16 @@ namespace that holds all functions for all light sensors
 
     [param iterations] amount to calibrate
     [param delay_ms] delay between measurements in ms
+    */
+
+    extern void save();
+    /*
+    save all lightsensor data to a file
+    */
+
+    extern void load();
+    /*
+    load all lightsensor data from a file
     */
 
 }

@@ -22,9 +22,9 @@
 #include <Adafruit_SSD1306.h> //https://github.com/adafruit/Adafruit_SSD1306
 
 #include "icons.h" // icons to be displayed
-#include "ESP32_BLE.h" // BLE - here only used for the bluetooth symbol
+//#include "ESP32_BLE.h" // BLE - here only used for the bluetooth symbol
 #include "shiftregister.h"
-#include "gyro.h"
+//#include "gyro.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -39,15 +39,17 @@ namespace menu {
 
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-  void DisplayInit(){
+  bool DisplayInit(){
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADRESS)) {
       Serial.println("SSD1306 allocation failed!");
+      return false;
     }
     display.display();
     display.clearDisplay();
     display.drawBitmap(0,0,logo_Bitmap, 128, 64, SSD1306_WHITE);
     display.display();
     delay(1000);
+    return true;
   }
 
   void overlay(){
@@ -114,6 +116,8 @@ namespace menu {
           selected++;
           if (selected >= menuOptions){selected = 0;}
         }
+        Serial.print("->");
+        Serial.println(texts[selected]);
       }
       last_RE_state = enc;
 
@@ -141,24 +145,7 @@ namespace menu {
     display.display();
   }
 
-  void showView(triangleData *t){
-    display.clearDisplay();
-    overlay();
-    for(uint8_t i = 0; i < SCREEN_WIDTH; i++){
-      Serial.print(t->upper[i]);
-      Serial.print(" ");
-      Serial.println(t->lower[i]);
-      uint16_t dataMappedUpper = 32-(float(t->upper[i + VIEW_START])/1200*32); // map from 0mm - 1200mm to 0 - 32
-      display.drawFastVLine(i, 32-dataMappedUpper, dataMappedUpper, SSD1306_WHITE);
-
-      uint16_t dataMappedLower = 32-(float(t->lower[i + VIEW_START])/1200*32); // map from 0mm - 1200mm to 0 - 32
-      display.drawFastVLine(i, 32, dataMappedLower, SSD1306_WHITE);
-
-    }
-    display.display();
-  }
-
-  void showRotation(){
+  /*void showRotation(){
     overlay();
     display.clearDisplay();
     display.drawCircle(64,32, 8, SSD1306_WHITE);
@@ -166,5 +153,5 @@ namespace menu {
     display.drawLine(64, 32, round(64 + 9 * cos(gyro::ZAngle)), round(32 + 9 * sin(gyro::ZAngle)), SSD1306_WHITE);
 
     display.display();
-  }
+  }*/
 }
