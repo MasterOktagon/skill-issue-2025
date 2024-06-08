@@ -29,8 +29,9 @@ lightSensorArray::lightSensorArray(uint8_t led_pin,
             const uint8_t right_outer){
             
     this->led_pin = led_pin;
+    Serial.print("LED Pin: ");
     Serial.println(left_outer);
-    this->left_outer.adc_pin  = ADC_PT_L_0;
+    this->left_outer.adc_pin  = left_outer;
     this->left.adc_pin        = left;
     this->center.adc_pin      = center;
     this->right.adc_pin       = right;
@@ -39,7 +40,7 @@ lightSensorArray::lightSensorArray(uint8_t led_pin,
 
 void lightSensorArray::led_on(){
     shiftregister::set(led_pin, HIGH);
-    delayMicroseconds(70);
+    delayMicroseconds(80);
 }
 
 void lightSensorArray::led_off(){
