@@ -1,3 +1,5 @@
+#include "gyro.h"
+#include "color.h"
 
 #include <cstdint>
 #include <Arduino.h>
@@ -88,6 +90,55 @@ void motor::rev(uint32_t time){
 }
 
 void motor::turn(int16_t v){
-  fwd(motor::A, v);
-  rev(motor::B, v);
+  fwd(motor::B, v);
+  rev(motor::A, v);
+}
+
+void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
+    if (angle == 0){
+        return;
+    }
+    if (reset_gyro){
+        gyro::reset();
+    }
+    int sign = 1;
+    if (angle < 0){
+        sign = -1;
+    }
+    turn(v * -sign);
+    while (abs(angle) > abs(gyro::z)){
+        gyro::update();
+        Serial.println(gyro::z);
+    }
+    stop();
+}
+
+bool motor::sensor_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors, Side side){
+    uint32_t timestamp = millis();
+    bool in_loop = true;
+    fwd(motor::AB, v);
+    do {
+        if (millis() - timestamp > time){
+            stop(); return false;
+        }
+        in_loop = true;
+        ls::read();
+        color::update(colors);
+        for (color::color* c : colors){
+            in_loop = in_loop && !(c->get() == side);
+        }
+
+    } while (in_loop);
+    stop();
+    return true;
+}
+
+void motor::read_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors){
+    uint32_t timestamp = millis();
+    fwd(motor::AB, v);
+    do {
+        ls::read();
+        color::update(colors);
+    } while (millis() - timestamp < time);
+    stop();
 }

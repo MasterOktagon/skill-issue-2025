@@ -6,7 +6,8 @@
 #include "warnings.h"
 #include "shiftregister.h"
 #include "adc.h"
-//#include "gyro.h"
+#include "gyro.h"
+#include "color.h"
 
 // undef those because those literals are used here (prob. not a good idea)
 #undef A1
@@ -17,7 +18,7 @@ namespace motor{
     This namespace holds all functions that directly influence motor movement
     */
     
-    #define V_STD 150 // standard speed
+    #define V_STD 200 // standard speed
     
     enum motor{
         /*
@@ -99,15 +100,24 @@ namespace motor{
     !Warns! standbyWarning
     */
     
-    //extern bool sensor_fwd(int16_t v, uint32_t time, color::color colors ...);
+    extern bool sensor_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors, Side side = Side::BOTH);
     /*
     Go straight forward reading and abort if timeout or color has been detected
     
     [param v] speed. negative will result in reversed movement
     [param time] time in ms before timeout
-    [param colors ...] colors to read and check for
+    [param colors] colors to read and check for
     
     [return] true if a color has been detected
+    */
+
+    extern void read_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors);
+    /*
+    go fwd while reading out colors
+
+    [param v] speed. negative will result in reversed movement
+    [param time] time in ms before timeout
+    [param colors] colors to read and check for
     */
 
 }

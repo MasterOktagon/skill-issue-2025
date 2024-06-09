@@ -6,11 +6,7 @@
 // copyright (c) SkillIssue Team, Berlin, 2024
 //
 
-// multithreading includes
-#include <mutex>
-#include <thread>
 #include <Wire.h>
-#include <esp_task_wdt.h>
 
 #include "motor.h"
 #include "shiftregister.h"
@@ -19,11 +15,15 @@
 #include "linefollower.h"
 #include "menu.h"
 #include "color.h"
+#include "gyro.h"
 
 using namespace std;
 
+#define GREEN_TIMEOUT 100
+
 bool button_failure = false; // wether buttons have a failure
-TaskHandle_t loop0;
+TaskHandle_t loop0; // Task handler for second loop
+uint16_t last_green = 0;
 
 #ifdef RASP_COMM
     TwoWire comm(1); // I2C Bus for communcating with the Rasberry Pi
@@ -47,6 +47,10 @@ void setup(){
     shiftregister::setup();
     shiftregister::reset();
 
+    Serial.println("Wire init...");
+    Wire.begin();
+    Wire.setClock(400000); // Fast mode
+
     Serial.println("ADC-Multi init...");
     adc::setup();
 
@@ -66,6 +70,9 @@ void setup(){
     // start SPIFFS
     fs::setup();
 
+    Serial.println("Initializing gyro...");
+    gyro::init();
+
     Serial.println("Display init...");
     if (!menu::DisplayInit()){
         shiftregister::set(SR_LED_L_RED, LOW); // Debug display setup failed
@@ -78,6 +85,7 @@ void setup(){
     if (!(digitalRead(T_L) || digitalRead(T_R))){
         Serial.println("Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
+        delay(1000);
         button_failure = true;
     }
     #ifdef RASP_COMM
@@ -136,17 +144,63 @@ void setup(){
 void loop(){
     ls::read();
     color::update();
+    gyro::update();
     if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){
         // avoid obstacle
         motor::stop();
         delay(2000);
     }
-    if (color::green() != Side::NONE){
-        // manage intersections
+    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         motor::stop();
-        delay(5000);
+        #ifdef DEBUG
+            Serial.println("Green Detected!");
+        #endif
+        // confirm the read values
+        for(uint8_t i = 0; i < 15; i++){
+            ls::read();
+            color::update({&color::green, &color::black});
+        }
+        bool left  = color::green() & Side::LEFT;
+        bool right = color::green() & Side::RIGHT;
+        motor::fwd(motor::motor::AB, V_STD);
+        while (color::green() != Side::NONE){
+            ls::read();
+            color::update();
+        }
+        motor::read_fwd(V_STD, 30, {&color::black});
+        
+        //motor::read_fwd(V_STD, 40, {&color::black});
+        bool left_black = color::black() & Side::LEFT;
+        bool right_black = color::black() & Side::RIGHT;
+        
+        // debug green detection
+        shiftregister::set(SR_LED_L_GREEN, !left, false);
+        shiftregister::set(SR_LED_L_BLUE, !left_black, false);
+        shiftregister::set(SR_LED_R_BLUE, !right_black, false);
+        shiftregister::set(SR_LED_R_GREEN, !right);
+        
+        int16_t deg = 0; // how much to turn
+        deg += 90 * int(left && left_black);
+        deg += 90 * int(right && right_black);
+
+        if (left && !(right)){
+            deg *= -1;
+        }
+        color::green.reset();
+        motor::fwd(120);
+        motor::gyro(deg);
+        motor::fwd(60);
+        last_green = millis();
+        
+
+        // reset LEDs
+        shiftregister::set(SR_LED_L_GREEN, HIGH, false);
+        shiftregister::set(SR_LED_L_BLUE, HIGH, false);
+        shiftregister::set(SR_LED_R_BLUE, HIGH, false);
+        shiftregister::set(SR_LED_R_GREEN, HIGH);
     }
     lf::follow();
+
     //Serial.print(ls::red.left.value);
     //Serial.print("\t");
     //Serial.print(ls::red.right.value);
