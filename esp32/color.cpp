@@ -15,12 +15,20 @@ inline int get_as_multiplier(bool b){
 }
 
 void color::color::update(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r){
-    counter_l = max(0,min(CHECK_LEN + 3, counter_l + get_as_multiplier(func(w,g,r, Side::LEFT))));
-    counter_r = max(0,min(CHECK_LEN + 3, counter_l + get_as_multiplier(func(w,g,r, Side::RIGHT))));
+    counter_l = min(CHECK_LEN + 3, max(0, counter_l + get_as_multiplier(func(w,g,r, Side::LEFT))));
+    counter_r = min(CHECK_LEN + 3, max(0, counter_r + get_as_multiplier(func(w,g,r, Side::RIGHT))));
 }
 
 Side color::color::operator () (){
     return Side((counter_l >= CHECK_LEN)*Side::LEFT + (counter_r >= CHECK_LEN)*Side::RIGHT);
+}
+
+Side color::color::get(){
+    return Side((counter_l >= CHECK_LEN)*Side::LEFT + (counter_r >= CHECK_LEN)*Side::RIGHT);
+}
+
+void color::color::reset(){
+    counter_l, counter_r = 0;
 }
 
 bool red_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){

@@ -11,8 +11,8 @@ using namespace std;
 
 #define CHECK_LEN 7
 #define RED_THRESHOLD 30
-#define GREEN_THRESHOLD 25
-#define BLACK_THRESHOLD 15
+#define GREEN_THRESHOLD 10
+#define BLACK_THRESHOLD 30
 
 namespace color{
 /*
@@ -34,6 +34,15 @@ namespace that deals with color detection
         */
         
         Side operator () ();
+        Side get();
+        /*
+        return on which sides a color has been detected
+        */
+
+        void reset();
+        /*
+        reset counters
+        */
     };
 
     extern color red, green, black;
