@@ -48,7 +48,7 @@ namespace menu {
     display.clearDisplay();
     display.drawBitmap(0,0,logo_Bitmap, 128, 64, SSD1306_WHITE);
     display.display();
-    delay(1000);
+    delay(1500);
     return true;
   }
 
