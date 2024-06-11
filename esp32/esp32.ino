@@ -148,7 +148,24 @@ void loop(){
     if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){
         // avoid obstacle
         motor::stop();
-        delay(2000);
+        motor::rev(200);
+        motor::gyro(-45);
+        motor::fwd(300);
+        motor::fwd(motor::motor::A, V_STD);
+        motor::fwd(motor::motor::B, 13);
+        delay(400);
+        uint32_t t = millis(); // time passed
+        do {
+            ls::white.read();
+            color::update({&color::black});
+        } while (color::black() == Side::NONE);
+        motor::fwd(250);
+        motor::gyro(-20);
+        motor::turn(V_STD);
+        do {
+            ls::white.read();
+            color::update({&color::black});
+        } while (!(color::black() & Side::RIGHT));
     }
     if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         motor::stop();
@@ -163,13 +180,13 @@ void loop(){
         bool left  = color::green() & Side::LEFT;
         bool right = color::green() & Side::RIGHT;
         motor::fwd(motor::motor::AB, V_STD);
+        // go fwd until there is no green
         while (color::green() != Side::NONE){
             ls::read();
             color::update();
         }
+        // check for black line
         motor::read_fwd(V_STD, 30, {&color::black});
-        
-        //motor::read_fwd(V_STD, 40, {&color::black});
         bool left_black = color::black() & Side::LEFT;
         bool right_black = color::black() & Side::RIGHT;
         
@@ -187,11 +204,12 @@ void loop(){
             deg *= -1;
         }
         color::green.reset();
+        color::black.reset();
         motor::fwd(120);
         motor::gyro(deg);
         motor::fwd(60);
+        // set freeze
         last_green = millis();
-        
 
         // reset LEDs
         shiftregister::set(SR_LED_L_GREEN, HIGH, false);
@@ -199,14 +217,11 @@ void loop(){
         shiftregister::set(SR_LED_R_BLUE, HIGH, false);
         shiftregister::set(SR_LED_R_GREEN, HIGH);
     }
+    if (color::red() != Side::NONE){
+        motor::stop();
+        delay(6000);
+    }
     lf::follow();
-
-    //Serial.print(ls::red.left.value);
-    //Serial.print("\t");
-    //Serial.print(ls::red.right.value);
-    //Serial.print("\t");
-    //Serial.println(lf::follow());
-    //timestamp = micros();
 }
 
 void core0_loop(void * pvargs){
