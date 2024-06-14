@@ -91,6 +91,17 @@ class that represents all light sensors in a light sensor bar V2 for one led col
         void load(String data);
 };
 
+class rawSensor : public lsBase{
+    uint8_t led_pin;
+    void led_on();
+    void led_off();
+
+    public:
+        lsData data;
+        void calibrate_turn(uint16_t i);
+        void read();
+};
+
 namespace ls{
 /*
 namespace that holds all functions for all light sensors
@@ -100,6 +111,8 @@ namespace that holds all functions for all light sensors
     #if (BOARD_REVISION > 1)
       extern lightSensorArray back; // back light sensors
     #endif
+
+    extern rawSensor ref_l, ref_r; // reflective sensors
 
     extern const void read();
     /*

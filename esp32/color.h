@@ -10,7 +10,7 @@
 using namespace std;
 
 #define CHECK_LEN 7
-#define RED_THRESHOLD 30
+#define RED_THRESHOLD 40
 #define GREEN_THRESHOLD 10
 #define BLACK_THRESHOLD 30
 
