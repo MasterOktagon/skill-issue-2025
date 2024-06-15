@@ -45,11 +45,11 @@ int16_t lf::follow(){
         //#define bias 0
 
         #ifndef MOT_STBY
-            //int16_t v = V_STD;
-            //if(abs(mot_diff) < 5){
-            //    v = 250;
-            //}
-            int16_t v = 255 - abs(mot_diff);
+            int16_t v = V_STD;
+            if(abs(mot_diff) < 5){
+                v = 250;
+            }
+            //int16_t v = 255 - abs(mot_diff);
 
             #ifdef LF_USE_BACK
                 float scale = 1 / ((abs(mot_diff) + 0.1) * 0.25);  // only use back LS if no difference on front is applied

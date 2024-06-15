@@ -168,7 +168,7 @@ void loop(){
         } while (!(color::black() & Side::RIGHT));
     }
     if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
-        motor::stop();
+        motor::fwd(motor::motor::AB, 70);
         #ifdef DEBUG
             Serial.println("Green Detected!");
         #endif
@@ -186,7 +186,7 @@ void loop(){
             color::update();
         }
         // check for black line
-        motor::read_fwd(V_STD, 30, {&color::black});
+        motor::read_fwd(V_STD, 50, {&color::black});
         bool left_black = color::black() & Side::LEFT;
         bool right_black = color::black() & Side::RIGHT;
         
