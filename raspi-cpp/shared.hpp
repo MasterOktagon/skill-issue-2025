@@ -15,4 +15,10 @@ class repr{
     virtual string _str();
 };
 
+string str(repr r){
+    return r._str();
+}
+
+#define loop while(true)
+
 
