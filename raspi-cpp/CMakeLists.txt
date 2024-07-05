@@ -20,7 +20,8 @@ file(GLOB_RECURSE F_HEADERS "*.hpp")
 
 list(FILTER F_SOURCES EXCLUDE REGEX "/CMakeFiles/*")
 list(FILTER F_HEADERS EXCLUDE REGEX "/CMakeFiles/*")
-
+list(FILTER F_SOURCES EXCLUDE REGEX "-backup*")
+list(FILTER F_HEADERS EXCLUDE REGEX "-backup*")
 add_executable (SkillIssue25-Raspi ${F_HEADERS} ${F_SOURCES})
 
 target_link_libraries( SkillIssue25-Raspi ${OpenCV_LIBS} )
