@@ -10,18 +10,20 @@ add_compile_options(-W -Wall -Wextra -Werror)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB_RECURSE F_SOURCES "*.cpp")
-#file(GLOB_RECURSE F_HEADERS "*.hpp")
-#message(${F_SOURCES})
-list(REMOVE_ITEM F_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-list(REMOVE_ITEM F_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/CMakeFiles/3.22.1/CompilerIdCXX/CMakeCXXCompilerId.cpp/main.cpp")
-message(${F_SOURCES})
-
-add_executable (SkillIssue25-Raspi main.cpp kmeans.hpp kmeans.cpp)
 find_package( OpenCV REQUIRED )
+find_package( json-c REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories( ${json-c_INCLUDE_DIRS} )
+
+file(GLOB_RECURSE F_SOURCES "*.cpp")
+file(GLOB_RECURSE F_HEADERS "*.hpp")
+
+list(FILTER F_SOURCES EXCLUDE REGEX "/CMakeFiles/*")
+list(FILTER F_HEADERS EXCLUDE REGEX "/CMakeFiles/*")
+
+add_executable (SkillIssue25-Raspi ${F_HEADERS} ${F_SOURCES})
+
 target_link_libraries( SkillIssue25-Raspi ${OpenCV_LIBS} )
-#find_package( i2c REQUIRED )
-#include_directories( ${i2c_INCLUDE_DIRS} )
-target_link_libraries( SkillIssue25-Raspi i2c )
+target_link_libraries( SkillIssue25-Raspi ${json-c_LIBS} )
+
 

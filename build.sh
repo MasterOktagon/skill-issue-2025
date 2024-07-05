@@ -1,6 +1,8 @@
 
 # compile arduino code
-#./bin/arduino-cli compile ./esp32 -b esp32:esp32:esp32 -u /dev/ttyUSB3 -t
+if $1 != "arduino"; then
+    ./bin/arduino-cli compile ./esp32 -b esp32:esp32:esp32 #-u /dev/ttyUSB3 -t
+fi
 
 # build rasberry pi code
 echo "building Rasberry PI Code..."

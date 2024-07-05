@@ -27,8 +27,8 @@ rm bin # remove old bin directory
 pip install esptool
 
 #install c++ opencv and make/cmake
-sudo apt install "libopencv-core4.5d" libopencv-dev make cmake
-#install libi2c and the GPIO interface
-sudo apt install libi2c-dev libpigpiod-if-dev
+sudo apt install "libopencv-core4.5d" libopencv-dev make cmake 
+#install libi2c and the GPIO interface, the JSON library
+sudo apt install libi2c-dev libpigpiod-if-dev libjson-c5 libjson-c-dev
 
 
