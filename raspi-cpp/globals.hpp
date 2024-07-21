@@ -1,4 +1,5 @@
 
+#pragma once
 /*
 This file contains all variables that are shared between multiple files
 */

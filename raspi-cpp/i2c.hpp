@@ -1,3 +1,4 @@
+#pragma once
 /*
 File that handles all the communication with the ESP32
 */
@@ -18,5 +19,10 @@ namespace i2c {
   extern Task get_task();
   /*
   [return] get the task given by the ESP32
+  */
+
+  extern void send_victims(vector<tuple<uint8_t, int8_t>> data);
+  /*
+  Send victim data back
   */
 }

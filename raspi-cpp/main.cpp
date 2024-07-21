@@ -63,7 +63,6 @@ Main loop
   try {
     loop {
       int task;
-      vector<tuple<uint8_t,int8_t>> victims = {};
 #ifdef DEBUG
       char pressed_char;
 #endif
@@ -74,12 +73,16 @@ Main loop
         break;
 
       case i2c::FIND_VICTIM:
-         // get viewed victims
+        // get viewed victims
+        i2c::send_victims(find_victims());
         break;
 
       case i2c::END:
         output << "received END task" << endl;
         goto endpoint; // break out of loop
+
+      case i2c::FIND_CORNER:
+        break;
       
       default:
         break;
