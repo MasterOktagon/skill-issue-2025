@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <tuple>
 using namespace std;
 using namespace std::this_thread;     // sleep_for, sleep_until
 using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
@@ -18,16 +19,27 @@ using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
 #include "i2c.hpp"
 
 void cleanup() {
-  // release cam and destroy all windows
+/*
+release cam and destroy all windows
+*/ 
   cam->release();
   cv::destroyAllWindows();
   delete cam;
+
+  output << "cleanup succesful!\n";
 #ifndef DEBUG
-  output.close();
+  output.close(); // if output is a file, close it
 #endif
 }
 
 int main(int argc, char **argv) {
+/*
+Main loop
+
+[param argc] number of arguments
+[param argv] values of arguments
+*/  
+
   // cam and output init
   try {
     int camdix = 0;
@@ -36,11 +48,13 @@ int main(int argc, char **argv) {
       camdix = stoi(string(argv[1]));
     }
     init(camdix);
+
   } catch (exception &e) {
     output << "Startup ERRROR" << e.what() << endl;
     cleanup();
     return _PROGRAM_SETUP_ERROR;
-  } catch (...) {
+
+  } catch (...) { // catch all other errors
     output << "Startup ERRROR" << endl;
     cleanup();
     return _PROGRAM_SETUP_ERROR;
@@ -48,26 +62,28 @@ int main(int argc, char **argv) {
 
   try {
     loop {
-      cv::Mat frame;
-      cam->read(frame);
       int task;
-      switch (task = i2c_get_task()) {
+      switch (task = i2c::get_task()) {
       case WAIT:
-        output << "WAIT" << endl;
+        output << "WAIT\n";
         sleep_for(100ms);
         break;
-      case FIND_VICTIM:
 
+      case FIND_VICTIM:
+        vector<tuple<uint8_t,int8_t>> victims = find_victims(); // get viewed victims
         break;
+
+      case END:
+        output << "received END task" << endl;
+        goto endpoint; // break out of loop
+      
       default:
-        output << "HELOLLOLOLOLL" << endl;
         break;
       }
-      // output << "Task: " << task << endl;
 
       show_frame(frame);
 #ifdef DEBUG
-      // close video when user presses any key
+      // abort when user presses any key
       char pressed_char;
       if ((pressed_char = cv::waitKey(1)) > 0) {
         break;
@@ -79,6 +95,6 @@ int main(int argc, char **argv) {
   } catch (...) {
     output << "Loop ERRROR" << endl;
   }
-  cleanup();
+  endpoint: cleanup();
   return _PROGRAM_END;
 }

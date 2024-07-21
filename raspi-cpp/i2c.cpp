@@ -1,8 +1,7 @@
 #include "i2c.hpp"
-#include <optional>
 using namespace std;
 
-Task i2c_get_task() {
+i2c::Task i2c::get_task() {
   // TODO:
   return WAIT;
 }

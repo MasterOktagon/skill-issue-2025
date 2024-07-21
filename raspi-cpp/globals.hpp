@@ -28,7 +28,17 @@ using namespace std;
 #define loop while (true)
 
 extern cv::VideoWriter vout;
-extern void init(int camdix);
 extern cv::VideoCapture *cam;
 extern ostream output;
-extern void show_frame(cv::Mat &);
+
+extern void init(int camdix);
+/*
+Init all global subsystems/variables
+
+[param camidx] camera index to use
+*/
+
+extern void show_frame(cv::Mat & frame);
+/*
+Show or debug a Frame or put it into the video
+*/
