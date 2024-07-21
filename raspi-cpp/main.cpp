@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <string>
 #include <thread>
-#include <vector>
 #include <tuple>
+#include <vector>
 using namespace std;
 using namespace std::this_thread;     // sleep_for, sleep_until
 using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
@@ -15,13 +15,14 @@ using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "find_victim.hpp"
 #include "globals.hpp"
 #include "i2c.hpp"
 
 void cleanup() {
-/*
-release cam and destroy all windows
-*/ 
+  /*
+  release cam and destroy all windows
+  */
   cam->release();
   cv::destroyAllWindows();
   delete cam;
@@ -33,12 +34,12 @@ release cam and destroy all windows
 }
 
 int main(int argc, char **argv) {
-/*
-Main loop
+  /*
+  Main loop
 
-[param argc] number of arguments
-[param argv] values of arguments
-*/  
+  [param argc] number of arguments
+  [param argv] values of arguments
+  */
 
   // cam and output init
   try {
@@ -83,17 +84,13 @@ Main loop
 
       case i2c::FIND_CORNER:
         break;
-      
+
       default:
         break;
       }
-
-      cv::Mat frame;
-      cam->read(frame);
-      show_frame(frame);
 #ifdef DEBUG
       // abort when user presses any key
-      
+
       if ((pressed_char = cv::waitKey(1)) > 0) {
         break;
       }
@@ -104,6 +101,7 @@ Main loop
   } catch (...) {
     output << "Loop ERRROR" << endl;
   }
-  endpoint: cleanup();
+endpoint:
+  cleanup();
   return _PROGRAM_END;
 }
