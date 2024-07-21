@@ -32,4 +32,3 @@ extern void init();
 extern ostream output;
 
 
-
