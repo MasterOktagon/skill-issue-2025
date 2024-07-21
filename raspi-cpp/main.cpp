@@ -63,17 +63,21 @@ Main loop
   try {
     loop {
       int task;
+      vector<tuple<uint8_t,int8_t>> victims = {};
+#ifdef DEBUG
+      char pressed_char;
+#endif
       switch (task = i2c::get_task()) {
-      case WAIT:
+      case i2c::WAIT:
         output << "WAIT\n";
         sleep_for(100ms);
         break;
 
-      case FIND_VICTIM:
-        vector<tuple<uint8_t,int8_t>> victims = find_victims(); // get viewed victims
+      case i2c::FIND_VICTIM:
+         // get viewed victims
         break;
 
-      case END:
+      case i2c::END:
         output << "received END task" << endl;
         goto endpoint; // break out of loop
       
@@ -81,10 +85,12 @@ Main loop
         break;
       }
 
+      cv::Mat frame;
+      cam->read(frame);
       show_frame(frame);
 #ifdef DEBUG
       // abort when user presses any key
-      char pressed_char;
+      
       if ((pressed_char = cv::waitKey(1)) > 0) {
         break;
       }

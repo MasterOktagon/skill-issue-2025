@@ -19,6 +19,4 @@ namespace i2c {
   /*
   [return] get the task given by the ESP32
   */
-
-
 }

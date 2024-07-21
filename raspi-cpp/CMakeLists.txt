@@ -11,9 +11,9 @@ add_compile_options(-W -Wall -Wextra -Werror)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package( OpenCV REQUIRED )
-find_package( json-c REQUIRED )
+#find_package( json-c REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
-include_directories( ${json-c_INCLUDE_DIRS} )
+#include_directories( ${json-c_INCLUDE_DIRS} )
 
 file(GLOB_RECURSE F_SOURCES "*.cpp")
 file(GLOB_RECURSE F_HEADERS "*.hpp")
@@ -21,10 +21,16 @@ file(GLOB_RECURSE F_HEADERS "*.hpp")
 list(FILTER F_SOURCES EXCLUDE REGEX "/CMakeFiles/*")
 list(FILTER F_HEADERS EXCLUDE REGEX "/CMakeFiles/*")
 list(FILTER F_SOURCES EXCLUDE REGEX "-backup*")
+list(FILTER F_SOURCES EXCLUDE REGEX "Example*")
 list(FILTER F_HEADERS EXCLUDE REGEX "-backup*")
+
+# to be removed later
+list(FILTER F_SOURCES EXCLUDE REGEX "MPU6050*")
+list(FILTER F_HEADERS EXCLUDE REGEX "MPU6050*")
+
 add_executable (SkillIssue25-Raspi ${F_HEADERS} ${F_SOURCES})
 
 target_link_libraries( SkillIssue25-Raspi ${OpenCV_LIBS} )
-target_link_libraries( SkillIssue25-Raspi ${json-c_LIBS} )
+#target_link_libraries( SkillIssue25-Raspi ${json-c_LIBS} )
 
 
