@@ -40,8 +40,7 @@ void init(int camdix) {
   output << "Program started!\n";
 
   cam = new cv::VideoCapture(camdix);
-  frame_size = cv::Size(20, 20); // cv::Size(cam.get(cv::CAP_PROP_FRAME_WIDTH),
-                                 // cam.get(cv::CAP_PROP_FRAME_HEIGHT));
+  cv::Size(cam->get(cv::CAP_PROP_FRAME_WIDTH), cam->get(cv::CAP_PROP_FRAME_HEIGHT));
   vout = cv::VideoWriter("run.avi", 0, 5, frame_size);
 
   output << "Init complete\n";
