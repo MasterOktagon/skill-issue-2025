@@ -19,6 +19,7 @@ using namespace std;
 
 // FLAGS
 #define DEBUG
+//#define VIDEO_EXPORT
 
 // constants
 #define CAM_FOV 30

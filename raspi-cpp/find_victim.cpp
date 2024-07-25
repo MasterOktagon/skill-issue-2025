@@ -5,6 +5,10 @@
 #include <opencv2/opencv.hpp>
 
 #define degrees(a) a * (180.0 / 3.141592653589793238463)
+/*
+calculate degrees out of radians
+*/
+
 vector<tuple<uint8_t, int8_t>> find_victims() {
 
   for (int _ = 0; _ < 1; _++) {
@@ -13,23 +17,29 @@ vector<tuple<uint8_t, int8_t>> find_victims() {
     cam->read(frame);
     cv::GaussianBlur(frame, frame, cv::Size(3, 3), 1);
     cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
-    // edge detection
-    // cv::Mat edges;
-    // cv::Canny(frame, edges, 60, 100, 3, false);
-    // cv::dilate(edges, edges, 4);
+
+    // edge detection using difference of Gaussian blur and image
     cv::Mat blurred, entropy;
     cv::GaussianBlur(frame, blurred, cv::Size(31, 31), 2);
     entropy = frame - blurred;
+
+    // get edges above threshold
     cv::inRange(entropy, cv::Scalar(3, 3, 3), cv::Scalar(255, 255, 255),
                 entropy);
+
+    // ignore upper part (over wall)
+    // TODO: make this based upon MPU gyro data
     cv::rectangle(entropy, cv::Point2i(0, 0),
                   cv::Point2i(entropy.cols, int(entropy.rows * 2 / 5)),
                   cv::Scalar(0, 0, 0), cv::FILLED);
 
+    // straighten lines by eroding features and dilating again
     cv::erode(entropy, entropy, 2);
     cv::dilate(entropy, entropy, 2);
     cv::erode(entropy, entropy, 2);
     cv::dilate(entropy, entropy, 2);
+
+    // remove small blobs
     cv::Mat blobs, centroids, stats;
     cv::connectedComponentsWithStats(entropy, blobs, stats, centroids, 8);
 
@@ -40,6 +50,7 @@ vector<tuple<uint8_t, int8_t>> find_victims() {
     }
     sizes.erase(sizes.begin()); // avoid the background
 
+    // draw edges
     cv::Mat edges(entropy.rows, entropy.cols, CV_8UC1, cv::Scalar(0, 0, 0));
     for (size_t i = 0; i < sizes.size(); i++) {
       if (sizes[i][0] >= 50) {
@@ -47,16 +58,19 @@ vector<tuple<uint8_t, int8_t>> find_victims() {
         cv::inRange(blobs, cv::Scalar(i + 1), cv::Scalar(i + 1), m);
         edges.setTo(cv::Scalar(255, 255, 255), m);
       }
-    } // end of oscars edge detection
+    }
+    // end of oskars edge detection
+    
     // circle detection
     vector<cv::Vec3f> circles;
     cv::HoughCircles(edges, circles, cv::HOUGH_GRADIENT, 1, 10, 54, 26, 15,
                      150);
-    cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR);
+
+    cv::cvtColor(frame, frame, cv::COLOR_GRAY2BGR); // turn GRAY to BGR to allow drawing colored
     // unzip clusters to centers and radii
     vector<cluster> clusters = {};
     vector<int> cluster_radiuses = {};
-    if (circles.size() > 0) {
+    if (circles.size() > 0) { // ignore if no circles where found
       vector<cv::Point2i> centers = {};
       vector<int> radii = {};
       for (cv::Vec3f c : circles) {
@@ -89,8 +103,6 @@ vector<tuple<uint8_t, int8_t>> find_victims() {
                                                   available_radiuses.end(), 0) /
                                        available_radiuses.size()));
       }
-      output << "anfang gefährlich" << endl;
-      output << "ende gefährlich" << endl;
       // validate clusters
       //       for (size_t i = 0; i < clusters.size(); i++) {
       //         bool valid = 1;

@@ -33,15 +33,18 @@ void init(int camdix) {
   of.open("out.log"); // Assign a file as target
   ostream output.rdbuf(of.rdbuf());
 #else
-  // auto buff = cout.rdbuf();
   output.rdbuf(cout.rdbuf()); // Assign cout as target for debug output
 #endif
 
   output << "Program started!\n";
 
   cam = new cv::VideoCapture(camdix);
-  cv::Size(cam->get(cv::CAP_PROP_FRAME_WIDTH), cam->get(cv::CAP_PROP_FRAME_HEIGHT));
+  frame_size = cv::Size(cam->get(cv::CAP_PROP_FRAME_WIDTH), cam->get(cv::CAP_PROP_FRAME_HEIGHT));
+  output << "Detected video size was: (" << frame_size.width << "," << frame_size.height << ")\n"; 
+#ifdef VIDEO_EXPORT
   vout = cv::VideoWriter("run.avi", 0, 5, frame_size);
+  output << "VideoWriter initialized!\n";
+#endif
 
   output << "Init complete\n";
 }
@@ -50,7 +53,8 @@ void show_frame(cv::Mat &frame) {
   // show frame or write to video file
 #ifdef DEBUG
   cv::imshow("frame", frame);
-#else
+#endif
+#ifdef VIDEO_EXPORT
   vout.write(frame);
 #endif
 }
