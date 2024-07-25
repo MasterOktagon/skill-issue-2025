@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
       switch (task = i2c::get_task()) {
       case i2c::WAIT:
         output << "WAIT\n";
-        sleep_for(100ms);
+        sleep_for(100ms); //TODO: remove this once finding algorithms are implemented
         break;
 
       case i2c::FIND_VICTIM:
