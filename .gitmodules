@@ -1,0 +1,3 @@
+[submodule "RoboCore"]
+	path = RoboCore
+	url = https://github.com/codemarv42/RoboCore/
