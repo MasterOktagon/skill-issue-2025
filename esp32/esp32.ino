@@ -6,6 +6,8 @@
 // copyright (c) SkillIssue Team, Berlin, 2024
 //
 
+#define BOARD_REVISION 3
+
 #include <Wire.h>
 
 #include "motor.h"
@@ -48,23 +50,24 @@ void setup(){
     shiftregister::reset();
 
     Serial.println("Wire init...");
-    Wire.begin();
+    Wire.begin(SDA, SCL); // start i2c
     Wire.setClock(400000); // Fast mode
 
-    Serial.println("ADC-Multi init...");
-    adc::setup();
+    // to be moved later
+    pinMode(PT_WHITE, OUTPUT);
 
     #ifdef LED_TEST
         Serial.println("LED test (wgr[b])");
-        shiftregister::set(SR_PT_WHITE, HIGH);
+        digitalWrite(PT_WHITE, HIGH);
         delay(1500);
-        shiftregister::set(SR_PT_WHITE, LOW);
-        shiftregister::set(SR_PT_GREEN, HIGH);
-        delay(1500);
-        shiftregister::set(SR_PT_GREEN, LOW);
-        shiftregister::set(SR_PT_RED, HIGH);
-        delay(1500);
-        shiftregister::set(SR_PT_RED, LOW);
+        digitalWrite(PT_WHITE, LOW);
+        
+        //shiftregister::set(PT_GREEN, HIGH);
+        //delay(1500);
+        //shiftregister::set(SR_PT_GREEN, LOW);
+        //shiftregister::set(SR_PT_RED, HIGH);
+        //delay(1500);
+        //shiftregister::set(SR_PT_RED, LOW);
     #endif
 
     // start SPIFFS
@@ -75,13 +78,12 @@ void setup(){
 
     Serial.println("Display init...");
     if (!menu::DisplayInit()){
-        shiftregister::set(SR_LED_L_RED, LOW); // Debug display setup failed
+        //shiftregister::set(SR_LED_L_RED, LOW); // Debug display setup failed
     }
-    pinMode(ENC_SW, INPUT);
 
     Serial.println("Checking Buttons for failures...");
-    pinMode(T_L, INPUT);
-    pinMode(T_R, INPUT);
+    pinMode(T_L, INPUT_PULLUP);
+    pinMode(T_R, INPUT_PULLUP);
     if (!(digitalRead(T_L) || digitalRead(T_R))){
         Serial.println("Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
