@@ -11,40 +11,56 @@
     #warning "Controlling single motors is currently not supported"
 #endif
 
-void motor::stop(){
+void motor::stop(bool hard){
     // stop the motors
-    digitalWrite(PWMA, LOW);
-    digitalWrite(PWMB, LOW);
+    digitalWrite(PWMA1, LOW);
+    digitalWrite(PWMB1, LOW);
+    digitalWrite(PWMA2, LOW);
+    digitalWrite(PWMB2, LOW);
+
+    if (hard){return;}
 
     // clean up
-    shiftregister::set(SR_AIN1, LOW, false);
-    shiftregister::set(SR_AIN2, LOW, false);
-    shiftregister::set(SR_BIN1, LOW, false);
-    shiftregister::set(SR_BIN2, LOW);
+    shiftregister::set(SR_AIN1_F, LOW, false);
+    shiftregister::set(SR_AIN1_R, LOW, false);
+    shiftregister::set(SR_AIN2_F, LOW, false);
+    shiftregister::set(SR_AIN2_R, LOW, false);
+    shiftregister::set(SR_BIN1_F, LOW, false);
+    shiftregister::set(SR_BIN1_R, LOW, false);
+    shiftregister::set(SR_BIN2_R, LOW, false);
+    shiftregister::set(SR_BIN2_F, LOW);
 }
 
 void motor::stop(motor m){
 
-    if (m & motor::A){
-        digitalWrite(PWMA, LOW);
-        shiftregister::set(SR_AIN1, LOW, false);
-        shiftregister::set(SR_AIN2, LOW, false);
+    if (m & motor::A1){
+        digitalWrite(PWMA1, LOW);
+        shiftregister::set(SR_AIN1_F, LOW, false);
+        shiftregister::set(SR_AIN1_R, LOW, false);
     }
-    else if (m & motor::B){
-        digitalWrite(PWMB, LOW);
-        shiftregister::set(SR_BIN1, LOW, false);
-        shiftregister::set(SR_BIN2, LOW, false);
+    if (m & motor::B1){
+        digitalWrite(PWMB1, LOW);
+        shiftregister::set(SR_BIN1_R, LOW, false);
+        shiftregister::set(SR_BIN1_R, LOW, false);
     }
+    if (m & motor::A2){
+        digitalWrite(PWMA2, LOW);
+        shiftregister::set(SR_AIN2_F, LOW, false);
+        shiftregister::set(SR_AIN2_R, LOW, false);
+    }
+    if (m & motor::B2){
+        digitalWrite(PWMB2, LOW);
+        shiftregister::set(SR_BIN2_R, LOW, false);
+        shiftregister::set(SR_BIN2_R, LOW, false);
+    }
+
+    shiftregister::shift();
 }
 
 void motor::hardstop(){
   // reerse all motors
-  shiftregister::set(SR_AIN1, !shiftregister::get(SR_AIN1), false);
-  shiftregister::set(SR_AIN2, !shiftregister::get(SR_AIN2), false);
-  shiftregister::set(SR_BIN1, !shiftregister::get(SR_BIN1), false);
-  shiftregister::set(SR_BIN2, !shiftregister::get(SR_BIN2));
-  
-  delay(25);
+  stop(true);
+  rev(25);
   stop();
 }
 
@@ -59,15 +75,25 @@ void motor::fwd(motor m, int16_t v){
   // control the motors
   bool rev = v < 0; // wether to reverse *IN1 and *IN2
   v = abs(v);
-  if (m & motor::A){
-    shiftregister::set(SR_AIN1,  rev, false);
-    shiftregister::set(SR_AIN2, !rev, false);
-    analogWrite(PWMA, v);
+  if (m & motor::A1){
+    shiftregister::set(SR_AIN1_F,  rev, false);
+    shiftregister::set(SR_AIN1_R, !rev, false);
+    analogWrite(PWMA1, v);
   }
-  if (m & motor::B){
-    shiftregister::set(SR_BIN1,  rev, false);
-    shiftregister::set(SR_BIN2, !rev, false);
-    analogWrite(PWMB, v);
+  if (m & motor::A2){
+    shiftregister::set(SR_AIN2_F,  rev, false);
+    shiftregister::set(SR_AIN2_R, !rev, false);
+    analogWrite(PWMA2, v);
+  }
+  if (m & motor::B1){
+    shiftregister::set(SR_BIN1_F,  rev, false);
+    shiftregister::set(SR_BIN1_R, !rev, false);
+    analogWrite(PWMB1, v);
+  }
+  if (m & motor::B2){
+    shiftregister::set(SR_BIN2_F,  rev, false);
+    shiftregister::set(SR_BIN2_R, !rev, false);
+    analogWrite(PWMB2, v);
   }
 
   shiftregister::shift();

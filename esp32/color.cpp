@@ -1,6 +1,7 @@
 
 #include "color.h"
 #include "lightsensor.h"
+#include "shared.h"
 
 color::color::color(fsignal<bool, lightSensorArray*, lightSensorArray*, lightSensorArray*, Side> method){
     func = method;

@@ -10,7 +10,6 @@
 //#define DEBUG
 //#define BLE
 //#define MOT_STBY
-#define BOARD_REVISION 1
 //#define LF_USE_BACK
 #define LF_ACTIVE
 #define USE_TIMESCALE

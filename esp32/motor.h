@@ -5,7 +5,6 @@
 
 #include "warnings.h"
 #include "shiftregister.h"
-#include "adc.h"
 #include "gyro.h"
 #include "color.h"
 
@@ -40,9 +39,11 @@ namespace motor{
     Stop a motor
     */
     
-    extern void stop();
+    extern void stop(bool hard = false);
     /*
     stop all motors
+
+    [param hard] if to short brake
     */
 
     extern void hardstop();

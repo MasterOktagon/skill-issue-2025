@@ -6,17 +6,14 @@
 // copyright (c) SkillIssue Team, Berlin, 2024
 //
 
-#define BOARD_REVISION 3
-
 #include <Wire.h>
 
+#include "color.h"
 #include "motor.h"
 #include "shiftregister.h"
 #include "lightsensor.h"
-#include "adc.h"
 #include "linefollower.h"
 #include "menu.h"
-#include "color.h"
 #include "gyro.h"
 
 using namespace std;
@@ -52,22 +49,19 @@ void setup(){
     Serial.println("Wire init...");
     Wire.begin(SDA, SCL); // start i2c
     Wire.setClock(400000); // Fast mode
-
-    // to be moved later
-    pinMode(PT_WHITE, OUTPUT);
+    
+    ls::setup();
 
     #ifdef LED_TEST
         Serial.println("LED test (wgr[b])");
-        digitalWrite(PT_WHITE, HIGH);
+        digitalWrite(PT_WHITE_L, HIGH);
         delay(1500);
-        digitalWrite(PT_WHITE, LOW);
-        
-        //shiftregister::set(PT_GREEN, HIGH);
-        //delay(1500);
-        //shiftregister::set(SR_PT_GREEN, LOW);
-        //shiftregister::set(SR_PT_RED, HIGH);
-        //delay(1500);
-        //shiftregister::set(SR_PT_RED, LOW);
+        digitalWrite(PT_WHITE_L, LOW);
+        digitalWrite(PT_WHITE_R, HIGH);
+        delay(1500);
+        digitalWrite(PT_WHITE_R, LOW);
+
+        //TODO: make the rgb led test
     #endif
 
     // start SPIFFS
@@ -78,7 +72,8 @@ void setup(){
 
     Serial.println("Display init...");
     if (!menu::DisplayInit()){
-        //shiftregister::set(SR_LED_L_RED, LOW); // Debug display setup failed
+        ls::led.setPixelColor(0, ls::led.Color(255,0,0));
+        ls::led.show();
     }
 
     Serial.println("Checking Buttons for failures...");
@@ -105,37 +100,38 @@ void setup(){
 
             case MENU_CALIBRATE:
                 delay(500);
-                attachInterrupt(ENC_SW, isr, RISING);
+                attachInterrupt(T_E, isr, RISING);
                 delay(1500);
                 ls::calibrate(10000, 1);
 
                 // Print min/max values
                 Serial.print("white "); Serial.println(ls::white._str().c_str());
                 Serial.print("green "); Serial.println(ls::green._str().c_str());
-                Serial.print("red ");   Serial.println(ls::red._str().c_str());
-                #ifdef LF_USE_BACK
-                    #if (BOARD_REVISION > 1)
-                        Serial.print("back ");   Serial.println(str(ls::back).c_str());
-                    #endif
-                #endif
+                Serial.println("red "); Serial.println(ls::red._str().c_str());
+                Serial.println("");
+                Serial.print("white_b "); Serial.println(ls::white_b._str().c_str());
+                Serial.print("green_b "); Serial.println(ls::green_b._str().c_str());
+                Serial.println("red_b "); Serial.println(ls::red_b._str().c_str());
+
                 ls::save();
-                detachInterrupt(ENC_SW);
+                detachInterrupt(T_E);
         }
     }
 
     ls::load();
 
+    // Print min/max values
     Serial.print("white "); Serial.println(ls::white._str().c_str());
     Serial.print("green "); Serial.println(ls::green._str().c_str());
-    Serial.print("red ");   Serial.println(ls::red._str().c_str());
-    #ifdef LF_USE_BACK
-        #if (BOARD_REVISION > 1)
-            Serial.print("back ");   Serial.println(str(ls::back).c_str());
-        #endif
-    #endif
+    Serial.println("red "); Serial.println(ls::red._str().c_str());
+    Serial.println("");
+    Serial.print("white_b "); Serial.println(ls::white_b._str().c_str());
+    Serial.print("green_b "); Serial.println(ls::green_b._str().c_str());
+    Serial.println("red_b "); Serial.println(ls::red_b._str().c_str());
+
 
     delay(500); // delay to not interrupt directly
-    attachInterrupt(ENC_SW, isr, RISING);
+    attachInterrupt(T_E, isr, RISING);
 
     // start i2c-Handler thread
     xTaskCreatePinnedToCore(core0_loop, "Core0MainLoop", 10000, NULL, 0, &loop0, 0);
@@ -193,10 +189,9 @@ void loop(){
         bool right_black = color::black() & Side::RIGHT;
         
         // debug green detection
-        shiftregister::set(SR_LED_L_GREEN, !left, false);
-        shiftregister::set(SR_LED_L_BLUE, !left_black, false);
-        shiftregister::set(SR_LED_R_BLUE, !right_black, false);
-        shiftregister::set(SR_LED_R_GREEN, !right);
+        ls::led.setPixelColor(0, ls::led.Color(0, 255 * int(!left),  255 * int(!left_black)));
+        ls::led.setPixelColor(1, ls::led.Color(0, 255 * int(!right), 255 * int(!right_black)));
+        ls::led.show();
         
         int16_t deg = 0; // how much to turn
         deg += 90 * int(left && left_black);
@@ -214,10 +209,8 @@ void loop(){
         last_green = millis();
 
         // reset LEDs
-        shiftregister::set(SR_LED_L_GREEN, HIGH, false);
-        shiftregister::set(SR_LED_L_BLUE, HIGH, false);
-        shiftregister::set(SR_LED_R_BLUE, HIGH, false);
-        shiftregister::set(SR_LED_R_GREEN, HIGH);
+        ls::led.clear();
+        ls::led.show();
     }
     if (color::red() != Side::NONE){
         motor::stop();

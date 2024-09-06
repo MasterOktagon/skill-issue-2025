@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <ArduinoJson.h>
+#include <Adafruit_NeoPixel.h>
 
 #include "Pins.h"
 #include "shared.h"
@@ -22,84 +23,92 @@ Holds functions general to the filesystem
 }
 
 
-struct lsData {
+class lightSensor{
 /*
-Holds data for one light sensor
-*/
-    int16_t min = 0x7FFF;
-    int16_t max = 1;
-    int16_t raw = 0; // not sure if this is going to be used
-    int16_t value = 0;
-    uint8_t adc_pin;
-};
-
-class lsBase : public repr{
-/*
-Base class for all light sensors.
+class that controls a single color light sensor
 */
     public:
-
-        virtual void calibrate_turn(uint16_t i);
-        /*
-        one calibration iteration
-
-        [param i] number of the iteration
-        */
-
-        virtual void read();
-        /*
-        update the light values
-        */
-        virtual string _str();
-
-        virtual string save();
-
-        virtual void load(String data);
-
-};
-
-class lightSensorArray : public lsBase{
-/*
-class that represents all light sensors in a light sensor bar V2 for one led color
-*/
+        int16_t value = 0; // current calibrated value
+                
+        int16_t vmin = 0x7FFF; // calibration minimum
+        int16_t vmax = 0; // calibration maximum
+        uint8_t sensor_pin;
+    
     private:
         uint8_t led_pin;
-        void led_on();
-        void led_off();
+        //uint8_t sensor_pin;
+        
+        virtual void led_on();
+        virtual void led_off();
 
     public:
-
-        lsData left_outer;
-        lsData left;
-        lsData center;
-        lsData right;
-        lsData right_outer;
-
-        lightSensorArray(uint8_t led_pin,
-            const uint8_t left_outer=ADC_PT_L_1,
-            const uint8_t left=ADC_PT_L_0,
-            const uint8_t center=ADC_PT_M,
-            const uint8_t right=ADC_PT_R_0,
-            const uint8_t right_outer=ADC_PT_R_1); //TODO: configure adc ports
+        
+        lightSensor();
+        lightSensor(uint8_t led_pin, uint8_t sensor_pin);
         /*
-        create a lightSensorArray object
+        create a lightSensor object
         */
-        void calibrate_turn(uint16_t i);
+        
         void read();
-        string _str();
-        string save();
-        void load(String data);
+        /*
+        turn on the led, read out the sensors, turn off the led, map the value and update it
+        */
+        
+        void calibrate_turn(int iter);
+        /*
+        run one calibtration turn
+        
+        [param iter] iteration index
+        */
+        
+        int16_t get_min();
+        int16_t get_max();
 };
 
-class rawSensor : public lsBase{
-    uint8_t led_pin;
+class RGBSensor : public lightSensor{
+/*
+class that controls a single color light sensor on a Neopixel base
+*/
+    
     void led_on();
     void led_off();
+    
+    uint8_t led_idx;
+    Adafruit_NeoPixel* led;
+    uint32_t color;
+    
+    public:;
+        RGBSensor(uint8_t sensor_pin, uint8_t led_idx, Adafruit_NeoPixel* leds, uint32_t color);
+        /*
+        create a RGBSensor object
+        
+        [param led_idx] index of the Neopixel LED in the continous "strip" of LEDs
+        [param leds]    the controller Object passed by reference
+        [param color]   color to be set. use Neopixel.Color(r,g,b) to get it
+        */
+    
+};
 
+
+class lightSensorArray : public repr {
+/*
+class representing and managing multiple light sensors of the same color
+*/  
     public:
-        lsData data;
-        void calibrate_turn(uint16_t i);
+
+        lightSensorArray(lightSensor l_o, lightSensor l, lightSensor r, lightSensor r_o);
+        
+        lightSensor left_outer, left, right, right_outer;
+        
+        void calibrate_turn(int iter);
+        
+        void load(String data);
+        string save();
+
         void read();
+
+        string _str();
+        
 };
 
 namespace ls{
@@ -107,18 +116,21 @@ namespace ls{
 namespace that holds all functions for all light sensors
 */
 
+    extern Adafruit_NeoPixel led;
     extern lightSensorArray white, green, red; // front light sensors
-    #if (BOARD_REVISION > 1)
-      extern lightSensorArray back; // back light sensors
-    #endif
-
-    extern rawSensor ref_l, ref_r; // reflective sensors
-
+    extern lightSensorArray white_b, green_b, red_b; // back light sensors
+    extern lightSensorArray* all[6];
+    
+    extern void setup();
+    /*
+    configure light sensors
+    */
+    
     extern const void read();
     /*
     read all lightSensorArrays
     */
-
+    
     extern void read(initializer_list<lightSensorArray*> ls);
     /*
     read all given lightSensorArrays.
@@ -145,6 +157,8 @@ namespace that holds all functions for all light sensors
     /*
     load all lightsensor data from a file
     */
-
 }
+
+
+
 

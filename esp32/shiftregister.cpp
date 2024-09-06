@@ -47,7 +47,8 @@ void shiftregister::reset(){
     for(int i = 9; i < 6 + 9; i++){
       set(i, HIGH, false);
     }
-    set(SR_STBY, HIGH);
+    set(SR_STBY1, HIGH);
+    set(SR_STBY2, HIGH);
     Serial.println("SR Reset succesfull");
 }
 

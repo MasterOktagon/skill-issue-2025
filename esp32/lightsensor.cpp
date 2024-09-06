@@ -1,15 +1,17 @@
-#include <iterator>
+
 #include <Arduino.h>
 #include <cstdint>
 #include <initializer_list>
 #include <string>
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
-#include <FS.h>
 
 #include "lightsensor.h"
 #include "shiftregister.h"
-#include "adc.h"
+
+
+#define LED_DELAY 80
+#define ITER_SKIP 20
 
 using namespace std;
 
@@ -20,103 +22,112 @@ void fs::setup(){
     }
 }
 
-
-lightSensorArray::lightSensorArray(uint8_t led_pin,
-            const uint8_t left_outer,
-            const uint8_t left,
-            const uint8_t center,
-            const uint8_t right,
-            const uint8_t right_outer){
-            
+lightSensor::lightSensor(uint8_t led_pin, uint8_t sensor_pin){
     this->led_pin = led_pin;
-    Serial.print("LED Pin: ");
-    Serial.println(left_outer);
-    this->left_outer.adc_pin  = left_outer;
-    this->left.adc_pin        = left;
-    this->center.adc_pin      = center;
-    this->right.adc_pin       = right;
-    this->right_outer.adc_pin = right_outer;
+    this->sensor_pin = sensor_pin;
 }
 
-void lightSensorArray::led_on(){
-    shiftregister::set(led_pin, HIGH);
-    delayMicroseconds(80);
+lightSensor::lightSensor(){
+    led_pin = 0;
+    sensor_pin = 0;
 }
 
-void lightSensorArray::led_off(){
-    shiftregister::set(led_pin, LOW, false);
+void lightSensor::led_on(){
+    digitalWrite(led_pin, HIGH);
+    delayMicroseconds(LED_DELAY);
 }
 
+void lightSensor::led_off(){
+    digitalWrite(led_pin, LOW);
+}
 
-#define cal(side)                                \
-    current_value = adc::read(side.adc_pin);     \
-    if (i > 20){                                 \
-        side.min = min(side.min, current_value); \
-        side.max = max(side.max, current_value); \
+void lightSensor::read(){
+    // read value and map it to a range between 0 and 100
+    int a = ((analogRead(sensor_pin) - vmin) * 100);
+    value = int16_t(a / (vmax - vmin));
+}
+
+void lightSensor::calibrate_turn(int iter){
+    led_on();
+
+    int16_t val = analogRead(sensor_pin); // read light sensor value
+    if (iter > ITER_SKIP){
+        // update min/max values
+        vmax = max(vmax, val);
+        vmin = min(vmin, val);
     }
 
-void lightSensorArray::calibrate_turn(uint16_t i){
-        led_on();
-        int16_t current_value;
-        cal(left_outer);
-        //Serial.println(current_value);
-        cal(left);
-        cal(center);
-        cal(right);
-        cal(right_outer);
-        
-        led_off();
-}
-
-void read_side(lsData& side){
-    
-    int a = ((adc::read(side.adc_pin) - side.min) * 100);
-    side.value = int16_t(a / (side.max - side.min));
-
-}
-
-void lightSensorArray::read(){
-    
-    led_on();
-    read_side(left_outer);
-    read_side(left);
-    read_side(center);
-    read_side(right);
-    read_side(right_outer);
     led_off();
+}
+
+int16_t lightSensor::get_max(){return vmax;}
+int16_t lightSensor::get_min(){return vmin;}
+
+RGBSensor::RGBSensor(uint8_t sensor_pin, uint8_t led_idx, Adafruit_NeoPixel* leds, uint32_t color){
+    this->led_idx = led_idx;
+    this->led = leds;
+    this->color = color;
+    this->sensor_pin = sensor_pin;
+}
+
+void RGBSensor::led_on(){
+    led->setPixelColor(led_idx, color);
+    led->show();
+}
+
+void RGBSensor::led_off(){
+    led->setPixelColor(led_idx, led->Color(0,0,0)); // black = Off
+    led->show();
+}
+
+lightSensorArray::lightSensorArray(lightSensor l_o, lightSensor l, lightSensor r, lightSensor r_o){
+    left_outer  = l_o;
+    left        = l;
+    right       = r;
+    right_outer = r_o;
+}
+
+void lightSensorArray::calibrate_turn(int iter){
+    left_outer.calibrate_turn(iter);
+    left.calibrate_turn(iter);
+    right.calibrate_turn(iter);
+    right_outer.calibrate_turn(iter);
 }
 
 string lightSensorArray::_str(){
     string s = "LightSensorArray:\t{L_1 ";
-    s += to_string(left_outer.min)  + "/" + to_string(left_outer.max)  + " \tL_0 ";
-    s += to_string(left.min)        + "/" + to_string(left.max)        + " \tM ";
-    s += to_string(center.min)      + "/" + to_string(center.max)      + " \tR_0 ";
-    s += to_string(right.min)       + "/" + to_string(right.max)       + " \tR_1 ";
-    s += to_string(right_outer.min) + "/" + to_string(right_outer.max) + " \t}" ;
+    s += to_string(left_outer.get_min())  + "/" + to_string(left_outer.get_max())  + " \tL_0 ";
+    s += to_string(left.get_min())        + "/" + to_string(left.get_max())        + " \tR_0 ";
+    s += to_string(right.get_min())       + "/" + to_string(right.get_max())       + " \tR_1 ";
+    s += to_string(right_outer.get_min()) + "/" + to_string(right_outer.get_max()) + " \t}" ;
 
     return s;
 }
 
 string lightSensorArray::save(){
     JsonDocument data;
-    data["left_outer"]["min"] = left_outer.min;
-    data["left_outer"]["max"] = left_outer.max;
+    data["left_outer"]["min"] = left_outer.vmin;
+    data["left_outer"]["max"] = left_outer.vmax;
 
-    data["left"]["min"] = left.min;
-    data["left"]["max"] = left.max;
+    data["left"]["min"] = left.vmin;
+    data["left"]["max"] = left.vmax;
 
-    data["center"]["min"] = center.min;
-    data["center"]["max"] = center.max;
+    data["right"]["min"] = right.vmin;
+    data["right"]["max"] = right.vmax;
 
-    data["right"]["min"] = right.min;
-    data["right"]["max"] = right.max;
-
-    data["right_outer"]["min"] = right_outer.min;
-    data["right_outer"]["max"] = right_outer.max;
+    data["right_outer"]["min"] = right_outer.vmin;
+    data["right_outer"]["max"] = right_outer.vmax;
 
     string s;
     serializeJson(data, s);
     return s;
+}
+
+void lightSensorArray::read(){
+    left_outer.read();
+    left.read();
+    right.read();
+    right_outer.read();
 }
 
 void lightSensorArray::load(String data){
@@ -129,35 +140,65 @@ void lightSensorArray::load(String data){
         return;
     }
 
-    left_outer.min = doc["left_outer"]["min"];
-    left_outer.max = doc["left_outer"]["max"];
+    left_outer.vmin = doc["left_outer"]["min"];
+    left_outer.vmax = doc["left_outer"]["max"];
 
-    left.min = doc["left"]["min"];
-    left.max = doc["left"]["max"];
+    left.vmin = doc["left"]["min"];
+    left.vmax = doc["left"]["max"];
 
-    center.min = doc["center"]["min"];
-    center.max = doc["center"]["max"];
+    right.vmin = doc["right"]["min"];
+    right.vmax = doc["right"]["max"];
 
-    right.min = doc["right"]["min"];
-    right.max = doc["right"]["max"];
-
-    right_outer.min = doc["right_outer"]["min"];
-    right_outer.max = doc["right_outer"]["max"];
+    right_outer.vmin = doc["right_outer"]["min"];
+    right_outer.vmax = doc["right_outer"]["max"];
 }
 
+
+
 namespace ls{
-    lightSensorArray white(SR_PT_WHITE);
-    lightSensorArray green(SR_PT_GREEN);
-    lightSensorArray red(SR_PT_RED);
-    #if (BOARD_REVISION > 1)
-        lightSensorArray back(SR_PT_WHITE, ADC_PT_BACK_L_1, ADC_PT_BACK_L_0, ADC_PT_BACK_L_0, ADC_PT_BACK_R_0, ADC_PT_BACK_R_1);
-        lightSensorArray* all[4] = {&white, &green, &red, &back};
-    #else 
-        #define back nullptr
-        lightSensorArray* all[4] = {&white, &green, &red, back};
-    #endif
 
+    Adafruit_NeoPixel led (6, PT_RGB);
 
+    lightSensorArray white(
+        lightSensor(PT_WHITE_L, PT_L_1),
+        lightSensor(PT_WHITE_L, PT_L_0),
+        lightSensor(PT_WHITE_R, PT_R_0),
+        lightSensor(PT_WHITE_R, PT_R_1)
+    );
+    lightSensorArray white_b(
+        lightSensor(PT_WHITE_L, PT_L_3),
+        lightSensor(PT_WHITE_L, PT_L_2),
+        lightSensor(PT_WHITE_R, PT_R_2),
+        lightSensor(PT_WHITE_R, PT_R_3)
+    );
+
+    lightSensorArray green(
+        RGBSensor(PT_L_1, 3, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_L_0, 3, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_R_0, 2, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_R_1, 2, &led, led.Color(0, 255, 0))
+    );
+    lightSensorArray green_b(
+        RGBSensor(PT_L_3, 5, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_L_2, 5, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_R_2, 4, &led, led.Color(0, 255, 0)),
+        RGBSensor(PT_R_3, 4, &led, led.Color(0, 255, 0))
+    );
+
+    lightSensorArray red(
+        RGBSensor(PT_L_1, 3, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_L_0, 3, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_R_0, 2, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_R_1, 2, &led, led.Color(255, 0, 0))
+    );
+    lightSensorArray red_b(
+        RGBSensor(PT_L_3, 5, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_L_2, 5, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_R_2, 4, &led, led.Color(255, 0, 0)),
+        RGBSensor(PT_R_3, 4, &led, led.Color(255, 0, 0))
+    );
+
+    lightSensorArray* all[6] = {&white, &green, &red, &white_b, &green_b, &red_b};
 }
 
 
@@ -165,9 +206,10 @@ const void ls::read(){
     white.read();
     red.read();
     green.read();
-    #if (BOARD_REVISION > 1)
-        back.read();
-    #endif
+
+    white_b.read();
+    red_b.read();
+    green_b.read();
 }
 
 void ls::read(initializer_list<lightSensorArray*> ls){
@@ -201,9 +243,11 @@ void ls::save(){
     doc["white"] = white.save();
     doc["green"] = green.save();
     doc["red"]   = red.save();
-    #if (BOARD_REVISION > 1)
-        doc["back"] = back.save();
-    #endif
+
+    doc["white_b"] = white_b.save();
+    doc["green_b"] = green_b.save();
+    doc["red_b"]   = red_b.save();
+
     serializeJson(doc, file);
 
     file.close();
@@ -230,13 +274,35 @@ void ls::load(){
     white.load(doc["white"]);
     green.load(doc["green"]);
     red.load(doc["red"]);
-    #if (BOARD_REVISION > 1)
-        red.load(doc["back"]);
-    #endif
+
+    white_b.load(doc["white_b"]);
+    green_b.load(doc["green_b"]);
+    red_b.load(doc["red_b"]);
 
     f.close();
 }
 
+void ls::setup(){
+    led.begin();
+    led.clear();
+    led.show();
 
+    
+    pinMode(WHITE_L, OUTPUT);
+    pinMode(WHITE, OUTPUT);
+    pinMode(WHITE_R, OUTPUT);
+
+    pinMode(PT_REF_L, INPUT);
+    pinMode(PT_L_1, INPUT);
+    pinMode(PT_L_0, INPUT);
+    pinMode(PT_R_0, INPUT);
+    pinMode(PT_R_1, INPUT);
+    pinMode(PT_REF_R, INPUT);
+
+    pinMode(PT_L_3, INPUT);
+    pinMode(PT_L_2, INPUT);
+    pinMode(PT_R_2, INPUT);
+    pinMode(PT_R_3, INPUT);
+}
 
 

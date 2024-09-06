@@ -84,7 +84,7 @@ namespace menu {
     const char * texts[menuOptions] = {"Run", "Calibrate", "test"}; // text of the options
 
     bool in_menu = true;
-    bool last_RE_state = analogRead(ENC_B); // used for rotary encoder detection
+    bool last_RE_state = analogRead(T_L); // used for rotary encoder detection
     Serial.println("InMenu");
     while (in_menu){
       #ifdef BLE
@@ -106,9 +106,9 @@ namespace menu {
       display.setCursor(8, 49);
       display.print(texts[selected]);
 
-      bool enc = analogRead(ENC_B); // rotary encoder turn detection
+      bool enc = analogRead(T_L); // rotary encoder turn detection
       if (enc != last_RE_state && enc == HIGH){
-        if (analogRead(ENC_A) == LOW){
+        if (analogRead(T_R) == LOW){
           selected--;
           if (selected < 0){selected = menuOptions-1;}
         }
@@ -122,7 +122,7 @@ namespace menu {
       last_RE_state = enc;
 
       display.display();
-      if (digitalRead(ENC_SW) == HIGH){ // -> rotary clicked
+      if (digitalRead(T_E) == HIGH){ // -> rotary clicked
         in_menu = false; // -> break while loop
         return selected;
       }
