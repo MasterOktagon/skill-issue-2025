@@ -54,6 +54,13 @@
 #define CH6              6
 #define CH7              7
 
+#define PT_RGB_RED_L     8
+#define PT_RGB_GREEN_L   9
+#define PT_RGB_BLUE_L    10
+#define PT_RGB_RED_R     11
+#define PT_RGB_GREEN_R   12
+#define PT_RGB_BLUE_R    13
+
 #define PWMA1            21
 #define PWMB1            34
 #define PWMA2            33

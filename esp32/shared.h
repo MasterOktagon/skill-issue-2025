@@ -41,3 +41,6 @@ enum Side {
     RIGHT = 12,
     BOTH = 15
 };
+
+#define PWMBus Bonezegei_PCA9685
+

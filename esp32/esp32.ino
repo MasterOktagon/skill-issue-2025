@@ -15,6 +15,7 @@
 #include "linefollower.h"
 #include "menu.h"
 #include "gyro.h"
+#include "claw.h"
 
 using namespace std;
 
@@ -72,9 +73,14 @@ void setup(){
 
     Serial.println("Display init...");
     if (!menu::DisplayInit()){
-        ls::led.setPixelColor(0, ls::led.Color(255,0,0));
-        ls::led.show();
+        //ls::led.setPixelColor(0, ls::led.Color(255,0,0));
+        //ls::led.show();
     }
+
+    Serial.println("PWM bus init");
+    claw::setup();
+    claw::up();
+    claw::down();
 
     Serial.println("Checking Buttons for failures...");
     pinMode(T_L, INPUT_PULLUP);
@@ -140,7 +146,7 @@ void setup(){
 }
 
 void loop(){
-    ls::read();
+    ls::read({&ls::white});
     color::update();
     gyro::update();
     if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){
@@ -165,7 +171,7 @@ void loop(){
             color::update({&color::black});
         } while (!(color::black() & Side::RIGHT));
     }
-    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
+    /*if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         motor::fwd(motor::motor::AB, 70);
         #ifdef DEBUG
             Serial.println("Green Detected!");
@@ -215,7 +221,7 @@ void loop(){
     if (color::red() != Side::NONE){
         motor::stop();
         delay(6000);
-    }
+    }*/
     lf::follow();
 }
 

@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <ArduinoJson.h>
-#include <Adafruit_NeoPixel.h>
 
 #include "Pins.h"
 #include "shared.h"
@@ -65,6 +64,7 @@ class that controls a single color light sensor
         int16_t get_max();
 };
 
+#if 0
 class RGBSensor : public lightSensor{
 /*
 class that controls a single color light sensor on a Neopixel base
@@ -74,11 +74,10 @@ class that controls a single color light sensor on a Neopixel base
     void led_off();
     
     uint8_t led_idx;
-    Adafruit_NeoPixel* led;
     uint32_t color;
     
     public:;
-        RGBSensor(uint8_t sensor_pin, uint8_t led_idx, Adafruit_NeoPixel* leds, uint32_t color);
+        RGBSensor(uint8_t sensor_pin, uint8_t led_idx,  uint32_t color);
         /*
         create a RGBSensor object
         
@@ -88,6 +87,7 @@ class that controls a single color light sensor on a Neopixel base
         */
     
 };
+#endif
 
 
 class lightSensorArray : public repr {
@@ -116,7 +116,6 @@ namespace ls{
 namespace that holds all functions for all light sensors
 */
 
-    extern Adafruit_NeoPixel led;
     extern lightSensorArray white, green, red; // front light sensors
     extern lightSensorArray white_b, green_b, red_b; // back light sensors
     extern lightSensorArray* all[6];

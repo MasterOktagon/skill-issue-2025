@@ -63,22 +63,22 @@ void lightSensor::calibrate_turn(int iter){
 int16_t lightSensor::get_max(){return vmax;}
 int16_t lightSensor::get_min(){return vmin;}
 
-RGBSensor::RGBSensor(uint8_t sensor_pin, uint8_t led_idx, Adafruit_NeoPixel* leds, uint32_t color){
-    this->led_idx = led_idx;
-    this->led = leds;
+#if 0
+RGBSensor::RGBSensor(uint8_t sensor_pin, uint8_t led_pin, uint32_t color){
     this->color = color;
     this->sensor_pin = sensor_pin;
+    this->led_pin = led_pin;
 }
 
 void RGBSensor::led_on(){
-    led->setPixelColor(led_idx, color);
-    led->show();
+    digitalWrite(led_pin, HIGH);
+    delayMicroseconds(LED_DELAY);
 }
 
 void RGBSensor::led_off(){
-    led->setPixelColor(led_idx, led->Color(0,0,0)); // black = Off
-    led->show();
+    digitalWrite(led_pin, LOW);
 }
+#endif
 
 lightSensorArray::lightSensorArray(lightSensor l_o, lightSensor l, lightSensor r, lightSensor r_o){
     left_outer  = l_o;
@@ -157,8 +157,6 @@ void lightSensorArray::load(String data){
 
 namespace ls{
 
-    Adafruit_NeoPixel led (6, PT_RGB);
-
     lightSensorArray white(
         lightSensor(PT_WHITE_L, PT_L_1),
         lightSensor(PT_WHITE_L, PT_L_0),
@@ -173,29 +171,29 @@ namespace ls{
     );
 
     lightSensorArray green(
-        RGBSensor(PT_L_1, 3, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_L_0, 3, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_R_0, 2, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_R_1, 2, &led, led.Color(0, 255, 0))
+        lightSensor(PT_WHITE_L, PT_L_3),
+        lightSensor(PT_WHITE_L, PT_L_2),
+        lightSensor(PT_WHITE_R, PT_R_2),
+        lightSensor(PT_WHITE_R, PT_R_3)
     );
     lightSensorArray green_b(
-        RGBSensor(PT_L_3, 5, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_L_2, 5, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_R_2, 4, &led, led.Color(0, 255, 0)),
-        RGBSensor(PT_R_3, 4, &led, led.Color(0, 255, 0))
+        lightSensor(PT_WHITE_L, PT_L_3),
+        lightSensor(PT_WHITE_L, PT_L_2),
+        lightSensor(PT_WHITE_R, PT_R_2),
+        lightSensor(PT_WHITE_R, PT_R_3)
     );
 
     lightSensorArray red(
-        RGBSensor(PT_L_1, 3, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_L_0, 3, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_R_0, 2, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_R_1, 2, &led, led.Color(255, 0, 0))
+        lightSensor(PT_WHITE_L, PT_L_3),
+        lightSensor(PT_WHITE_L, PT_L_2),
+        lightSensor(PT_WHITE_R, PT_R_2),
+        lightSensor(PT_WHITE_R, PT_R_3)
     );
     lightSensorArray red_b(
-        RGBSensor(PT_L_3, 5, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_L_2, 5, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_R_2, 4, &led, led.Color(255, 0, 0)),
-        RGBSensor(PT_R_3, 4, &led, led.Color(255, 0, 0))
+        lightSensor(PT_WHITE_L, PT_L_3),
+        lightSensor(PT_WHITE_L, PT_L_2),
+        lightSensor(PT_WHITE_R, PT_R_2),
+        lightSensor(PT_WHITE_R, PT_R_3)
     );
 
     lightSensorArray* all[6] = {&white, &green, &red, &white_b, &green_b, &red_b};
@@ -283,14 +281,11 @@ void ls::load(){
 }
 
 void ls::setup(){
-    led.begin();
-    led.clear();
-    led.show();
-
+    analogReadResolution(9);
     
-    pinMode(WHITE_L, OUTPUT);
-    pinMode(WHITE, OUTPUT);
-    pinMode(WHITE_R, OUTPUT);
+    pinMode(PT_WHITE_L, OUTPUT);
+    pinMode(PT_WHITE_REF, OUTPUT);
+    pinMode(PT_WHITE_R, OUTPUT);
 
     pinMode(PT_REF_L, INPUT);
     pinMode(PT_L_1, INPUT);
