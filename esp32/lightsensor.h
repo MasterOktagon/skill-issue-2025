@@ -21,13 +21,19 @@ Holds functions general to the filesystem
     */
 }
 
+class lightSensorArray;
 
 class lightSensor{
 /*
 class that controls a single color light sensor
 */
+    friend lightSensorArray;
     public:
-        int16_t value = 0; // current calibrated value
+        int16_t value = 0; // current (old) calibrated value
+        int16_t nvalue = 0; // new calibrated value
+        #ifdef FASTREAD
+            int16_t raw = 0;
+        #endif
                 
         int16_t vmin = 0x7FFF; // calibration minimum
         int16_t vmax = 0; // calibration maximum
@@ -35,10 +41,22 @@ class that controls a single color light sensor
     
     private:
         uint8_t led_pin;
-        //uint8_t sensor_pin;
         
         virtual void led_on();
         virtual void led_off();
+
+    protected:
+        void update();
+        /*
+        update value with nvalue
+        */
+
+        void calibrate_turn(int iter);
+        /*
+        run one calibtration turn
+        
+        [param iter] iteration index
+        */
 
     public:
         
@@ -48,47 +66,16 @@ class that controls a single color light sensor
         create a lightSensor object
         */
         
-        void read();
-        /*
-        turn on the led, read out the sensors, turn off the led, map the value and update it
-        */
-        
-        void calibrate_turn(int iter);
-        /*
-        run one calibtration turn
-        
-        [param iter] iteration index
-        */
+        #ifndef FASTREAD 
+            void read();
+            /*
+            turn on the led, read out the sensors, turn off the led, map the value and update it
+            */
+        #endif
         
         int16_t get_min();
         int16_t get_max();
 };
-
-#if 0
-class RGBSensor : public lightSensor{
-/*
-class that controls a single color light sensor on a Neopixel base
-*/
-    
-    void led_on();
-    void led_off();
-    
-    uint8_t led_idx;
-    uint32_t color;
-    
-    public:;
-        RGBSensor(uint8_t sensor_pin, uint8_t led_idx,  uint32_t color);
-        /*
-        create a RGBSensor object
-        
-        [param led_idx] index of the Neopixel LED in the continous "strip" of LEDs
-        [param leds]    the controller Object passed by reference
-        [param color]   color to be set. use Neopixel.Color(r,g,b) to get it
-        */
-    
-};
-#endif
-
 
 class lightSensorArray : public repr {
 /*
@@ -108,6 +95,11 @@ class representing and managing multiple light sensors of the same color
         void read();
 
         string _str();
+
+        void update();
+        /*
+        update all associated LightSensor objects
+        */
         
 };
 
@@ -155,6 +147,20 @@ namespace that holds all functions for all light sensors
     extern void load();
     /*
     load all lightsensor data from a file
+    */
+
+    extern const void update();
+    /*
+    update all LightSensorArrays
+    */
+
+    extern void update(initializer_list<lightSensorArray*> ls);
+    /*
+    update all given lightSensorArrays.
+    
+    !raises! NullptrException/LoadProhibited
+
+    [param ls] all light sensors. may not be nullptr!
     */
 }
 

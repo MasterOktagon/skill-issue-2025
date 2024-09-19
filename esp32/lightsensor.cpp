@@ -8,6 +8,8 @@
 
 #include "lightsensor.h"
 #include "shiftregister.h"
+#include "fadc.h"
+#include "shared.h"
 
 
 #define LED_DELAY 80
@@ -41,10 +43,33 @@ void lightSensor::led_off(){
     digitalWrite(led_pin, LOW);
 }
 
-void lightSensor::read(){
-    // read value and map it to a range between 0 and 100
-    int a = ((analogRead(sensor_pin) - vmin) * 100);
-    value = int16_t(a / (vmax - vmin));
+#ifndef FASTREAD
+    void lightSensor::read(){
+        led_on();
+        // read value and map it to a range between 0 and 100
+        int a = ((analogRead(sensor_pin) - vmin) * 100);
+        nvalue = int16_t(a / (vmax - vmin));
+        led_off();
+    }
+#else
+    void lightSensor::read(lightSensor* prev){
+        led_on();
+
+        analogRead(sensor_pin);
+            prev->end_read();
+        while(fadc::busy()){};
+        raw = fadc::value();
+        led_off();
+
+    }
+
+    void lightSensor::end_read(){
+        int a = ((raw - vmin) * 100);
+        nvalue = int16_t(a / (vmax - vmin));
+    }
+#endif
+void lightSensor::update(){
+    value = nvalue;
 }
 
 void lightSensor::calibrate_turn(int iter){
@@ -62,23 +87,6 @@ void lightSensor::calibrate_turn(int iter){
 
 int16_t lightSensor::get_max(){return vmax;}
 int16_t lightSensor::get_min(){return vmin;}
-
-#if 0
-RGBSensor::RGBSensor(uint8_t sensor_pin, uint8_t led_pin, uint32_t color){
-    this->color = color;
-    this->sensor_pin = sensor_pin;
-    this->led_pin = led_pin;
-}
-
-void RGBSensor::led_on(){
-    digitalWrite(led_pin, HIGH);
-    delayMicroseconds(LED_DELAY);
-}
-
-void RGBSensor::led_off(){
-    digitalWrite(led_pin, LOW);
-}
-#endif
 
 lightSensorArray::lightSensorArray(lightSensor l_o, lightSensor l, lightSensor r, lightSensor r_o){
     left_outer  = l_o;
@@ -124,10 +132,25 @@ string lightSensorArray::save(){
 }
 
 void lightSensorArray::read(){
-    left_outer.read();
-    left.read();
-    right.read();
-    right_outer.read();
+    #ifdef FASTREAD
+        left_outer.read();
+        left.read(&left_outer);
+        right.read(&left);
+        right_outer.read(&right);
+        right_outer.end_read();
+    #else
+        left_outer.read();
+        left.read();
+        right.read();
+        right_outer.read();
+    #endif
+}
+
+void lightSensorArray::update(){
+    left_outer.update();
+    left.update();
+    right.update();
+    right_outer.update();
 }
 
 void lightSensorArray::load(String data){
@@ -152,7 +175,6 @@ void lightSensorArray::load(String data){
     right_outer.vmin = doc["right_outer"]["min"];
     right_outer.vmax = doc["right_outer"]["max"];
 }
-
 
 
 namespace ls{
@@ -210,9 +232,25 @@ const void ls::read(){
     green_b.read();
 }
 
+const void ls::update(){
+    white.update();
+    red.update();
+    green.update();
+
+    white_b.update();
+    red_b.update();
+    green_b.update();
+}
+
 void ls::read(initializer_list<lightSensorArray*> ls){
     for (lightSensorArray* l : ls){
         l->read();
+    }
+}
+
+void ls::update(initializer_list<lightSensorArray*> ls){
+    for (lightSensorArray* l : ls){
+        l->update();
     }
 }
 

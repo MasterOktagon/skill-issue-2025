@@ -7,7 +7,9 @@
 //
 
 #include <Wire.h>
+#include <thread>
 
+#include "fadc.h"
 #include "color.h"
 #include "motor.h"
 #include "shiftregister.h"
@@ -43,6 +45,8 @@ void setup(){
     Serial.begin(115200);
     Serial.println("");
     Serial.println("Serial init [115200] ...");
+
+    // init SR
     Serial.println("Shiftregister init...");
     shiftregister::setup();
     shiftregister::reset();
@@ -50,9 +54,15 @@ void setup(){
     Serial.println("Wire init...");
     Wire.begin(SDA, SCL); // start i2c
     Wire.setClock(400000); // Fast mode
+
+    // setup FastADC
+    //Serial.println("FADC begin...");
+    //fadc::begin();
     
+    // create lightSensor objects
     ls::setup();
 
+    // run the led test
     #ifdef LED_TEST
         Serial.println("LED test (wgr[b])");
         digitalWrite(PT_WHITE_L, HIGH);
@@ -73,16 +83,20 @@ void setup(){
 
     Serial.println("Display init...");
     if (!menu::DisplayInit()){
-        //ls::led.setPixelColor(0, ls::led.Color(255,0,0));
-        //ls::led.show();
+        // TODO: show that display init failed
     }
 
     Serial.println("PWM bus init");
     claw::setup();
-    claw::up();
-    claw::down();
+
+    #ifdef CLAW_TEST
+        claw::up();
+        claw::down();
+    #endif
 
     Serial.println("Checking Buttons for failures...");
+    // if a button has failed (is pressed when he shouldn't)
+    // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
     if (!(digitalRead(T_L) || digitalRead(T_R))){
@@ -106,7 +120,7 @@ void setup(){
 
             case MENU_CALIBRATE:
                 delay(500);
-                attachInterrupt(T_E, isr, RISING);
+                attachInterrupt(T_E, isr, RISING); // make calibrating (soft-)abortable
                 delay(1500);
                 ls::calibrate(10000, 1);
 
@@ -119,7 +133,7 @@ void setup(){
                 Serial.print("green_b "); Serial.println(ls::green_b._str().c_str());
                 Serial.println("red_b "); Serial.println(ls::red_b._str().c_str());
 
-                ls::save();
+                ls::save(); // save values to a json file
                 detachInterrupt(T_E);
         }
     }
@@ -140,29 +154,39 @@ void setup(){
     attachInterrupt(T_E, isr, RISING);
 
     // start i2c-Handler thread
-    xTaskCreatePinnedToCore(core0_loop, "Core0MainLoop", 10000, NULL, 0, &loop0, 0);
+    //xTaskCreatePinnedToCore(core0_loop, "Core0MainLoop", 10000, NULL, 0, &loop0, 0);
 
     timestamp = micros();
 }
 
 void loop(){
-    ls::read({&ls::white});
-    color::update();
-    gyro::update();
-    if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){
-        // avoid obstacle
+    // we start a thread to control the motors (line follower)
+    // using backed up values from the last light sensors reading
+    // to avoid race conditions between the acces and the new values
+    // due to reading the light values simultaneusly
+    thread t(lf::follow);
+        ls::read({&ls::white});
+    t.join();
+    ls::update({&ls::white}); // update the data with the new values
+
+    color::update(); // update color detection
+    gyro::update();  // update gyro
+    if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+        // avoid obstacle:
+        // go back and turn by 45 deg (right)
         motor::stop();
         motor::rev(200);
         motor::gyro(-45);
         motor::fwd(300);
+        // go fwd/turn until black is reached
         motor::fwd(motor::motor::A, V_STD);
         motor::fwd(motor::motor::B, 13);
         delay(400);
-        uint32_t t = millis(); // time passed
         do {
             ls::white.read();
             color::update({&color::black});
         } while (color::black() == Side::NONE);
+        // turn left until one side is on Black
         motor::fwd(250);
         motor::gyro(-20);
         motor::turn(V_STD);
@@ -222,11 +246,11 @@ void loop(){
         motor::stop();
         delay(6000);
     }*/
-    lf::follow();
+    
 }
 
-void core0_loop(void * pvargs){
-    while(true){
-        
-    }
-}
+//void core0_loop(void * pvargs){
+//    while(true){
+//        
+//    }
+//}
