@@ -2,6 +2,7 @@
 #include "claw.h"
 #include "shared.h"
 #include "Pins.h"
+#include "fadc.h"
 
 PWMBus bus(0x40);
 

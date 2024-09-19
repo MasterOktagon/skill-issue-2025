@@ -6,6 +6,7 @@
 #include "linefollower.h"
 #include "motor.h"
 #include "gyro.h"
+#include "fadc.h"
 
 using namespace std;
 

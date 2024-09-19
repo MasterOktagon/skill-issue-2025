@@ -7,14 +7,16 @@
 #include <string>
 
 // defines (comment out/in for features)
-//#define DEBUG
+#define DEBUG
 //#define BLE
 //#define MOT_STBY
 //#define LF_USE_BACK
 #define LF_ACTIVE
 #define USE_TIMESCALE
 //#define RASP_COMM
-//#define LED_TEST
+#define LED_TEST
+#define CLAW_TEST
+//#define FASTREAD
 
 // define the 'signal' type
 template <typename T, typename ... K>
