@@ -1,4 +1,3 @@
-
 #pragma once
 
 //
@@ -7,6 +6,8 @@
 // for Robocore board. 
 // NOTE: Version compability with older versions than the V3 of the RoboCore has been REMOVED!
 //
+
+#define BOARD_REVISION 3
 
 ///////////////////////Input////////////////////////
 #define RGB              14 // currently unused

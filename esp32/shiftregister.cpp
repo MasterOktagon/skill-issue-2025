@@ -1,5 +1,9 @@
 
+#include <Arduino.h>
 #include "shiftregister.h"
+#ifndef output
+    #define output Serial
+#endif
 
 static uint64_t shiftregister_bits; // the current shiftregister pins values are stored here. max 64 ports
 static bool updated; // if the current bits are flushed
@@ -44,12 +48,12 @@ bool shiftregister::is_flushed(){
 
 void shiftregister::reset(){
     shiftregister_bits = 0;
-    for(int i = 9; i < 6 + 9; i++){
-      set(i, HIGH, false);
-    }
+    //for(int i = 9; i < 6 + 9; i++){
+    //  set(i, HIGH, false);
+    //}
     set(SR_STBY1, HIGH);
     set(SR_STBY2, HIGH);
-    Serial.println("SR Reset succesfull");
+    output.println("SR Reset succesfull");
 }
 
 bool shiftregister::get(uint8_t pin){

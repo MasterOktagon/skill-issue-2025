@@ -1,8 +1,21 @@
 #pragma once
+
+//
+// SHIFTREGISTER HEADER
+//
+// layouts the shiftregister interface. Its battle-proved.
+// can be used outside of this project (remember the license) with minor modifications:
+//      - comment out or remove '#include "shared.h"', this only replaces the Serial output with
+//           an OutputWriter
+//      - provide your own Pins.h which defines STCP, SHCP, DS and SR_PORTS macros
+//      - dont forget including the shiftregister.cpp file in your directory
+//
+
 #include <cstdint>
 #include <Arduino.h>
 
 #include "Pins.h"
+#include "shared.h"
 
 namespace shiftregister{
     /*

@@ -1,5 +1,11 @@
 #pragma once
 
+//
+// MOTOR HEADER
+//
+// layouts the interface with the motors
+//
+
 #include <Arduino.h>
 #include <cstdint>
 
@@ -13,9 +19,9 @@
 #undef B1
 
 namespace motor{
-    /*
-    This namespace holds all functions that directly influence motor movement
-    */
+/*
+This namespace holds all functions that directly influence motor movement
+*/
     
     #define V_STD 200 // standard speed
     
@@ -60,7 +66,7 @@ namespace motor{
     
     extern void fwd(uint32_t time);
     /*
-    go straight forward for the time given
+    go straight forward for the time given using V_STD
     
     [param time] time in ms.
     */
@@ -74,7 +80,7 @@ namespace motor{
     
     extern void rev(uint32_t time);
     /*
-    go straight reversed for the time given
+    go straight reversed for the time given using V_STD
     
     [param time] time in ms.
     */
@@ -91,12 +97,13 @@ namespace motor{
     turn on axis using the gyro
     
     [param angle] turn angle in degrees. Positive values result in left turns
-    [param v] turn speed. only unsigned values are not accepted because it would break otherwise. clamped between 0..255
+    [param v] turn speed. only unsigned values are accepted because it would break otherwise. clamped between 0..255
+    [param reset_gyro] reset the gyro afterwards
     */
     
     extern void standby(bool active);
     /*
-    Turn the motors on standby
+    Turn the motors on standby/deactivate standby
     
     !Warns! standbyWarning
     */

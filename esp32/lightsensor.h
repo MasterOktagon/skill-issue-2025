@@ -1,5 +1,10 @@
-
 #pragma once
+
+//
+// LIGHTSENSOR HEADER
+//
+// layouts the lightsensor (for line following) interface.
+//
 
 #include <Arduino.h>
 #include <cstdint>
@@ -71,6 +76,11 @@ class that controls a single color light sensor
             /*
             turn on the led, read out the sensors, turn off the led, map the value and update it
             */
+        #else
+            void read(lightSensor* prev = nullptr);
+            void end_read();
+
+            // see the diffrences between FASTREAD and not-FASTREAD in lightsensor.cpp
         #endif
         
         int16_t get_min();

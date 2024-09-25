@@ -1,4 +1,11 @@
 #pragma once
+
+//
+// LINEFOLLOWER HEADER
+//
+// we had to move our linefollower into a seperate file
+//
+
 #include <Arduino.h>
 #include <cstdint>
 

@@ -8,7 +8,7 @@ PWMBus bus(0x40);
 
 void claw::setup(){
     if (!bus.begin()){
-        Serial.println("PWM Bus setup ERROR");
+        output.println("PWM Bus setup ERROR");
         return;
     }
 

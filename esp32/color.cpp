@@ -1,4 +1,10 @@
 
+//
+// COLOR.cpp
+//
+// implements the color detection
+//
+
 #include "color.h"
 #include "lightsensor.h"
 #include "shared.h"
@@ -16,6 +22,7 @@ inline int get_as_multiplier(bool b){
 }
 
 void color::color::update(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r){
+    // The min/max configuration limits the counter in a certain frame
     counter_l = min(CHECK_LEN + 3, max(0, counter_l + get_as_multiplier(func(w,g,r, Side::LEFT))));
     counter_r = min(CHECK_LEN + 3, max(0, counter_r + get_as_multiplier(func(w,g,r, Side::RIGHT))));
 }
@@ -31,6 +38,11 @@ Side color::color::get(){
 void color::color::reset(){
     counter_l, counter_r = 0;
 }
+
+// The main detection functions
+//
+// Red/Green is detected using the difference between green and red, since a 
+// green light will make red shine black (and vice versa)
 
 bool red_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){
@@ -49,6 +61,8 @@ bool green_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray*
             return g->right.value - r->right.value >= GREEN_THRESHOLD;
     }
 }
+
+// black detection is simply just checking if the light values of 'white' are lower than a threshold
 
 bool black_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){

@@ -1,5 +1,12 @@
-
 #pragma once
+
+//
+// GYRO HEADER
+//
+// This header layouts the interface with the gyroscope
+// we used a MPU6050 gyroscope, but by changing this layer you can
+// keep the rest of the program in its original state 
+//
 
 #include <Arduino.h>
 #include "Pins.h"

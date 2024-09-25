@@ -1,4 +1,10 @@
 
+//
+// LIGHTSENSOR.cpp
+//
+// implements the lightsensor interface
+//
+
 #include <Arduino.h>
 #include <cstdint>
 #include <initializer_list>
@@ -11,16 +17,23 @@
 #include "fadc.h"
 #include "shared.h"
 
+// make this independent of "shared.h"
+#ifndef output
+    #define output Serial
+#endif
 
-#define LED_DELAY 80
-#define ITER_SKIP 20
+#define LED_DELAY 80 // delay between turning on the LED and reading in us
+#define ITER_SKIP 20 // The first x readings are corrupted for no reason. Skip these readings when calibrating
 
 using namespace std;
 
 void fs::setup(){
-    Serial.println("mounting SPIFFS");
-    if (!SPIFFS.begin(true)) {
-        Serial.println("An Error has occurred while mounting SPIFFS");
+    /*
+    call fs::setup in your setup routine. requires SPIFFS to work
+    */
+    output.println("mounting SPIFFS");
+    if (!SPIFFS.begin(true)) { // NOTE: this will format your device to use SPIFFS
+        output.println("An Error has occurred while mounting SPIFFS");
     }
 }
 
@@ -36,14 +49,17 @@ lightSensor::lightSensor(){
 
 void lightSensor::led_on(){
     digitalWrite(led_pin, HIGH);
-    delayMicroseconds(LED_DELAY);
+    delayMicroseconds(LED_DELAY); // Delay because your LED needs time to turn on
 }
 
 void lightSensor::led_off(){
-    digitalWrite(led_pin, LOW);
+    digitalWrite(led_pin, LOW); // we do not have to wait here because it can turn off while the next
+                                // LED is turned on
 }
 
 #ifndef FASTREAD
+    // Default reading function (uses arduino analogRead)
+
     void lightSensor::read(){
         led_on();
         // read value and map it to a range between 0 and 100
@@ -52,11 +68,15 @@ void lightSensor::led_off(){
         led_off();
     }
 #else
+    // The FADC version
+    // FADC supports asyncronous reading so we map while the next lightSensor
+    // reads its raw values
+
     void lightSensor::read(lightSensor* prev){
         led_on();
 
-        analogRead(sensor_pin);
-            prev->end_read();
+        fadc::start(sensor_pin);
+            if (prev != nullptr){prev->end_read();}
         while(fadc::busy()){};
         raw = fadc::value();
         led_off();
@@ -68,11 +88,22 @@ void lightSensor::led_off(){
         nvalue = int16_t(a / (vmax - vmin));
     }
 #endif
+
 void lightSensor::update(){
+    /*
+    switch the new value with the old value.
+    this allows other threads to acces 'value' while reading (avoiding race conditions)
+    this function should be called after thread.join()
+    */
     value = nvalue;
 }
 
 void lightSensor::calibrate_turn(int iter){
+    /*
+    single calibration turn.
+    A value is read out and the min/max values are stored to later map the
+    read-out values between them
+    */
     led_on();
 
     int16_t val = analogRead(sensor_pin); // read light sensor value
@@ -87,6 +118,11 @@ void lightSensor::calibrate_turn(int iter){
 
 int16_t lightSensor::get_max(){return vmax;}
 int16_t lightSensor::get_min(){return vmin;}
+
+/*
+A lightSensorArray is just a container that has 4 lightSensors of one color.
+It also adds some shared functions for convinience and to clean up the main loop code.
+*/
 
 lightSensorArray::lightSensorArray(lightSensor l_o, lightSensor l, lightSensor r, lightSensor r_o){
     left_outer  = l_o;
@@ -111,6 +147,10 @@ string lightSensorArray::_str(){
 
     return s;
 }
+
+/*
+Saving is done using JSON files since they are very human-readable
+*/
 
 string lightSensorArray::save(){
     JsonDocument data;
@@ -137,7 +177,7 @@ void lightSensorArray::read(){
         left.read(&left_outer);
         right.read(&left);
         right_outer.read(&right);
-        right_outer.end_read();
+        right_outer.end_read(); // dont forget to call end_read on your last lightSensor when in FASTREAD mode
     #else
         left_outer.read();
         left.read();
@@ -158,8 +198,8 @@ void lightSensorArray::load(String data){
     DeserializationError error = deserializeJson(doc, data);
 
     if (error) {
-        Serial.print(F("local deserializeJson() failed: "));
-        Serial.println(error.f_str());
+        output.print(F("local deserializeJson() failed: "));
+        output.println(error.f_str());
         return;
     }
 
@@ -178,6 +218,8 @@ void lightSensorArray::load(String data){
 
 
 namespace ls{
+    // This constructs all needed LightSensor objects
+    // Back Light sensor bar objects are postfixed with an '_b'
 
     lightSensorArray white(
         lightSensor(PT_WHITE_L, PT_L_1),
@@ -193,11 +235,12 @@ namespace ls{
     );
 
     lightSensorArray green(
-        lightSensor(PT_WHITE_L, PT_L_3),
-        lightSensor(PT_WHITE_L, PT_L_2),
-        lightSensor(PT_WHITE_R, PT_R_2),
-        lightSensor(PT_WHITE_R, PT_R_3)
+        lightSensor(PT_WHITE_L, PT_L_1),
+        lightSensor(PT_WHITE_L, PT_L_0),
+        lightSensor(PT_WHITE_R, PT_R_0),
+        lightSensor(PT_WHITE_R, PT_R_1)
     );
+
     lightSensorArray green_b(
         lightSensor(PT_WHITE_L, PT_L_3),
         lightSensor(PT_WHITE_L, PT_L_2),
@@ -206,10 +249,10 @@ namespace ls{
     );
 
     lightSensorArray red(
-        lightSensor(PT_WHITE_L, PT_L_3),
-        lightSensor(PT_WHITE_L, PT_L_2),
-        lightSensor(PT_WHITE_R, PT_R_2),
-        lightSensor(PT_WHITE_R, PT_R_3)
+        lightSensor(PT_WHITE_L, PT_L_1),
+        lightSensor(PT_WHITE_L, PT_L_0),
+        lightSensor(PT_WHITE_R, PT_R_0),
+        lightSensor(PT_WHITE_R, PT_R_1)
     );
     lightSensorArray red_b(
         lightSensor(PT_WHITE_L, PT_L_3),
@@ -255,22 +298,22 @@ void ls::update(initializer_list<lightSensorArray*> ls){
 }
 
 void ls::calibrate(uint16_t iterations, uint16_t delay_ms){
-    Serial.print("Calibrating...");
+    output.print("Calibrating...");
     for(uint16_t i = 0; i < iterations; i++){
-        for(uint8_t ls = 0; ls < 4; ls++){
+        for(uint8_t ls = 0; ls < 6; ls++){
             if (all[ls] != nullptr){
                 all[ls]->calibrate_turn(i);
             }
         }
         delay(delay_ms);
     }
-    Serial.println("Succes!");
+    output.println("Succes!");
 }
 
 void ls::save(){
     File file = SPIFFS.open("/calibration.json","w");
     if (!file){
-      Serial.println("ERROR opening write file!");
+      output.println("ERROR opening write file!");
       file.close();
       return;
     }
@@ -290,11 +333,11 @@ void ls::save(){
 }
 
 void ls::load(){
-    Serial.println("Loading from file...");
+    output.println("Loading from file...");
     File f = SPIFFS.open("/calibration.json","r");
 
     if (!f){
-        Serial.println("ERROR opening read file!");
+        output.println("ERROR opening read file!");
         f.close();
         return;
     }
@@ -303,8 +346,8 @@ void ls::load(){
     DeserializationError error = deserializeJson(doc, f.readString());
 
     if (error) {
-        Serial.print(F("global deserializeJson() failed: "));
-        Serial.println(error.f_str());
+        output.print(F("global deserializeJson() failed: "));
+        output.println(error.f_str());
         return;
     }
     white.load(doc["white"]);
@@ -318,8 +361,12 @@ void ls::load(){
     f.close();
 }
 
+// setup sets up the pins needed to read out the light values
+
 void ls::setup(){
-    analogReadResolution(9);
+    #ifndef FASTREAD
+        analogReadResolution(9);
+    #endif
     
     pinMode(PT_WHITE_L, OUTPUT);
     pinMode(PT_WHITE_REF, OUTPUT);

@@ -1,5 +1,10 @@
 
-//#include <queue>
+//
+// LINEFOLLOWER.cpp
+//
+// the heart of our program
+//
+
 #include <cstdint>
 
 #include "lightsensor.h"

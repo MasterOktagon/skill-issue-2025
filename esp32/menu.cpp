@@ -1,22 +1,23 @@
-#include "Arduino.h"
-#include "menu.h"
+
 
 //
-// MENU.CPP
+// MENU.cpp
 // 
-// this module contains high-level functions that do output on the Display
+// this module contains high-level functions that do output on the Display [W.I.P.]
 //
 
 
 // No idea why arduino added this
-#include "esp32-hal-gpio.h"
-#include "esp32-hal-adc.h"
-
-#include "Pins.h" // pin layout
-
+#include <esp32-hal-gpio.h>
+#include <esp32-hal-adc.h>
 #include <SPI.h> // comms
 #include <Wire.h>
 #include <cmath>
+
+#include "Pins.h" // pin layout
+#include "shared.h"
+#include "Arduino.h"
+#include "menu.h"
 
 #include <Adafruit_GFX.h> //https://github.com/adafruit/Adafruit-GFX-Library
 #include <Adafruit_SSD1306.h> //https://github.com/adafruit/Adafruit_SSD1306
@@ -41,7 +42,7 @@ namespace menu {
 
   bool DisplayInit(){
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADRESS)) {
-      Serial.println("SSD1306 allocation failed!");
+      output.println("SSD1306 allocation failed!");
       return false;
     }
     display.display();
@@ -85,7 +86,7 @@ namespace menu {
 
     bool in_menu = true;
     bool last_RE_state = analogRead(T_L); // used for rotary encoder detection
-    Serial.println("InMenu");
+    output.println("InMenu");
     while (in_menu){
       #ifdef BLE
         // BLELoop to not timeout while in menu
@@ -116,8 +117,8 @@ namespace menu {
           selected++;
           if (selected >= menuOptions){selected = 0;}
         }
-        Serial.print("->");
-        Serial.println(texts[selected]);
+        output.print("->");
+        output.println(texts[selected]);
       }
       last_RE_state = enc;
 

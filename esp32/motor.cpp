@@ -7,10 +7,6 @@
 #include "motor.h"
 #include "shiftregister.h"
 
-#if (BOARD_REVISION > 2)
-    #warning "Controlling single motors is currently not supported"
-#endif
-
 void motor::stop(bool hard){
     // stop the motors
     digitalWrite(PWMA1, LOW);
