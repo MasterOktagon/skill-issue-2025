@@ -12,7 +12,7 @@
 #include "Pins.h"
 #include "shared.h"
 
-//#define USE_MTX
+//#define USE_MTX // use mutexes
 
 #define ADC_BUSY() !(bool)SENS.sar_meas1_ctrl2.meas1_done_sar
 
@@ -37,7 +37,7 @@ void fadc::start(uint8_t pin){
          adcread.lock();
     #endif
     #ifdef DEBUG
-        if (pin < 1 || pin > 20){ Serial.print("Pin has no channel: "); Serial.println(pin); return; }
+        if (pin < 1 || pin > 20){ output.print("Pin has no channel: "); output.println(pin); return; }
     #endif
 
     SENS.sar_meas1_ctrl2.sar1_en_pad = (1 << gpio_to_channel[pin]);
@@ -77,7 +77,7 @@ void fadc::begin(){
 
     // Enable ADC
     periph_module_enable(PERIPH_SARADC_MODULE);
-    //adc_power_acquire();
+    adc_power_acquire();
 }
 
 

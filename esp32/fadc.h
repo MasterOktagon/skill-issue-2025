@@ -1,20 +1,21 @@
 #pragma once
 
+//
+// FADC HEADER
+//
+// custom reimplentation of the fastAnalogRead from stg
+// https://github.com/stg/ESP32-S3-FastAnalogRead
+// 
+// NOTES:
+// not C-compatible!!
+// maximum Board version: 2.0.17
+//
+
 #include <cstdint>
-
-/*
-
-FADC
-
-custom reimplentation of the fastAnalogRead from stg
-https://github.com/stg/ESP32-S3-FastAnalogRead
-
-not C-compatible!!
-*/
 
 #define FADC_RESOLUTION 12 // 12-bit resolution
 #define FADC_ATTEN ADC_11db
-//#define analogRead(pin) fadc::read(pin) // replace the standard analogRead with the Fast read
+#define analogRead(pin) fadc::read(pin) // replace the standard analogRead with the Fast read
  
 namespace fadc {
     extern void begin();
