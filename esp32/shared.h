@@ -2,9 +2,13 @@
 
 //
 // SHARED HEADER
+// 
+// This header implements some custom base classes (ex. repr) and defines to configure the program before the
+// competition
 //
 
 #include <string>
+#include <Arduino.h>
 
 // defines (comment out/in for features)
 #define DEBUG
@@ -16,7 +20,13 @@
 //#define RASP_COMM
 #define LED_TEST
 #define CLAW_TEST
-//#define FASTREAD
+#define FASTREAD
+
+#ifndef DEBUG
+    PrintWriter output;
+#else
+    #define output Serial
+#endif
 
 // define the 'signal' type
 template <typename T, typename ... K>
@@ -44,5 +54,5 @@ enum Side {
     BOTH = 15
 };
 
-#define PWMBus Bonezegei_PCA9685
+#define PWMBus Bonezegei_PCA9685 // no one wants to write so much
 

@@ -24,7 +24,6 @@ using namespace std;
 #define GREEN_TIMEOUT 100
 
 bool button_failure = false; // wether buttons have a failure
-TaskHandle_t loop0; // Task handler for second loop
 uint16_t last_green = 0;
 
 #ifdef RASP_COMM
@@ -41,22 +40,26 @@ long timestamp;
 
 // gets executed before loop
 void setup(){
-    // begin Serial connection (DEBUG)
+    // begin output connection (DEBUG)
     Serial.begin(115200);
-    Serial.println("");
-    Serial.println("Serial init [115200] ...");
+    #ifndef DEBUG
+        output = createWriter("out.log"); // log Serial output to file
+    #endif
+
+    output.println("");
+    output.println("output init [115200] ...");
 
     // init SR
-    Serial.println("Shiftregister init...");
+    output.println("Shiftregister init...");
     shiftregister::setup();
     shiftregister::reset();
 
-    Serial.println("Wire init...");
+    output.println("Wire init...");
     Wire.begin(SDA, SCL); // start i2c
     Wire.setClock(400000); // Fast mode
 
     // setup FastADC
-    //Serial.println("FADC begin...");
+    //output.println("FADC begin...");
     //fadc::begin();
     
     // create lightSensor objects
@@ -64,7 +67,7 @@ void setup(){
 
     // run the led test
     #ifdef LED_TEST
-        Serial.println("LED test (wgr[b])");
+        output.println("LED test (wgr[b])");
         digitalWrite(PT_WHITE_L, HIGH);
         delay(1500);
         digitalWrite(PT_WHITE_L, LOW);
@@ -78,15 +81,15 @@ void setup(){
     // start SPIFFS
     fs::setup();
 
-    Serial.println("Initializing gyro...");
+    output.println("Initializing gyro...");
     gyro::init();
 
-    Serial.println("Display init...");
+    output.println("Display init...");
     if (!menu::DisplayInit()){
         // TODO: show that display init failed
     }
 
-    Serial.println("PWM bus init");
+    output.println("PWM bus init");
     claw::setup();
 
     #ifdef CLAW_TEST
@@ -94,19 +97,19 @@ void setup(){
         claw::down();
     #endif
 
-    Serial.println("Checking Buttons for failures...");
+    output.println("Checking Buttons for failures...");
     // if a button has failed (is pressed when he shouldn't)
     // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
     if (!(digitalRead(T_L) || digitalRead(T_R))){
-        Serial.println("Button failure detected, disabling buttons!");
+        output.println("Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
         delay(1000);
         button_failure = true;
     }
     #ifdef RASP_COMM
-        Serial.println("Starting RPI communication...");
+        output.println("Starting RPI communication...");
         comm.begin();     // Start master (transmitter)
         comm.begin(0x01); // Start slave (receiver)
     #endif
@@ -125,13 +128,13 @@ void setup(){
                 ls::calibrate(10000, 1);
 
                 // Print min/max values
-                Serial.print("white "); Serial.println(ls::white._str().c_str());
-                Serial.print("green "); Serial.println(ls::green._str().c_str());
-                Serial.println("red "); Serial.println(ls::red._str().c_str());
-                Serial.println("");
-                Serial.print("white_b "); Serial.println(ls::white_b._str().c_str());
-                Serial.print("green_b "); Serial.println(ls::green_b._str().c_str());
-                Serial.println("red_b "); Serial.println(ls::red_b._str().c_str());
+                output.print("white "); output.println(ls::white._str().c_str());
+                output.print("green "); output.println(ls::green._str().c_str());
+                output.println("red "); output.println(ls::red._str().c_str());
+                output.println("");
+                output.print("white_b "); output.println(ls::white_b._str().c_str());
+                output.print("green_b "); output.println(ls::green_b._str().c_str());
+                output.println("red_b "); output.println(ls::red_b._str().c_str());
 
                 ls::save(); // save values to a json file
                 detachInterrupt(T_E);
@@ -141,13 +144,13 @@ void setup(){
     ls::load();
 
     // Print min/max values
-    Serial.print("white "); Serial.println(ls::white._str().c_str());
-    Serial.print("green "); Serial.println(ls::green._str().c_str());
-    Serial.println("red "); Serial.println(ls::red._str().c_str());
-    Serial.println("");
-    Serial.print("white_b "); Serial.println(ls::white_b._str().c_str());
-    Serial.print("green_b "); Serial.println(ls::green_b._str().c_str());
-    Serial.println("red_b "); Serial.println(ls::red_b._str().c_str());
+    output.print("white "); output.println(ls::white._str().c_str());
+    output.print("green "); output.println(ls::green._str().c_str());
+    output.println("red "); output.println(ls::red._str().c_str());
+    output.println("");
+    output.print("white_b "); output.println(ls::white_b._str().c_str());
+    output.print("green_b "); output.println(ls::green_b._str().c_str());
+    output.println("red_b "); output.println(ls::red_b._str().c_str());
 
 
     delay(500); // delay to not interrupt directly
@@ -198,7 +201,7 @@ void loop(){
     /*if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         motor::fwd(motor::motor::AB, 70);
         #ifdef DEBUG
-            Serial.println("Green Detected!");
+            output.println("Green Detected!");
         #endif
         // confirm the read values
         for(uint8_t i = 0; i < 15; i++){
@@ -248,9 +251,3 @@ void loop(){
     }*/
     
 }
-
-//void core0_loop(void * pvargs){
-//    while(true){
-//        
-//    }
-//}
