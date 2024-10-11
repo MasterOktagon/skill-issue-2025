@@ -59,11 +59,18 @@ void setup(){
     Wire.setClock(400000); // Fast mode
 
     // setup FastADC
-    //output.println("FADC begin...");
-    //fadc::begin();
+    #ifdef FASTREAD
+        output.println("FADC begin...");
+        fadc::begin();
+    #endif
     
     // create lightSensor objects
     ls::setup();
+
+    output.println("Display init...");
+    if (!menu::DisplayInit()){
+        rgb::setValue(Side::BOTH, 255, 0, 0);
+    }
 
     // run the led test
     #ifdef LED_TEST
@@ -74,6 +81,12 @@ void setup(){
         digitalWrite(PT_WHITE_R, HIGH);
         delay(1500);
         digitalWrite(PT_WHITE_R, LOW);
+        digitalWrite(PT_GREEN, HIGH);
+        delay(1500);
+        digitalWrite(PT_GREEN, LOW);
+        digitalWrite(PT_RED, HIGH);
+        delay(1500);
+        digitalWrite(PT_RED, LOW);
 
         //TODO: make the rgb led test
     #endif
@@ -84,13 +97,9 @@ void setup(){
     output.println("Initializing gyro...");
     gyro::init();
 
-    output.println("Display init...");
-    if (!menu::DisplayInit()){
-        // TODO: show that display init failed
-    }
-
     output.println("PWM bus init");
     claw::setup();
+    rgb::setValue(Side::BOTH, 0, 0, 0);
 
     #ifdef CLAW_TEST
         claw::up();
@@ -102,9 +111,10 @@ void setup(){
     // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
-    if (!(digitalRead(T_L) || digitalRead(T_R))){
+    if (!(digitalRead(T_L) && digitalRead(T_R))){
         output.println("Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
+        rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(1000);
         button_failure = true;
     }
@@ -115,8 +125,11 @@ void setup(){
     #endif
 
     // menu selection
+    output.println("Menu");
+
+    //digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
-    while((selected = menu::menu()) != MENU_RUN){
+    while((selected = menu::menu(button_failure)) != MENU_RUN){
         switch (selected){
             default:
                 break;
@@ -125,7 +138,7 @@ void setup(){
                 delay(500);
                 attachInterrupt(T_E, isr, RISING); // make calibrating (soft-)abortable
                 delay(1500);
-                ls::calibrate(10000, 1);
+                ls::calibrate(10000, 0);
 
                 // Print min/max values
                 output.print("white "); output.println(ls::white._str().c_str());
@@ -156,9 +169,6 @@ void setup(){
     delay(500); // delay to not interrupt directly
     attachInterrupt(T_E, isr, RISING);
 
-    // start i2c-Handler thread
-    //xTaskCreatePinnedToCore(core0_loop, "Core0MainLoop", 10000, NULL, 0, &loop0, 0);
-
     timestamp = micros();
 }
 
@@ -168,13 +178,13 @@ void loop(){
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
     thread t(lf::follow);
-        ls::read({&ls::white});
+        ls::read();
     t.join();
-    ls::update({&ls::white}); // update the data with the new values
+    ls::update(); // update the data with the new values
 
     color::update(); // update color detection
     gyro::update();  // update gyro
-    if (!(digitalRead(T_L) || digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+    if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         // avoid obstacle:
         // go back and turn by 45 deg (right)
         motor::stop();
@@ -198,18 +208,27 @@ void loop(){
             color::update({&color::black});
         } while (!(color::black() & Side::RIGHT));
     }
-    /*if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
+
+    // We detect green using the difference between 
+    // red and green light values
+    // there is also a timeout since the last green green to
+    // avoid detecting the same crossing two times
+    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         motor::fwd(motor::motor::AB, 70);
         #ifdef DEBUG
             output.println("Green Detected!");
         #endif
-        // confirm the read values
+
+        // confirm the read values by reading 15 times more
+        // (note we are still moving forwards. this helps
+        // detecting double points when approaching unaligned)
         for(uint8_t i = 0; i < 15; i++){
             ls::read();
             color::update({&color::green, &color::black});
         }
         bool left  = color::green() & Side::LEFT;
         bool right = color::green() & Side::RIGHT;
+
         motor::fwd(motor::motor::AB, V_STD);
         // go fwd until there is no green
         while (color::green() != Side::NONE){
@@ -217,24 +236,22 @@ void loop(){
             color::update();
         }
         // check for black line
-        motor::read_fwd(V_STD, 50, {&color::black});
+        motor::read_fwd(V_STD, 50, {&color::black}); // basically same as in the for loop but time-capped
         bool left_black = color::black() & Side::LEFT;
         bool right_black = color::black() & Side::RIGHT;
         
-        // debug green detection
-        ls::led.setPixelColor(0, ls::led.Color(0, 255 * int(!left),  255 * int(!left_black)));
-        ls::led.setPixelColor(1, ls::led.Color(0, 255 * int(!right), 255 * int(!right_black)));
-        ls::led.show();
+        // debug green detection on the onboard RGB LEDs
+        rgb::setValue(Side::LEFT,  0, !left*255,  !left_black*255);
+        rgb::setValue(Side::RIGHT, 0, !right*255, !right_black*255);
         
         int16_t deg = 0; // how much to turn
         deg += 90 * int(left && left_black);
         deg += 90 * int(right && right_black);
-
         if (left && !(right)){
             deg *= -1;
         }
-        color::green.reset();
-        color::black.reset();
+
+        // execute the turning        
         motor::fwd(120);
         motor::gyro(deg);
         motor::fwd(60);
@@ -242,10 +259,15 @@ void loop(){
         last_green = millis();
 
         // reset LEDs
-        ls::led.clear();
-        ls::led.show();
+        rgb::setValue(Side::BOTH, 0, 0, 0);
+        // reset color counters
+        color::green.reset();
+        color::black.reset();
     }
-    if (color::red() != Side::NONE){
+    // Red line - stop and wait 6s
+    // if falsely detected, it will continue
+    // with only losing some time
+    /*if (color::red() != Side::NONE){
         motor::stop();
         delay(6000);
     }*/

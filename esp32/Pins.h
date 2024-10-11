@@ -10,15 +10,14 @@
 #define BOARD_REVISION 3
 
 ///////////////////////Input////////////////////////
-#define RGB              14 // currently unused
-#define FLEX             15
-#define VBAT             16
-#define T_E              17 // Menu selection
+#define FLEX             14
+#define VBAT             15
+#define T_E              16 // Menu selection
 #define MPU_INT          26 // Interrupt Pin!
 
-#define MS               39
-#define T_L              41
-#define T_R              40
+#define MS               41
+#define T_L              18
+#define T_R              17
 
 ///////////////////Light Sensors////////////////////
 
@@ -43,6 +42,8 @@
 #define PT_WHITE_L       36
 #define PT_WHITE_R       37
 #define PT_WHITE_REF     38
+#define PT_RED           39
+#define PT_GREEN         40
 
 ///////////////////////PWM//////////////////////////
 #define SERVO1           0
@@ -55,12 +56,12 @@
 #define CH6              6
 #define CH7              7
 
-#define PT_RGB_RED_L     8
-#define PT_RGB_GREEN_L   9
-#define PT_RGB_BLUE_L    10
-#define PT_RGB_RED_R     11
-#define PT_RGB_GREEN_R   12
-#define PT_RGB_BLUE_R    13
+#define RED_L            8
+#define GREEN_L          9
+#define BLUE_L           10
+#define RED_R            11
+#define GREEN_R          12
+#define BLUE_R           13
 
 #define PWMA1            21
 #define PWMB1            34
@@ -101,4 +102,5 @@
 #define MPU6050_ADRESS   0x51
 #define OLED_ADRESS      0x3C
 #define TOF_ADRESS       0x29
+#define BUS_ADDRES       0x40
 

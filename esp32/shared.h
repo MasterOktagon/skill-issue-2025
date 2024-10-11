@@ -18,9 +18,9 @@
 #define LF_ACTIVE
 #define USE_TIMESCALE
 //#define RASP_COMM
-#define LED_TEST
+//#define LED_TEST
 #define CLAW_TEST
-#define FASTREAD
+//#define FASTREAD
 
 #ifndef DEBUG
     PrintWriter output;

@@ -32,5 +32,6 @@ namespace rgb {
 /*
 namespace that controls the onboard debug RGB LEDs [W.I.P.]
 */
+    extern void setValue(Side s,uint8_t r, uint8_t g, uint8_t b);
 }
 

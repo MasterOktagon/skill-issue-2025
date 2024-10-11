@@ -1,3 +1,4 @@
+#include "FreeRTOS.h"
 
 
 //
@@ -18,14 +19,13 @@
 #include "shared.h"
 #include "Arduino.h"
 #include "menu.h"
+#include "fadc.h"
 
 #include <Adafruit_GFX.h> //https://github.com/adafruit/Adafruit-GFX-Library
 #include <Adafruit_SSD1306.h> //https://github.com/adafruit/Adafruit_SSD1306
 
 #include "icons.h" // icons to be displayed
-//#include "ESP32_BLE.h" // BLE - here only used for the bluetooth symbol
 #include "shiftregister.h"
-//#include "gyro.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -38,121 +38,117 @@
 
 namespace menu {
 
-  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+    Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-  bool DisplayInit(){
-  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADRESS)) {
-      output.println("SSD1306 allocation failed!");
-      return false;
+    bool DisplayInit(){
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADRESS)) {
+        output.println("SSD1306 allocation failed!");
+            return false;
+        }
+        display.display();
+        display.clearDisplay();
+        display.drawBitmap(0,0,logo_Bitmap, 128, 64, SSD1306_WHITE);
+        display.display();
+        delay(1500);
+
+        #ifdef SHOW_VBAT
+            pinMode(VBAT, INPUT);
+            analogReadResolution(12);
+        #endif
+
+        pinMode(T_E, INPUT_PULLUP);
+
+        return true;
     }
-    display.display();
-    display.clearDisplay();
-    display.drawBitmap(0,0,logo_Bitmap, 128, 64, SSD1306_WHITE);
-    display.display();
-    delay(1500);
-    return true;
-  }
 
-  void overlay(){
-    #ifdef BLE
-      if (BLEStat == 2){
-        display.drawBitmap(128-7,0, bluetooth, 7,9, SSD1306_WHITE);
-      }
-    #endif
-    #ifdef SHOW_VBAT
-        display.setCursor(0, 0);
-        display.print(String((1649/649*analogRead(VBAT))/1000));
-        display.print("V");
-    #endif
-  }
-
-  void showWaiting(const char* msg){
-    display.clearDisplay();
-    overlay();
-    display.setCursor(0,16);
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    display.println(msg);
-    display.display();
-  }
-
-  
-  #define menuOptions 3
-
-  int menu(){
-    int selected = 0;
-    const unsigned char * icons[menuOptions] = {iconRun, iconCalibrate, placeholder}; // icons to display in menu
-    const char * texts[menuOptions] = {"Run", "Calibrate", "test"}; // text of the options
-
-    bool in_menu = true;
-    bool last_RE_state = analogRead(T_L); // used for rotary encoder detection
-    output.println("InMenu");
-    while (in_menu){
-      #ifdef BLE
-        // BLELoop to not timeout while in menu
-        BLELoop(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-      #endif
-      display.clearDisplay();
-      overlay();
-      display.setTextColor(SSD1306_WHITE);
-      for(int i = 0; i < menuOptions; i++){ // draw icons
-        if (i == selected){ // highlight selected
-          display.fillRoundRect(32*i, 16, 32, 32, 4, SSD1306_WHITE);
-          display.drawBitmap(32*i, 16, icons[i], 32, 32, SSD1306_INVERSE);
-        }
-        else{
-          display.drawBitmap(32*i, 16, icons[i], 32, 32, SSD1306_INVERSE);
-        }
-      }
-      display.setCursor(8, 49);
-      display.print(texts[selected]);
-
-      bool enc = analogRead(T_L); // rotary encoder turn detection
-      if (enc != last_RE_state && enc == HIGH){
-        if (analogRead(T_R) == LOW){
-          selected--;
-          if (selected < 0){selected = menuOptions-1;}
-        }
-        else{
-          selected++;
-          if (selected >= menuOptions){selected = 0;}
-        }
-        output.print("->");
-        output.println(texts[selected]);
-      }
-      last_RE_state = enc;
-
-      display.display();
-      if (digitalRead(T_E) == HIGH){ // -> rotary clicked
-        in_menu = false; // -> break while loop
-        return selected;
-      }
+    void overlay(){
+        #ifdef SHOW_VBAT
+            float BATVoltage = (float)analogRead(VBAT) / 4096 * 4.8 * 5.1 / 2.2;
+            unsigned int BATPercent = (float)(BATVoltage - 7) * 100 / 1.4 + 0;
+            if (BATPercent > 100) {
+                BATPercent = 100;
+                if (BATVoltage < 7.00){
+                    BATPercent = 0;
+                }
+            }
+            display.setCursor(0, 0);
+            //display.print(String((1649/649*analogRead(VBAT))/1000));
+            display.print(String(BATPercent));
+            display.print("%");
+        #endif
     }
-    return selected;
-  }
 
-
-  void showDifference(int16_t value, bool clear=false){
-    overlay();
-    if (clear){
-      display.clearDisplay();
-      display.drawFastVLine(64, 32-8, 16, SSD1306_WHITE);
-      //display.setTextSize(2);
-      display.setTextColor(SSD1306_WHITE);
+    void showWaiting(const char* msg){
+        display.clearDisplay();
+        overlay();
+        display.setCursor(0,16);
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.println(msg);
+        display.display();
     }
-    int16_t xShift = value;
-    display.drawFastVLine(xShift + 64, 32-8, 16, SSD1306_WHITE);
-    //display.drawFastHLine(xShift, 64, 32, uint16_t color);
-    display.display();
-  }
 
-  /*void showRotation(){
-    overlay();
-    display.clearDisplay();
-    display.drawCircle(64,32, 8, SSD1306_WHITE);
-    display.drawFastVLine(64, 15, 17, SSD1306_WHITE);
-    display.drawLine(64, 32, round(64 + 9 * cos(gyro::ZAngle)), round(32 + 9 * sin(gyro::ZAngle)), SSD1306_WHITE);
 
-    display.display();
-  }*/
+    #define menuOptions 3
+
+    int menu(bool button_failure){
+        int selected = 0;
+        const unsigned char * icons[menuOptions] = {iconRun, iconCalibrate, iconLog}; // icons to display in menu
+        const char * texts[menuOptions] = {"Run", "Calibrate", "Print Log"}; // text of the options
+
+        bool in_menu = true;
+        while (in_menu){
+            display.clearDisplay();
+            display.setTextColor(SSD1306_WHITE);
+            overlay();
+            for(int i = 0; i < menuOptions; i++){ // draw icons
+                if (i == selected){ // highlight selected
+                display.fillRoundRect(32*i, 16, 32, 32, 4, SSD1306_WHITE);
+                }
+                display.drawBitmap(32*i, 16, icons[i], 32, 32, SSD1306_INVERSE);
+            }
+            display.setCursor(8, 49);
+            display.print(texts[selected]);
+
+            display.display();
+            if (digitalRead(T_E) == LOW){ // -> clicked
+                in_menu = false; // -> break while loop
+                return selected;
+            }
+            if (!button_failure){
+                selected = (selected + digitalRead(T_L) - digitalRead(T_R)) % menuOptions;
+                if (selected < 0){selected = menuOptions-1;}
+                delay(150);
+            }
+            delay(10);
+        }
+        // => button failure
+        delay(2000);
+        return MENU_RUN;
+    }
+
+
+    void showDifference(int16_t value, bool clear=false){
+        overlay();
+        if (clear){
+            display.clearDisplay();
+            display.drawFastVLine(64, 32-8, 16, SSD1306_WHITE);
+            //display.setTextSize(2);
+            display.setTextColor(SSD1306_WHITE);
+        }
+        int16_t xShift = value;
+        display.drawFastVLine(xShift + 64, 32-8, 16, SSD1306_WHITE);
+        //display.drawFastHLine(xShift, 64, 32, uint16_t color);
+        display.display();
+    }
+
+    /*void showRotation(){
+        overlay();
+        display.clearDisplay();
+        display.drawCircle(64,32, 8, SSD1306_WHITE);
+        display.drawFastVLine(64, 15, 17, SSD1306_WHITE);
+        display.drawLine(64, 32, round(64 + 9 * cos(gyro::ZAngle)), round(32 + 9 * sin(gyro::ZAngle)), SSD1306_WHITE);
+
+        display.display();
+    }*/
 }

@@ -15,8 +15,10 @@
 
 #define FADC_RESOLUTION 12 // 12-bit resolution
 #define FADC_ATTEN ADC_11db
-#define analogRead(pin) fadc::read(pin) // replace the standard analogRead with the Fast read
- 
+#ifdef FASTREAD
+    #define analogRead(pin) fadc::read(pin) // replace the standard analogRead with the Fast read
+#endif
+
 namespace fadc {
     extern void begin();
     /*

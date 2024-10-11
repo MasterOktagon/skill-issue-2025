@@ -7,7 +7,7 @@
 namespace menu {
   extern bool DisplayInit();
   extern void showDifference(int16_t value, bool clear);
-  extern int menu();
+  extern int menu(bool button_failure);
   extern void showWaiting(const char* msg);
   extern void showRotation();
 }

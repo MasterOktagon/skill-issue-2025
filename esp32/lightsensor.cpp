@@ -1,3 +1,4 @@
+#include "Pins.h"
 
 //
 // LIGHTSENSOR.cpp
@@ -235,30 +236,30 @@ namespace ls{
     );
 
     lightSensorArray green(
-        lightSensor(PT_WHITE_L, PT_L_1),
-        lightSensor(PT_WHITE_L, PT_L_0),
-        lightSensor(PT_WHITE_R, PT_R_0),
-        lightSensor(PT_WHITE_R, PT_R_1)
+        lightSensor(PT_GREEN, PT_L_1),
+        lightSensor(PT_GREEN, PT_L_0),
+        lightSensor(PT_GREEN, PT_R_0),
+        lightSensor(PT_GREEN, PT_R_1)
     );
 
     lightSensorArray green_b(
-        lightSensor(PT_WHITE_L, PT_L_3),
-        lightSensor(PT_WHITE_L, PT_L_2),
-        lightSensor(PT_WHITE_R, PT_R_2),
-        lightSensor(PT_WHITE_R, PT_R_3)
+        lightSensor(PT_GREEN, PT_L_3),
+        lightSensor(PT_GREEN, PT_L_2),
+        lightSensor(PT_GREEN, PT_R_2),
+        lightSensor(PT_GREEN, PT_R_3)
     );
 
     lightSensorArray red(
-        lightSensor(PT_WHITE_L, PT_L_1),
-        lightSensor(PT_WHITE_L, PT_L_0),
-        lightSensor(PT_WHITE_R, PT_R_0),
-        lightSensor(PT_WHITE_R, PT_R_1)
+        lightSensor(PT_RED, PT_L_1),
+        lightSensor(PT_RED, PT_L_0),
+        lightSensor(PT_RED, PT_R_0),
+        lightSensor(PT_RED, PT_R_1)
     );
     lightSensorArray red_b(
-        lightSensor(PT_WHITE_L, PT_L_3),
-        lightSensor(PT_WHITE_L, PT_L_2),
-        lightSensor(PT_WHITE_R, PT_R_2),
-        lightSensor(PT_WHITE_R, PT_R_3)
+        lightSensor(PT_RED, PT_L_3),
+        lightSensor(PT_RED, PT_L_2),
+        lightSensor(PT_RED, PT_R_2),
+        lightSensor(PT_RED, PT_R_3)
     );
 
     lightSensorArray* all[6] = {&white, &green, &red, &white_b, &green_b, &red_b};
@@ -371,6 +372,8 @@ void ls::setup(){
     pinMode(PT_WHITE_L, OUTPUT);
     pinMode(PT_WHITE_REF, OUTPUT);
     pinMode(PT_WHITE_R, OUTPUT);
+    pinMode(PT_RED, OUTPUT);
+    pinMode(PT_GREEN, OUTPUT);
 
     pinMode(PT_REF_L, INPUT);
     pinMode(PT_L_1, INPUT);
