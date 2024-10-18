@@ -4,7 +4,7 @@
 // PINOUT HEADER
 //
 // for Robocore board. 
-// NOTE: Version compability with older versions than the V3 of the RoboCore has been REMOVED!
+// NOTE: Version compability with older versions than the V3.2 of the RoboCore has been REMOVED!
 //
 
 #define BOARD_REVISION 3
