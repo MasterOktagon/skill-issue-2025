@@ -30,12 +30,6 @@ uint16_t last_green = 0;
     TwoWire comm(1); // I2C Bus for communcating with the Rasberry Pi
 #endif
 
-void IRAM_ATTR isr() {
-    /*
-    interruption service routine for reset
-    */
-	ESP.restart();
-}
 long timestamp;
 
 // gets executed before loop
@@ -135,8 +129,6 @@ void setup(){
                 break;
 
             case MENU_CALIBRATE:
-                delay(500);
-                attachInterrupt(T_E, isr, RISING); // make calibrating (soft-)abortable
                 delay(1500);
                 ls::calibrate(10000, 0);
 
@@ -149,8 +141,7 @@ void setup(){
                 output.print("green_b "); output.println(ls::green_b._str().c_str());
                 output.println("red_b "); output.println(ls::red_b._str().c_str());
 
-                ls::save(); // save values to a json file
-                detachInterrupt(T_E);
+                //ls::save(); // save values to a json file
         }
     }
 
@@ -165,10 +156,6 @@ void setup(){
     output.print("green_b "); output.println(ls::green_b._str().c_str());
     output.println("red_b "); output.println(ls::red_b._str().c_str());
 
-
-    delay(500); // delay to not interrupt directly
-    attachInterrupt(T_E, isr, RISING);
-
     timestamp = micros();
 }
 
@@ -177,13 +164,21 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
-    thread t(lf::follow);
-        ls::read();
-    t.join();
+    //thread t(lf::follow);
+    //    ls::read();
+    //t.join();
+    ls::read();
     ls::update(); // update the data with the new values
 
     color::update(); // update color detection
     gyro::update();  // update gyro
+
+    output.print(ls::white.left.value);
+    output.print("\t");
+    output.println(ls::white.right.value);
+    delay(100);
+    
+    #if 0
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         // avoid obstacle:
         // go back and turn by 45 deg (right)
@@ -271,5 +266,6 @@ void loop(){
         motor::stop();
         delay(6000);
     }*/
+    #endif
     
 }

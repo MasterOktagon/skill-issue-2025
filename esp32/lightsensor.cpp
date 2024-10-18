@@ -28,6 +28,8 @@
 
 using namespace std;
 
+int8_t last_led = -1;
+
 void fs::setup(){
     /*
     call fs::setup in your setup routine. requires SPIFFS to work
@@ -49,12 +51,17 @@ lightSensor::lightSensor(){
 }
 
 void lightSensor::led_on(){
-    digitalWrite(led_pin, HIGH);
-    delayMicroseconds(LED_DELAY); // Delay because your LED needs time to turn on
+    if (led_pin != last_led){
+        digitalWrite(led_pin, HIGH);
+        digitalWrite(last_led, LOW);
+        delayMicroseconds(LED_DELAY); // Delay because your LED needs time to turn on
+
+        last_led = led_pin;
+    }
 }
 
 void lightSensor::led_off(){
-    digitalWrite(led_pin, LOW); // we do not have to wait here because it can turn off while the next
+    //digitalWrite(led_pin, LOW); // we do not have to wait here because it can turn off while the next
                                 // LED is turned on
 }
 
@@ -64,7 +71,8 @@ void lightSensor::led_off(){
     void lightSensor::read(){
         led_on();
         // read value and map it to a range between 0 and 100
-        int a = ((analogRead(sensor_pin) - vmin) * 100);
+        int raw = analogRead(sensor_pin);
+        int a = ((raw - vmin) * 100);
         nvalue = int16_t(a / (vmax - vmin));
         led_off();
     }

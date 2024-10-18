@@ -96,8 +96,6 @@
 #define SR_PORTS 16 // number of ports to evaluate
 
 ///////////////////////Other////////////////////////
-#define SDA              8
-#define SCL              9
 
 #define MPU6050_ADRESS   0x51
 #define OLED_ADRESS      0x3C

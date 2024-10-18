@@ -39,6 +39,7 @@ class that controls a single color light sensor
         #ifdef FASTREAD
             int16_t raw = 0;
         #endif
+        //int16_t raw = 0;
                 
         int16_t vmin = 0x7FFF; // calibration minimum
         int16_t vmax = 0; // calibration maximum
