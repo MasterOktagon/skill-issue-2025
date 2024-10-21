@@ -27,39 +27,50 @@ void motor::stop(bool hard){
     shiftregister::set(SR_BIN2_F, LOW);
 }
 
-void motor::stop(motor m){
+void motor::stop(motor m, bool hard){
 
     if (m & motor::A1){
         digitalWrite(PWMA1, LOW);
-        shiftregister::set(SR_AIN1_F, LOW, false);
-        shiftregister::set(SR_AIN1_R, LOW, false);
+        if (!hard){
+            shiftregister::set(SR_AIN1_F, LOW, false);
+            shiftregister::set(SR_AIN1_R, LOW, false);
+        }
     }
     if (m & motor::B1){
         digitalWrite(PWMB1, LOW);
-        shiftregister::set(SR_BIN1_R, LOW, false);
-        shiftregister::set(SR_BIN1_R, LOW, false);
+        if (!hard){
+            shiftregister::set(SR_BIN1_F, LOW, false);
+            shiftregister::set(SR_BIN1_R, LOW, false);
+        }
     }
     if (m & motor::A2){
         digitalWrite(PWMA2, LOW);
-        shiftregister::set(SR_AIN2_F, LOW, false);
-        shiftregister::set(SR_AIN2_R, LOW, false);
+        if (!hard){
+            shiftregister::set(SR_AIN2_F, LOW, false);
+            shiftregister::set(SR_AIN2_R, LOW, false);
+        }
     }
     if (m & motor::B2){
         digitalWrite(PWMB2, LOW);
-        shiftregister::set(SR_BIN2_R, LOW, false);
-        shiftregister::set(SR_BIN2_R, LOW, false);
+        if (!hard){
+            shiftregister::set(SR_BIN2_F, LOW, false);
+            shiftregister::set(SR_BIN2_R, LOW, false);
+        }
     }
 
     shiftregister::shift();
 }
 
-void motor::hardstop(){
+/*void motor::hardstop(){
   // reerse all motors
   stop(true);
   rev(25);
   stop();
-}
+}*/
 
+void motor::hardstop(){
+    stop(true);
+}
 
 void motor::fwd(motor m, int16_t v){
   if (v == 0){

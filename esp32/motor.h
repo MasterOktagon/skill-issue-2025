@@ -40,9 +40,11 @@ This namespace holds all functions that directly influence motor movement
     };
     
     
-    extern void stop(motor m);
+    extern void stop(motor m, bool hard = false);
     /*
     Stop a motor
+
+    [param hard] short break if true
     */
     
     extern void stop(bool hard = false);
