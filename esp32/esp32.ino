@@ -26,10 +26,6 @@ using namespace std;
 bool button_failure = false; // wether buttons have a failure
 uint16_t last_green = 0;
 
-#ifdef RASP_COMM
-    TwoWire comm(1); // I2C Bus for communcating with the Rasberry Pi
-#endif
-
 long timestamp;
 
 // gets executed before loop
@@ -49,7 +45,7 @@ void setup(){
     shiftregister::reset();
 
     output.println("Wire init...");
-    Wire.begin(SDA, SCL); // start i2c
+    Wire.begin(SDA, SCL);  // start i2c
     Wire.setClock(400000); // Fast mode
 
     // setup FastADC
@@ -68,7 +64,7 @@ void setup(){
 
     // run the led test
     #ifdef LED_TEST
-        output.println("LED test (wgr[b])");
+        output.println("LED test (wwgr)");
         digitalWrite(PT_WHITE_L, HIGH);
         delay(1500);
         digitalWrite(PT_WHITE_L, LOW);
@@ -81,8 +77,6 @@ void setup(){
         digitalWrite(PT_RED, HIGH);
         delay(1500);
         digitalWrite(PT_RED, LOW);
-
-        //TODO: make the rgb led test
     #endif
 
     // start SPIFFS
@@ -106,7 +100,7 @@ void setup(){
     #endif
 
     output.println("Checking Buttons for failures...");
-    // if a button has failed (is pressed when he shouldn't)
+    // if a button has failed (is pressed when it shouldn't be)
     // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
@@ -117,11 +111,6 @@ void setup(){
         delay(1000);
         button_failure = true;
     }
-    #ifdef RASP_COMM
-        output.println("Starting RPI communication...");
-        comm.begin();     // Start master (transmitter)
-        //comm.begin(0x01); // Start slave (receiver)
-    #endif
 
     // menu selection
     output.println("Menu");
@@ -146,7 +135,7 @@ void setup(){
                 output.print("green_b "); output.println(ls::green_b._str().c_str());
                 output.println("red_b "); output.println(ls::red_b._str().c_str());
 
-                //ls::save(); // save values to a json file
+                ls::save(); // save values to a json file
         }
     }
 
@@ -178,10 +167,10 @@ void loop(){
     color::update(); // update color detection
     gyro::update();  // update gyro
 
-    output.print(ls::white.left.value);
-    output.print("\t");
-    output.println(ls::white.right.value);
-    delay(100);
+    //output.print(ls::white.left.value);
+    //output.print("\t");
+    //output.println(ls::white.right.value);
+    //delay(100);
     
     #if 0
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
@@ -237,7 +226,7 @@ void loop(){
         }
         // check for black line
         motor::read_fwd(V_STD, 50, {&color::black}); // basically same as in the for loop but time-capped
-        bool left_black = color::black() & Side::LEFT;
+        bool left_black  = color::black() & Side::LEFT;
         bool right_black = color::black() & Side::RIGHT;
         
         // debug green detection on the onboard RGB LEDs
@@ -267,10 +256,10 @@ void loop(){
     // Red line - stop and wait 6s
     // if falsely detected, it will continue
     // with only losing some time
-    /*if (color::red() != Side::NONE){
+    if (color::red() != Side::NONE){
         motor::stop();
         delay(6000);
-    }*/
+    }
     #endif
     
 }

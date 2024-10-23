@@ -14,7 +14,7 @@
 
 //#define USE_MTX // use mutexes
 
-#define ADC_BUSY() !(bool)SENS.sar_meas1_ctrl2.meas1_done_sar
+#define ADC_BUSY() !((bool)SENS.sar_meas1_ctrl2.meas1_done_sar)
 
 using namespace std;
 
@@ -59,7 +59,7 @@ uint16_t fadc::value(){
 
 uint16_t fadc::read(uint8_t pin){
     start(pin);
-    while(busy()){}
+    while(busy());
     return value();
 }
 

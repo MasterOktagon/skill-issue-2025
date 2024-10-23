@@ -12,6 +12,7 @@
 #include <Arduino.h>
 #include <MPU6050_light.h>
 #include <Wire.h>
+#include <cmath>
 
 #include "Pins.h"
 #include "gyro.h"
