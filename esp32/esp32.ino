@@ -100,6 +100,11 @@ void setup(){
         claw::down();
     #endif
 
+    #ifdef MOT_STBY
+        shiftregister::set(SR_STBY1, LOW);
+        shiftregister::set(SR_STBY2, LOW);
+    #endif
+
     output.println("Checking Buttons for failures...");
     // if a button has failed (is pressed when he shouldn't)
     // we disable buttons by setting the button_failure flag
@@ -115,7 +120,7 @@ void setup(){
     #ifdef RASP_COMM
         output.println("Starting RPI communication...");
         comm.begin();     // Start master (transmitter)
-        comm.begin(0x01); // Start slave (receiver)
+        //comm.begin(0x01); // Start slave (receiver)
     #endif
 
     // menu selection

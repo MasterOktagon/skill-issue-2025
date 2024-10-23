@@ -14,7 +14,7 @@
 #define DEBUG
 //#define BLE
 //#define MOT_STBY
-//#define LF_USE_BACK
+#define LF_USE_BACK
 #define LF_ACTIVE
 #define USE_TIMESCALE
 //#define RASP_COMM
@@ -42,10 +42,10 @@ class repr{
     virtual string _str();
 };
 
-/*
-inline string str(repr r){
-    return r._str();
-}*/
+
+inline const char* str(repr r){
+    return r._str().c_str();
+}
 
 enum Side {
     NONE = 0,
