@@ -47,8 +47,7 @@ int16_t lf::follow(){
         int16_t diff_outer = ls::white.left_outer.value - ls::white.right_outer.value;
         mot_diff = int(float((diff + diff_green * 2) * 4 + diff_outer * diff_outer_factor) * mul * timescale);  // calculate inner to outer mult
         int16_t derivative = int(float(mot_diff - last / timescale));
-        bias += mot_diff;
-        //#define bias 0
+        bias += mot_diff; // bias = integral
 
         #ifndef MOT_STBY
             //int16_t v = V_STD;

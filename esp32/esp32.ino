@@ -161,10 +161,9 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
-    //thread t(lf::follow);
-    //    ls::read();
-    //t.join();
-    ls::read();
+    thread t(lf::follow);
+        ls::read();
+    t.join();
     ls::update(); // update the data with the new values outside the thread
 
     color::update(); // update color detection

@@ -14,6 +14,7 @@ namespace tof {
 /*
 implements a high-level acces to the time-of-flight sensors
 */
+    extern VL53L1X front, left, right;
 
     void setup();
     /*

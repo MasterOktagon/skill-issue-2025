@@ -12,9 +12,6 @@
 #include "shared.h"
 #include "shiftregister.h"
 
-//#define LF_ACTIVE
-
-
 namespace lf{
 /*
 namespace that holds the linefollower
