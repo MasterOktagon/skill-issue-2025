@@ -9,7 +9,6 @@
 #include <Arduino.h>
 #include <cstdint>
 
-#include "warnings.h"
 #include "shiftregister.h"
 #include "gyro.h"
 #include "color.h"

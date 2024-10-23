@@ -1,0 +1,48 @@
+
+//
+// TOF.cpp
+//
+// implements a high-level acces to the time-of-flight sensors
+// This is the special implementaition for the VL53L1X ToF sensor
+//
+
+#include <cstdint>
+
+#include "shiftregister.h"
+#include "tof.h"
+#include "shared.h"
+#include "Pins.h"
+
+VL53L1X front, left, right, back;
+
+#define INIT_TOF(xsht, where) \
+    shiftregister::set(xsht, HIGH);                                             \
+    delay(10);                                                                  \
+    where = VL53L1X();                                                          \
+    if (!where.init()){                                                         \
+        Serial.print("\tMISSING TOF ");                                         \
+        Serial.print(xsht - SR_XSHT_1);                                         \
+        Serial.print(" ");                                                      \
+        Serial.println(#where);                                                 \
+    }                                                                           \
+    else{                                                                       \
+        where.setDistanceMode(VL53L1X::Short);                                  \
+        where.setTimeout(500);                                                  \
+        where.setAddress(0x2A + (xsht - SR_XSHT_1));                            \
+    }                                                                           \
+    shiftregister::set(xsht, LOW, false);
+
+void tof::setup(){
+    
+    INIT_TOF(SR_XSHT_1, front);
+    INIT_TOF(SR_XSHT_2, left);
+    INIT_TOF(SR_XSHT_3, right);
+    INIT_TOF(SR_XSHT_4, back);
+}
+
+void tof::start_all(){
+    front.startContinuous(50);
+    left.startContinuous(50);
+    right.startContinuous(50);
+}
+

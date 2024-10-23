@@ -23,7 +23,8 @@
 //#define FASTREAD
 
 #ifndef DEBUG
-    PrintWriter output;
+    //PrintWriter output;
+    #define output Serial
 #else
     #define output Serial
 #endif

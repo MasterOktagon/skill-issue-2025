@@ -18,6 +18,7 @@
 #include "menu.h"
 #include "gyro.h"
 #include "claw.h"
+#include "tof.h"
 
 using namespace std;
 
@@ -61,6 +62,8 @@ void setup(){
     if (!menu::DisplayInit()){
         rgb::setValue(Side::BOTH, 255, 0, 0);
     }
+
+    tof::setup();
 
     // run the led test
     #ifdef LED_TEST
@@ -162,15 +165,10 @@ void loop(){
     //    ls::read();
     //t.join();
     ls::read();
-    ls::update(); // update the data with the new values
+    ls::update(); // update the data with the new values outside the thread
 
     color::update(); // update color detection
     gyro::update();  // update gyro
-
-    //output.print(ls::white.left.value);
-    //output.print("\t");
-    //output.println(ls::white.right.value);
-    //delay(100);
     
     #if 0
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
@@ -203,7 +201,7 @@ void loop(){
     // there is also a timeout since the last green green to
     // avoid detecting the same crossing two times
     if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
-        motor::fwd(motor::motor::AB, 70);
+        motor::fwd(motor::motor::AB, 70); // reduce motor speed to allow better read resolution
         #ifdef DEBUG
             output.println("Green Detected!");
         #endif
@@ -258,7 +256,9 @@ void loop(){
     // with only losing some time
     if (color::red() != Side::NONE){
         motor::stop();
+        rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(6000);
+        rgb::setValue(Side::BOTH, 0, 0, 0);
     }
     #endif
     
