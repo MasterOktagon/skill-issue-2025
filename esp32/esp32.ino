@@ -33,9 +33,9 @@ long timestamp;
 void setup(){
     // begin output connection (DEBUG)
     Serial.begin(115200);
-    #ifndef DEBUG
-        output = createWriter("out.log"); // log Serial output to file
-    #endif
+    //#ifndef DEBUG
+    //    output = createWriter("out.log"); // log Serial output to file
+    //#endif
 
     output.println("");
     output.println("output init [115200] ...");
@@ -161,11 +161,12 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
+    //Serial.println("fewf");
     thread t(lf::follow);
         ls::read();
     t.join();
     ls::update(); // update the data with the new values outside the thread
-
+    
     color::update(); // update color detection
     gyro::update();  // update gyro
     

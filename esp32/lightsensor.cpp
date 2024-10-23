@@ -28,7 +28,7 @@
 
 using namespace std;
 
-int8_t last_led = -1;
+int8_t last_led = -1; // which led was turned on lastly
 
 void fs::setup(){
     /*
