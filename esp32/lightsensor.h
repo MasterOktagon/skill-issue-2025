@@ -34,8 +34,8 @@ class that controls a single color light sensor
 */
     friend lightSensorArray;
     public:
-        int16_t value = 0; // current (old) calibrated value
-        int16_t nvalue = 0; // new calibrated value
+        int16_t value = 1; // current (old) calibrated value
+        int16_t nvalue = 1; // new calibrated value
         #ifdef FASTREAD
             int16_t raw = 0;
         #endif

@@ -1,4 +1,3 @@
-#include "FreeRTOS.h"
 
 
 //
@@ -14,6 +13,7 @@
 #include <SPI.h> // comms
 #include <Wire.h>
 #include <cmath>
+#include "FreeRTOS.h"
 
 #include "Pins.h" // pin layout
 #include "shared.h"

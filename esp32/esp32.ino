@@ -115,6 +115,7 @@ void setup(){
         button_failure = true;
     }
 
+    
     // menu selection
     output.println("Menu");
 
@@ -162,10 +163,14 @@ void loop(){
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
     //Serial.println("fewf");
-    thread t(lf::follow);
-        ls::read();
-    t.join();
+    //thread t(lf::follow);
+    //    ls::read();
+    //t.join();
+    ls::read();
     ls::update(); // update the data with the new values outside the thread
+    lf::follow();
+
+    delayMicroseconds(300);
     
     color::update(); // update color detection
     gyro::update();  // update gyro

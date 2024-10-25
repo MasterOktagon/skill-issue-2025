@@ -100,9 +100,9 @@
 #define MPU6050_ADRESS   0x51
 #define OLED_ADRESS      0x3C
 #define TOF_ADRESS       0x29
-#define TOF_ADDRESS1     0x61
-#define TOF_ADDRESS2     0x62
-#define TOF_ADDRESS3     0x63
-#define TOF_ADDRESS4     0x64
+#define TOF_ADDRESS1     0x31
+#define TOF_ADDRESS2     0x32
+#define TOF_ADDRESS3     0x33
+#define TOF_ADDRESS4     0x34
 #define BUS_ADDRES       0x40
 
