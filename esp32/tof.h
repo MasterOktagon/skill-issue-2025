@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 #include <VL53L1X.h>
+#include "Pins.h"
+#include "shiftregister.h"
 
 namespace tof {
 /*
