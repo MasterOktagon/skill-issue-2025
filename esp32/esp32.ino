@@ -208,6 +208,7 @@ void loop(){
     // avoid detecting the same crossing two times
     if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         rgb::setValue(color::green(), 0, 255, 0);
+        Side l = color::green();
         #ifdef DEBUG
             output.println("Green Detected!");
         #endif
@@ -215,9 +216,9 @@ void loop(){
         // confirm the read values by reading 50ms more
         // (note we are still moving forwards. this helps
         // detecting double points when approaching unaligned)
-        motor::read_fwd(70, 50, {&color::green}); // reduce motor speed to allow better read resolution
-        bool left  = color::green() & Side::LEFT;
-        bool right = color::green() & Side::RIGHT;
+        motor::read_fwd(70, 100, {&color::green}); // reduce motor speed to allow better read resolution
+        bool left  = (color::green() & Side::LEFT)  || l & Side::LEFT;
+        bool right = (color::green() & Side::RIGHT) || l & Side::RIGHT;
 
         motor::fwd(motor::motor::AB, V_STD);
         // go fwd until there is no green
@@ -233,8 +234,8 @@ void loop(){
         bool right_black = color::black() & Side::RIGHT;
         
         // debug green detection on the onboard RGB LEDs
-        rgb::setValue(Side::RIGHT,  0, !left*255,  !left_black*255);
-        rgb::setValue(Side::LEFT, 0, !right*255, !right_black*255);
+        rgb::setValue(Side::RIGHT,  0, left*255,  !left_black*255);
+        rgb::setValue(Side::LEFT, 0, right*255, !right_black*255);
 
         motor::stop();
         delay(1000);
