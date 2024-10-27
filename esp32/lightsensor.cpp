@@ -274,7 +274,7 @@ namespace ls{
 }
 
 
-const void ls::read(){
+const void ls::read(bool doupdate){
     white.read();
     red.read();
     green.read();
@@ -282,6 +282,8 @@ const void ls::read(){
     white_b.read();
     red_b.read();
     green_b.read();
+
+    if (doupdate){update();}
 }
 
 const void ls::update(){
@@ -294,9 +296,10 @@ const void ls::update(){
     green_b.update();
 }
 
-void ls::read(initializer_list<lightSensorArray*> ls){
+void ls::read(initializer_list<lightSensorArray*> ls, bool doupdate){
     for (lightSensorArray* l : ls){
         l->read();
+        if (doupdate){l->update();}
     }
 }
 

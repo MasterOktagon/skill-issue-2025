@@ -16,7 +16,7 @@
 //#define MOT_STBY
 //#define LF_USE_BACK
 #define LF_ACTIVE
-#define USE_TIMESCALE
+//#define USE_TIMESCALE
 //#define RASP_COMM
 //#define LED_TEST
 #define CLAW_TEST

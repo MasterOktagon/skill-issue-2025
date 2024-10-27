@@ -77,7 +77,7 @@ void motor::fwd(motor m, int16_t v){
     stop(m); return;
   }
   // clamp the speed
-  v = min(max(v, int16_t(-255)), int16_t(255));
+  v = min(max(v, int16_t(-200)), int16_t(200));
 
   // control the motors
   bool rev = v < 0; // wether to reverse *IN1 and *IN2
@@ -141,7 +141,9 @@ void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
     turn(v * -sign);
     while (abs(angle) > abs(gyro::z)){
         gyro::update();
-        Serial.println(gyro::z);
+        Serial.print(abs(gyro::z));
+        Serial.print("\t");
+        Serial.println(abs(angle));
     }
     stop();
 }

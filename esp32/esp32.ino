@@ -29,6 +29,10 @@ uint16_t last_green = 0;
 
 long timestamp;
 
+void IRAM_ATTR isr(){
+    esp_restart();
+}
+
 // gets executed before loop
 void setup(){
     // begin output connection (DEBUG)
@@ -44,6 +48,7 @@ void setup(){
     output.println("Shiftregister init...");
     shiftregister::setup();
     shiftregister::reset();
+    motor::stop();
 
     output.println("Wire init...");
     Wire.begin(SDA, SCL);  // start i2c
@@ -119,7 +124,7 @@ void setup(){
     // menu selection
     output.println("Menu");
 
-    //digitalWrite(PT_GREEN, HIGH);
+    digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
     while((selected = menu::menu(button_failure)) != MENU_RUN){
         switch (selected){
@@ -155,6 +160,8 @@ void setup(){
     output.println("red_b "); output.println(ls::red_b._str().c_str());
 
     timestamp = micros();
+    delay(2000);
+    attachInterrupt(T_E, isr, RISING);
 }
 
 void loop(){
@@ -162,20 +169,14 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
-    //Serial.println("fewf");
-    //thread t(lf::follow);
-    //    ls::read();
-    //t.join();
-    ls::read();
+    thread t(lf::follow);
+        ls::read(false);
+    t.join();
     ls::update(); // update the data with the new values outside the thread
-    lf::follow();
 
-    delayMicroseconds(300);
-    
     color::update(); // update color detection
     gyro::update();  // update gyro
     
-    #if 0
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         // avoid obstacle:
         // go back and turn by 45 deg (right)
@@ -206,18 +207,15 @@ void loop(){
     // there is also a timeout since the last green green to
     // avoid detecting the same crossing two times
     if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
-        motor::fwd(motor::motor::AB, 70); // reduce motor speed to allow better read resolution
+        rgb::setValue(color::green(), 0, 255, 0);
         #ifdef DEBUG
             output.println("Green Detected!");
         #endif
 
-        // confirm the read values by reading 15 times more
+        // confirm the read values by reading 50ms more
         // (note we are still moving forwards. this helps
         // detecting double points when approaching unaligned)
-        for(uint8_t i = 0; i < 15; i++){
-            ls::read();
-            color::update({&color::green, &color::black});
-        }
+        motor::read_fwd(70, 50, {&color::green}); // reduce motor speed to allow better read resolution
         bool left  = color::green() & Side::LEFT;
         bool right = color::green() & Side::RIGHT;
 
@@ -227,19 +225,24 @@ void loop(){
             ls::read();
             color::update();
         }
+        motor::stop(true);
+
         // check for black line
-        motor::read_fwd(V_STD, 50, {&color::black}); // basically same as in the for loop but time-capped
+        motor::read_fwd(V_STD, 50, {&color::black});
         bool left_black  = color::black() & Side::LEFT;
         bool right_black = color::black() & Side::RIGHT;
         
         // debug green detection on the onboard RGB LEDs
-        rgb::setValue(Side::LEFT,  0, !left*255,  !left_black*255);
-        rgb::setValue(Side::RIGHT, 0, !right*255, !right_black*255);
+        rgb::setValue(Side::RIGHT,  0, !left*255,  !left_black*255);
+        rgb::setValue(Side::LEFT, 0, !right*255, !right_black*255);
+
+        motor::stop();
+        delay(1000);
         
         int16_t deg = 0; // how much to turn
-        deg += 90 * int(left && left_black);
+        deg += 90 * int(left && left_black);  // check if green and black was detected
         deg += 90 * int(right && right_black);
-        if (left && !(right)){
+        if (right && !(left)){
             deg *= -1;
         }
 
@@ -264,7 +267,7 @@ void loop(){
         rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(6000);
         rgb::setValue(Side::BOTH, 0, 0, 0);
+        color::red.reset();
     }
-    #endif
     
 }

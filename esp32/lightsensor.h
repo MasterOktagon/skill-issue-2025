@@ -128,18 +128,21 @@ namespace that holds all functions for all light sensors
     configure light sensors
     */
     
-    extern const void read();
+    extern const void read(bool update=true);
     /*
     read all lightSensorArrays
+
+    [param update] directly update all values
     */
     
-    extern void read(initializer_list<lightSensorArray*> ls);
+    extern void read(initializer_list<lightSensorArray*> ls, bool update=true);
     /*
     read all given lightSensorArrays.
     
     !raises! NullptrException/LoadProhibited
 
     [param ls] all light sensors. may not be nullptr!
+    [param update] directly update all values
     */
 
     extern void calibrate(uint16_t iterations, uint16_t delay_ms=0);
