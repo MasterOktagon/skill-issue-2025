@@ -104,5 +104,7 @@
 #define TOF_ADDRESS2     0x32
 #define TOF_ADDRESS3     0x33
 #define TOF_ADDRESS4     0x34
-#define BUS_ADDRES       0x40
+#define BUS_ADDRESS      0x40
+#define PI_ADDRESS       0x18
+
 

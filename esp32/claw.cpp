@@ -4,7 +4,7 @@
 #include "Pins.h"
 #include "fadc.h"
 
-PWMBus bus(BUS_ADDRES);
+PWMBus bus(BUS_ADDRESS);
 
 void claw::setup(){
     if (!bus.begin()){
@@ -19,9 +19,26 @@ void claw::up(){
     bus.setValue(SERVO1, 0);
 }
 
-
 void claw::down(){
     bus.setValue(SERVO1, 255);
+    delay(2000);
+}
+
+void claw::half(){
+    bus.setValue(SERVO1, 128);
+    delay(2000);
+}
+
+void claw::open(){
+    bus.setValue(SERVO2, 128);
+}
+
+void claw::wide(){
+    bus.setValue(SERVO2, 0);
+}
+
+void claw::close(){
+    bus.setValue(SERVO2, 255);
 }
 
 void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
