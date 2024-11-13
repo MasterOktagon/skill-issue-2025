@@ -17,7 +17,7 @@ struct Victim {
 Victim positionon image
 */
     uint16_t x,y,r = 0;
-}
+};
 
 namespace rpi {
 /*
@@ -33,10 +33,10 @@ namespace that holds raspberry pi comm fucntions
     /*
     select which ai to start
     */
-        NONE    = 0x0,
-        VICTIMS = 0x1,
-        CORNERS = 0x2,
-        EXITS   = 0x3
+        NONE    = 0x00,
+        VICTIMS = 0x01,
+        CORNERS = 0x02,
+        EXITS   = 0x03
     };
 
     extern void start_ai(Ai ai);
@@ -55,8 +55,23 @@ namespace that holds raspberry pi comm fucntions
     /*
     get the data from the victim ai
 
+    !raises! AINotStartedException
     [return] nearest victim information
     */
+
+    extern uint8_t status();
+    /*
+    get the pi's status message
+
+    0xFF - everything fine
+    */
+
+    class AINotStartedException : exception{
+        public:
+            Ai ai;
+            AINotStartedException(Ai ai);
+            const char * what();
+    };
 
 }
 
