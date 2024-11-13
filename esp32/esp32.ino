@@ -20,6 +20,7 @@
 #include "gyro.h"
 #include "claw.h"
 #include "tof.h"
+#include "rpi_com.h"
 
 using namespace std;
 
@@ -118,6 +119,11 @@ void setup(){
         shiftregister::set(SR_STBY2, LOW);
     #endif
 
+    #ifdef MOT_TEST
+        motor::fwd(1000);
+        motor::rev(1000);
+    #endif
+
     output.println("Checking Buttons for failures...");
     // if a button has failed (is pressed when it shouldn't be)
     // we disable buttons by setting the button_failure flag
@@ -130,6 +136,7 @@ void setup(){
         delay(1000);
         button_failure = true;
     }
+    output.println(rpi::status());
 
     
     // menu selection
@@ -143,6 +150,8 @@ void setup(){
                 break;
 
             case MENU_CALIBRATE:
+
+                menu::showWaiting("Calibrating...");
                 delay(1500);
 
                 thread t(cal_movement);
