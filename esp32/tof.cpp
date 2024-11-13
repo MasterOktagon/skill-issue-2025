@@ -15,7 +15,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_1, HIGH);
   delay(10);
   if (!front.init()) {
-    output.println("MISSING TOF FRONT!!!");
+    output.println("MISSING TOF 1 FRONT!!!");
   }
   else {
     front.setAddress(TOF_ADDRESS1);
@@ -26,7 +26,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_2, HIGH);
   delay(10);
   if (!left.init()) {
-    output.println("MISSING TOF LEFT!!!");
+    output.println("MISSING TOF 2 LEFT!!!");
   }
   else {
     left.setAddress(TOF_ADDRESS2);
@@ -34,24 +34,24 @@ void tof::setup(){
     left.setDistanceMode(VL53L1X::Short);
   }
   VL53L1X right = VL53L1X();
-  shiftregister::set(SR_XSHT_3, HIGH);
+  shiftregister::set(SR_XSHT_4, HIGH);
   delay(10);
   if (!right.init()) {
-    output.println("MISSING TOF RIGHT!!!");
+    output.println("MISSING TOF 4 RIGHT!!!");
   }
   else {
-    right.setAddress(TOF_ADDRESS3);
+    right.setAddress(TOF_ADDRESS4);
     right.setTimeout(500);
     right.setDistanceMode(VL53L1X::Short);
   }
   VL53L1X claw = VL53L1X();
-  shiftregister::set(SR_XSHT_4, HIGH);
+  shiftregister::set(SR_XSHT_3, HIGH);
   delay(10);
   if (!claw.init()) {
-    output.println("MISSING TOF CLAW!!!");
+    output.println("MISSING TOF 3 CLAW!!!");
   }
   else {
-    claw.setAddress(TOF_ADDRESS4);
+    claw.setAddress(TOF_ADDRESS3);
     claw.setTimeout(500);
     claw.setDistanceMode(VL53L1X::Short);
   }
