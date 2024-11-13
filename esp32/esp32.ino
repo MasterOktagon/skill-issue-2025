@@ -8,6 +8,7 @@
 
 #include <Wire.h>
 #include <thread>
+#include <exception>
 
 #include "fadc.h"
 #include "color.h"
@@ -30,7 +31,17 @@ uint16_t last_green = 0;
 long timestamp;
 
 void IRAM_ATTR isr(){
+    Wire.end();
     esp_restart();
+}
+
+void cal_movement(){
+    unsigned long timestamp = millis();
+    while(millis() - timestamp < 30000){
+        int v = (millis() - timestamp % 3000) > 1500 ? 70 : -70;
+        motor::fwd(motor::motor::AB, v);
+    }
+    motor::stop();
 }
 
 // gets executed before loop
@@ -133,7 +144,10 @@ void setup(){
 
             case MENU_CALIBRATE:
                 delay(1500);
-                ls::calibrate(10000, 0);
+
+                thread t(cal_movement);
+                    ls::calibrate(10000, 0);
+                t.join();
 
                 // Print min/max values
                 output.print("white "); output.println(ls::white._str().c_str());
