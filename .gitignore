@@ -2,6 +2,7 @@
 __pycache__
 build/
 *.cmake
+venv/
 Makefile
 CMakeCache.*
 CMakeFiles/
