@@ -62,6 +62,10 @@ Victim rpi::get_victim(){
 }
 uint8_t rpi::status(){
     Wire.beginTransmission(PI_ADDRESS);
+    if (!Wire.available()){
+        Wire.endTransmission();
+        return 0x00;
+    }
     Wire.write(PI_STATUS);
     Wire.requestFrom(PI_ADDRESS, 1);
     uint8_t status = Wire.read() == 0xFF;

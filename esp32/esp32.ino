@@ -32,15 +32,16 @@ uint16_t last_green = 0;
 long timestamp;
 
 void IRAM_ATTR isr(){
-    Wire.end();
     esp_restart();
 }
 
 void cal_movement(){
     unsigned long timestamp = millis();
-    while(millis() - timestamp < 30000){
-        int v = (millis() - timestamp % 3000) > 1500 ? 70 : -70;
+    while(millis() - timestamp < 10000){
+        int v = ((millis() - timestamp) % 3000) >= 1500 ? -70 : 70;
+        output.println(v);
         motor::fwd(motor::motor::AB, v);
+        delay(1);
     }
     motor::stop();
 }
@@ -136,7 +137,7 @@ void setup(){
         delay(1000);
         button_failure = true;
     }
-    output.println(rpi::status());
+    //output.println(rpi::status());
 
     
     // menu selection
@@ -154,9 +155,11 @@ void setup(){
                 menu::showWaiting("Calibrating...");
                 delay(1500);
 
+                attachInterrupt(T_E, isr, RISING);
                 thread t(cal_movement);
                     ls::calibrate(10000, 0);
                 t.join();
+                detachInterrupt(T_E);
 
                 // Print min/max values
                 output.print("white "); output.println(ls::white._str().c_str());
@@ -270,10 +273,12 @@ void loop(){
             deg *= -1;
         }
 
-        // execute the turning        
+        // execute the turning      
         motor::fwd(120);
-        motor::gyro(deg);
-        motor::fwd(60);
+        if (shiftregister::get(SR_STBY1)){
+            motor::gyro(deg);
+        }
+        motor::fwd(120);
         // set freeze
         last_green = millis();
 

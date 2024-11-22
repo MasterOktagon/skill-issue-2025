@@ -115,6 +115,7 @@ void lightSensor::calibrate_turn(int iter){
     */
     led_on();
 
+    //output.println(sensor_pin);
     int16_t val = analogRead(sensor_pin); // read light sensor value
     if (iter > ITER_SKIP){
         // update min/max values
@@ -376,9 +377,6 @@ void ls::load(){
 // setup sets up the pins needed to read out the light values
 
 void ls::setup(){
-    #ifndef FASTREAD
-        analogReadResolution(9);
-    #endif
     
     pinMode(PT_WHITE_L, OUTPUT);
     pinMode(PT_WHITE_REF, OUTPUT);

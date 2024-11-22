@@ -52,7 +52,7 @@ int16_t lf::follow(){
         int16_t diff = ls::white.left.value - ls::white.right.value;
         int16_t diff_green = (ls::green.left.value - ls::red.left.value) - (ls::green.right.value - ls::red.right.value);  // difference to ignore green points
         int16_t diff_outer = ls::white.left_outer.value - ls::white.right_outer.value;
-        mot_diff = int(float((diff /*+ diff_green * 5*/) * 1 + diff_outer * diff_outer_factor) * mul * timescale);  // calculate inner to outer mult
+        mot_diff = int(float((diff + diff_green * 2) * 1 + diff_outer * diff_outer_factor) * mul * timescale);  // calculate inner to outer mult
         int16_t derivative = mot_diff - last;
         bias = 0; // += mot_diff; // bias : integral
 
