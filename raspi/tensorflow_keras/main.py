@@ -20,3 +20,14 @@ if __name__ == "__main__":
 	print("TensorFlow version:", tf.__version__)
 	default()
 
+
+	import pathlib
+	import numpy as np
+	import pandas as pd
+	from PIL import Image
+	
+	path = pathlib.Path(__file__).parent.parent.resolve()
+	path  = str(((path / 'generated_tests') / 'ball_simple_one') / 'df.csv')
+	train_df = pd.read_csv(path)
+	print(train_df)
+

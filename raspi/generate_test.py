@@ -19,10 +19,10 @@ def one_ball(n,width,height):
         im = Image.new("RGB", (width, height), white)
         draw = ImageDraw.Draw(im)
         draw.circle((x,y),r,black)
-        im.save(str(path)+"\\generated_tests\\ball_simple_one\\"+str(i)+".png")
+        im.save(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png')))
         data.append((x,y,r))
     df = pd.DataFrame(data=data, columns=columns)
-    df.to_csv(str(path)+"\\generated_tests\\ball_simple_one\\df.csv")
+    df.to_csv(str(path / 'generated_tests' / 'ball_simple_one' / 'df.csv'), index=False)
 
 
 if __name__=="__main__":
