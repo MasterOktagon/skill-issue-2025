@@ -111,8 +111,15 @@ void setup(){
     rgb::setValue(Side::BOTH, 0, 0, 0);
 
     #ifdef CLAW_TEST
-        claw::up();
-        claw::down();
+        output.println("Claw Test...");
+        output.println("Open");
+        claw::open();
+        output.println("Close");
+        claw::close();
+        output.println("Wide");
+        claw::wide();
+        output.println("Close");
+        claw::close();
     #endif
 
     #ifdef MOT_STBY
@@ -195,9 +202,12 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
-    thread t(lf::follow);
-        ls::read(false);
-    t.join();
+    //thread t(lf::follow);
+    //    ls::read(false);
+    //t.join();
+    ls::read();
+    lf::follow();
+    delayMicroseconds(50);
     ls::update(); // update the data with the new values outside the thread
 
     color::update(); // update color detection

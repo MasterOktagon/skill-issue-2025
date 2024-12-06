@@ -20,7 +20,7 @@
 //#define RASP_COMM
 //#define LED_TEST
 //#define MOT_TEST
-#define CLAW_TEST
+//#define CLAW_TEST
 //#define FASTREAD
 
 #ifndef DEBUG

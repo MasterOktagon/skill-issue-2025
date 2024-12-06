@@ -46,6 +46,7 @@ void rpi::stop_ai(){
 Victim rpi::get_victim(){
     Wire.beginTransmission(PI_ADDRESS);
     Wire.write(PI_READ | Ai::VICTIMS);
+    Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 12);
     Victim victim;
     if (Wire.read() == 0x00) {
@@ -67,6 +68,7 @@ uint8_t rpi::status(){
         return 0x00;
     }
     Wire.write(PI_STATUS);
+    Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 1);
     uint8_t status = Wire.read() == 0xFF;
     Wire.endTransmission();
