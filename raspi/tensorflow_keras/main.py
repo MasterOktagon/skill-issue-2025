@@ -33,6 +33,7 @@ def show_result(df: pd.DataFrame):
 	next_button = tk.Button(root, text="Next Entry", command=next_entry)
 	next_button.place(x=700,y=500)
 
+	# root.bind("<Return>", next_entry)
 	root.mainloop()
 
 
