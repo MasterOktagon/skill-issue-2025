@@ -24,7 +24,7 @@
 #endif
 
 #define LED_DELAY 80 // delay between turning on the LED and reading in us
-#define ITER_SKIP 20 // The first x readings are corrupted for no reason. Skip these readings when calibrating
+#define ITER_SKIP 500 // The first x readings are corrupted for no reason. Skip these readings when calibrating
 
 using namespace std;
 
@@ -71,7 +71,7 @@ void lightSensor::led_off(){
     void lightSensor::read(){
         led_on();
         // read value and map it to a range between 0 and 100
-        int raw = analogRead(sensor_pin);
+        raw = analogRead(sensor_pin);
         int a = ((raw - vmin) * 100);
         nvalue = int16_t(a / (vmax - vmin));
         led_off();

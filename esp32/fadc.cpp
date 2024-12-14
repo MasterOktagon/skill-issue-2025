@@ -76,8 +76,8 @@ void fadc::begin(){
     }
 
     // Enable ADC
-    periph_module_enable(PERIPH_SARADC_MODULE);
-    adc_power_acquire();
+    //periph_module_enable(PERIPH_SARADC_MODULE);
+    //adc_power_acquire();
 }
 
 

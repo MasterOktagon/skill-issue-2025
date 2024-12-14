@@ -13,14 +13,14 @@
 // defines (comment out/in for features)
 #define DEBUG
 //#define BLE
-//#define MOT_STBY
+#define MOT_STBY
 #define LF_USE_BACK
-#define LF_ACTIVE
+//#define LF_ACTIVE
 //#define USE_TIMESCALE
 //#define RASP_COMM
 //#define LED_TEST
 //#define MOT_TEST
-//#define CLAW_TEST
+#define CLAW_TEST
 //#define FASTREAD
 
 #ifndef DEBUG

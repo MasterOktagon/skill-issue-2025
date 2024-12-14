@@ -28,6 +28,12 @@ namespace that handles claw movement
 
 }
 
+namespace storage {
+    extern void divide(Side s);
+    extern void unload(Side s);
+    extern void reset();
+}
+
 namespace rgb {
 /*
 namespace that controls the onboard debug RGB LEDs [W.I.P.]

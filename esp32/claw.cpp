@@ -23,36 +23,43 @@ void claw::setup(){
 }
 
 void claw::up(){
-    bus.setPWM(SERVO2, 0, 400);
+    bus.wakeup();
+    bus.setPWM(SERVO4, 0, 245);
+    delay(2000);
+    bus.sleep();
 }
 
 void claw::down(){
-    bus.setPWM(SERVO2, 0, 600);
+    bus.wakeup();
+    bus.setPWM(SERVO4, 0, 528);
     delay(2000);
+    bus.sleep();
 }
 
 void claw::half(){
-    bus.setPWM(SERVO1, 0, 400);
+    bus.wakeup();
+    bus.setPWM(SERVO4, 0, 260);
     delay(2000);
+    bus.sleep();
 }
 
 void claw::open(){
     bus.wakeup();
-    bus.setPWM(SERVO1, 0, 250);
+    bus.setPWM(SERVO5, 0, 250);
     delay(2000);
     bus.sleep();
 }
 
 void claw::wide(){
     bus.wakeup();
-    bus.setPWM(SERVO1, 0, 140);
+    bus.setPWM(SERVO5, 0, 140);
     delay(2000);
     bus.sleep();
 }
 
 void claw::close(){
     bus.wakeup();
-    bus.setPWM(SERVO1, 0, 525);
+    bus.setPWM(SERVO5, 0, 528);
     delay(2000);
     bus.sleep();
 }
@@ -68,6 +75,22 @@ void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
         bus.setPWM(GREEN_R, 0, 4095 - 8*g);
         bus.setPWM(BLUE_R, 0, 4095 - 8*b);
     }
+}
+
+void storage::unload(Side s){
+    if (s == Side::LEFT){
+        bus.wakeup();
+        bus.setPWM(SERVO2, 0, 140);
+        delay(2000);
+        bus.sleep();
+    }
+    else if (s == Side::RIGHT){
+        bus.wakeup();
+        bus.setPWM(SERVO2, 0, 528);
+        delay(2000);
+        bus.sleep();
+    }
+    
 }
 
 

@@ -38,7 +38,7 @@ void IRAM_ATTR isr(){
 void cal_movement(){
     unsigned long timestamp = millis();
     while(millis() - timestamp < 10000){
-        int v = ((millis() - timestamp) % 3000) >= 1500 ? -70 : 70;
+        int v = ((millis() - timestamp) % 4000) >= 2000 ? -70 : 70;
         output.println(v);
         motor::fwd(motor::motor::AB, v);
         delay(1);
@@ -56,7 +56,7 @@ void setup(){
 
     output.println("");
     output.println("output init [115200] ...");
-
+    
     // init SR
     output.println("Shiftregister init...");
     shiftregister::setup();
@@ -112,14 +112,19 @@ void setup(){
 
     #ifdef CLAW_TEST
         output.println("Claw Test...");
-        output.println("Open");
-        claw::open();
-        output.println("Close");
-        claw::close();
+        //output.println("Open");
+        //claw::open();
+        //output.println("Close");
+        //claw::close();
         output.println("Wide");
-        claw::wide();
-        output.println("Close");
-        claw::close();
+        //claw::wide();
+        //output.println("Close");
+        //claw::close();
+
+        claw::up();
+        claw::down();
+
+        storage::unload(Side::LEFT);
     #endif
 
     #ifdef MOT_STBY
@@ -207,11 +212,15 @@ void loop(){
     //t.join();
     ls::read();
     lf::follow();
-    delayMicroseconds(50);
+    //delayMicroseconds(50);
     ls::update(); // update the data with the new values outside the thread
 
     color::update(); // update color detection
     gyro::update();  // update gyro
+
+    output.print("GreenL: "); output.print(ls::green.left.raw); output.print("\tRedL: "); output.println(ls::red.left.raw);
+    output.print("GreenR: "); output.print(ls::green.right.raw); output.print("\tRedR: "); output.println(ls::red.right.raw);
+    delay(10);
     
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         // avoid obstacle:
@@ -242,7 +251,7 @@ void loop(){
     // red and green light values
     // there is also a timeout since the last green green to
     // avoid detecting the same crossing two times
-    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
+    /*if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         rgb::setValue(color::green(), 0, 255, 0);
         Side l = color::green();
         #ifdef DEBUG
@@ -307,6 +316,6 @@ void loop(){
         delay(6000);
         rgb::setValue(Side::BOTH, 0, 0, 0);
         color::red.reset();
-    }
+    }*/
     
 }
