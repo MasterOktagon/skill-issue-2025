@@ -79,12 +79,14 @@ void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
 
 void storage::unload(Side s){
     if (s == Side::LEFT){
+        output.println("Storage::unload LEFT");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 140);
         delay(2000);
         bus.sleep();
     }
     else if (s == Side::RIGHT){
+        output.println("Storage::unload RIGHT");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 528);
         delay(2000);

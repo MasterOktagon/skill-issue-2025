@@ -23,12 +23,9 @@
     #define output Serial
 #endif
 
-#define LED_DELAY 80 // delay between turning on the LED and reading in us
-#define ITER_SKIP 500 // The first x readings are corrupted for no reason. Skip these readings when calibrating
-
 using namespace std;
 
-int8_t last_led = -1; // which led was turned on lastly
+uint8_t last_led = PT_GREEN; // which led was turned on lastly
 
 void fs::setup(){
     /*
@@ -40,9 +37,10 @@ void fs::setup(){
     }
 }
 
-lightSensor::lightSensor(uint8_t led_pin, uint8_t sensor_pin){
+lightSensor::lightSensor(uint8_t led_pin, uint8_t sensor_pin, uint32_t delay){
     this->led_pin = led_pin;
     this->sensor_pin = sensor_pin;
+    this->delay = delay;
 }
 
 lightSensor::lightSensor(){
@@ -51,18 +49,18 @@ lightSensor::lightSensor(){
 }
 
 void lightSensor::led_on(){
-    if (led_pin != last_led){
+    //if (led_pin != last_led){
         digitalWrite(led_pin, HIGH);
-        digitalWrite(last_led, LOW);
-        delayMicroseconds(LED_DELAY); // Delay because your LED needs time to turn on
+        delayMicroseconds(delay); // Delay because your LED needs time to turn on
 
-        last_led = led_pin;
-    }
+        //last_led = led_pin;
+    //}
 }
 
 void lightSensor::led_off(){
-    //digitalWrite(led_pin, LOW); // we do not have to wait here because it can turn off while the next
+    digitalWrite(led_pin, LOW); // we do not have to wait here because it can turn off while the next
                                 // LED is turned on
+    delayMicroseconds(delay);
 }
 
 #ifndef FASTREAD
@@ -277,11 +275,12 @@ namespace ls{
 
 const void ls::read(bool doupdate){
     white.read();
-    red.read();
-    green.read();
-
     white_b.read();
+
+    red.read();
     red_b.read();
+    
+    green.read();
     green_b.read();
 
     if (doupdate){update();}

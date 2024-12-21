@@ -14,6 +14,9 @@
 #include "Pins.h"
 #include "shared.h"
 
+#define LED_DELAY 100 // delay between turning on the LED and reading in us
+#define ITER_SKIP 100 // The first x readings are corrupted for no visible reason. Skip these readings when calibrating
+
 using namespace std;
 
 namespace fs{
@@ -48,6 +51,7 @@ class that controls a single color light sensor
     
     private:
         uint8_t led_pin;
+        uint32_t delay;
         
         virtual void led_on();
         virtual void led_off();
@@ -68,7 +72,7 @@ class that controls a single color light sensor
     public:
         
         lightSensor();
-        lightSensor(uint8_t led_pin, uint8_t sensor_pin);
+        lightSensor(uint8_t led_pin, uint8_t sensor_pin, uint32_t delay=LED_DELAY);
         /*
         create a lightSensor object
         */

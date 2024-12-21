@@ -37,7 +37,7 @@ void motor::stop(motor m, bool hard){
         }
     }
     if (m & motor::B1){
-        digitalWrite(PWMB1, LOW);
+        digitalWrite(PWMB1+5, LOW);
         if (!hard){
             shiftregister::set(SR_BIN1_F, LOW, false);
             shiftregister::set(SR_BIN1_R, LOW, false);
@@ -51,7 +51,7 @@ void motor::stop(motor m, bool hard){
         }
     }
     if (m & motor::B2){
-        digitalWrite(PWMB2, LOW);
+        digitalWrite(PWMB2+5, LOW);
         if (!hard){
             shiftregister::set(SR_BIN2_F, LOW, false);
             shiftregister::set(SR_BIN2_R, LOW, false);
@@ -128,24 +128,26 @@ void motor::turn(int16_t v){
 }
 
 void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
-    if (angle == 0){
-        return;
-    }
-    if (reset_gyro){
-        gyro::reset();
-    }
-    int sign = 1;
-    if (angle < 0){
-        sign = -1;
-    }
-    turn(v * -sign);
-    while (abs(angle) > abs(gyro::z)){
-        gyro::update();
-        Serial.print(abs(gyro::z));
-        Serial.print("\t");
-        Serial.println(abs(angle));
-    }
-    stop();
+    #ifndef MOT_STBY
+        if (angle == 0){
+            return;
+        }
+        if (reset_gyro){
+            gyro::reset();
+        }
+        int sign = 1;
+        if (angle < 0){
+            sign = -1;
+        }
+        turn(v * -sign);
+        while (abs(angle) > abs(gyro::z)){
+            gyro::update();
+            Serial.print(abs(gyro::z));
+            Serial.print("\t");
+            Serial.println(abs(angle));
+        }
+        stop();
+    #endif
 }
 
 bool motor::sensor_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors, Side side){

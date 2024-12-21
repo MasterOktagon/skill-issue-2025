@@ -5,10 +5,12 @@
 // 
 // copyright (c) SkillIssue Team, Berlin, 2024
 //
+// TODO: clibrate with difference, check with white
 
 #include <Wire.h>
 #include <thread>
 #include <exception>
+#include <string>
 
 #include "fadc.h"
 #include "color.h"
@@ -37,9 +39,9 @@ void IRAM_ATTR isr(){
 
 void cal_movement(){
     unsigned long timestamp = millis();
-    while(millis() - timestamp < 10000){
+    while(millis() - timestamp < 20000){
         int v = ((millis() - timestamp) % 4000) >= 2000 ? -70 : 70;
-        output.println(v);
+        //output.println(v);
         motor::fwd(motor::motor::AB, v);
         delay(1);
     }
@@ -112,19 +114,24 @@ void setup(){
 
     #ifdef CLAW_TEST
         output.println("Claw Test...");
-        //output.println("Open");
-        //claw::open();
-        //output.println("Close");
-        //claw::close();
+        output.println("Open");
+        claw::open();
+        output.println("Close");
+        claw::close();
         output.println("Wide");
-        //claw::wide();
-        //output.println("Close");
-        //claw::close();
+        claw::wide();
+        output.println("Close");
+        claw::close();
 
         claw::up();
         claw::down();
-
+    #endif
+    #ifdef STORAGE_TEST
         storage::unload(Side::LEFT);
+    #endif
+    #ifndef NO_CLAW
+        claw::up();
+        claw::close();
     #endif
 
     #ifdef MOT_STBY
@@ -155,8 +162,9 @@ void setup(){
     // menu selection
     output.println("Menu");
 
-    digitalWrite(PT_GREEN, HIGH);
+    //digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
+    rgb::setValue(Side::BOTH, 0,0,0);
     while((selected = menu::menu(button_failure)) != MENU_RUN){
         switch (selected){
             default:
@@ -169,7 +177,7 @@ void setup(){
 
                 attachInterrupt(T_E, isr, RISING);
                 thread t(cal_movement);
-                    ls::calibrate(10000, 0);
+                    ls::calibrate(7000, 0);
                 t.join();
                 detachInterrupt(T_E);
 
@@ -207,22 +215,24 @@ void loop(){
     // using backed up values from the last light sensors reading
     // to avoid race conditions between the acces and the new values
     // due to reading the light values simultaneusly
-    //thread t(lf::follow);
-    //    ls::read(false);
-    //t.join();
-    ls::read();
-    lf::follow();
-    //delayMicroseconds(50);
+    thread t(lf::follow);
+        ls::read(false);
+    t.join();
     ls::update(); // update the data with the new values outside the thread
 
     color::update(); // update color detection
     gyro::update();  // update gyro
 
-    output.print("GreenL: "); output.print(ls::green.left.raw); output.print("\tRedL: "); output.println(ls::red.left.raw);
-    output.print("GreenR: "); output.print(ls::green.right.raw); output.print("\tRedR: "); output.println(ls::red.right.raw);
-    delay(10);
+    //digitalWrite(PT_WHITE_REF, HIGH);
+    //delayMicroseconds(80);
+    //output.println(analogRead(PT_REF_R));
+    //digitalWrite(PT_WHITE_REF, LOW);
     
-    if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+    //output.print("GreenL: "); output.print(ls::white.left.raw); //output.print("\tRedL: "); output.println(ls::red.left.value);
+    //output.print("\tGreenR: "); output.println(ls::white.right.raw); //output.print("\tRedR: "); output.println(ls::red.right.value);
+    //delay(10);
+    
+    /*if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         // avoid obstacle:
         // go back and turn by 45 deg (right)
         motor::stop();
@@ -245,13 +255,13 @@ void loop(){
             ls::white.read();
             color::update({&color::black});
         } while (!(color::black() & Side::RIGHT));
-    }
+    }*/
 
     // We detect green using the difference between 
     // red and green light values
     // there is also a timeout since the last green green to
     // avoid detecting the same crossing two times
-    /*if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
+    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
         rgb::setValue(color::green(), 0, 255, 0);
         Side l = color::green();
         #ifdef DEBUG
@@ -265,39 +275,41 @@ void loop(){
         bool left  = (color::green() & Side::LEFT)  || l & Side::LEFT;
         bool right = (color::green() & Side::RIGHT) || l & Side::RIGHT;
 
-        motor::fwd(motor::motor::AB, V_STD);
+        motor::fwd(motor::motor::AB, 70);
         // go fwd until there is no green
         while (color::green() != Side::NONE){
             ls::read();
             color::update();
         }
-        motor::stop(true);
+        //motor::stop(true);
 
         // check for black line
-        motor::read_fwd(V_STD, 50, {&color::black});
-        bool left_black  = color::black() & Side::LEFT;
-        bool right_black = color::black() & Side::RIGHT;
+        //motor::read_fwd(70, 50, {&color::black});
+        bool left_black  = ls::white.left.value  < 60;
+        bool right_black = ls::white.right.value < 70;
         
         // debug green detection on the onboard RGB LEDs
-        rgb::setValue(Side::RIGHT,  0, left*255,  !left_black*255);
-        rgb::setValue(Side::LEFT, 0, right*255, !right_black*255);
 
         motor::stop();
-        delay(1000);
         
         int16_t deg = 0; // how much to turn
-        deg += 90 * int(left && left_black);  // check if green and black was detected
-        deg += 90 * int(right && right_black);
+        deg += 80 * int(left && left_black);  // check if green and black was detected
+        deg += 80 * int(right && right_black);
         if (right && !(left)){
             deg *= -1;
         }
 
+        rgb::setValue(Side::RIGHT,  0, left*255,  !left_black*255);
+        rgb::setValue(Side::LEFT, 0, right*255, !right_black*255);
+        menu::showWaiting((to_string(left_black) + " " + to_string(left) + " " + to_string(int(deg)) + " " + to_string(right) + " " + to_string(right_black)).c_str());
+        delay(1000);
+
         // execute the turning      
-        motor::fwd(120);
+        motor::fwd(150);
         if (shiftregister::get(SR_STBY1)){
             motor::gyro(deg);
         }
-        motor::fwd(120);
+        if(deg != 0) motor::fwd(120);
         // set freeze
         last_green = millis();
 
@@ -305,7 +317,7 @@ void loop(){
         rgb::setValue(Side::BOTH, 0, 0, 0);
         // reset color counters
         color::green.reset();
-        color::black.reset();
+        color::black_b.reset();
     }
     // Red line - stop and wait 6s
     // if falsely detected, it will continue
@@ -316,6 +328,6 @@ void loop(){
         delay(6000);
         rgb::setValue(Side::BOTH, 0, 0, 0);
         color::red.reset();
-    }*/
+    }
     
 }
