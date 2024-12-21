@@ -8,4 +8,5 @@ CMakeFiles/
 bin/
 *.log
 0]
+venv/
 
