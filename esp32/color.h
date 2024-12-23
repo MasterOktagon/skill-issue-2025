@@ -15,10 +15,11 @@
 
 using namespace std;
 
-#define CHECK_LEN 7             // check lenght required to detect a color
+#define CHECK_LEN 10            // check lenght required to detect a color
 #define RED_THRESHOLD 50        // Thresholds to detect a color
-#define GREEN_THRESHOLD -150    // ..
-#define BLACK_THRESHOLD 50      // ..
+#define GREEN_THRESHOLD -80     // ..
+#define BLACK_THRESHOLD 18      // ..
+#define SILVER_THRESHOLD 400    // ..
 
 namespace color{
 /*
@@ -58,7 +59,7 @@ namespace that deals with color detection
             */
     };
 
-    extern color red, green, black, black_b;
+    extern color red, green, black, black_outer, silver;
     extern vector<color&> colors; // all colors will be registered here
     
     void update();

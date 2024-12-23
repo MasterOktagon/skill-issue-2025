@@ -73,16 +73,48 @@ bool black_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray*
     }
 }
 
+bool black_detection_outer(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
+    switch (s){
+        case Side::LEFT:
+            return w->left_outer.value <= BLACK_THRESHOLD;
+        default:
+            return w->right_outer.value <= BLACK_THRESHOLD;
+    }
+}
+
+bool silver_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
+    int16_t value;
+    switch(s){
+        case Side::LEFT:
+            digitalWrite(PT_WHITE_REF, HIGH);
+            delayMicroseconds(80);
+            value = analogRead(PT_REF_L);
+            digitalWrite(PT_WHITE_REF, LOW);
+            delayMicroseconds(80);
+            return value >= SILVER_THRESHOLD;
+        default:
+            digitalWrite(PT_WHITE_REF, HIGH);
+            delayMicroseconds(80);
+            value = analogRead(PT_REF_R);
+            digitalWrite(PT_WHITE_REF, LOW);
+            delayMicroseconds(80);
+            return value >= SILVER_THRESHOLD;
+    }
+}
+
+
 color::color color::red = color(red_detection);
 color::color color::green = color(green_detection);
 color::color color::black = color(black_detection);
-color::color color::black_b = color(black_detection);
+color::color color::black_outer = color(black_detection_outer);
+color::color color::silver = color(silver_detection);
 
 void color::update(){
     red.update(&ls::white, &ls::green, &ls::red);
     green.update(&ls::white, &ls::green, &ls::red);
     black.update(&ls::white, &ls::green, &ls::red);
-    black_b.update(&ls::white_b, &ls::green, &ls::red);
+    black_outer.update(&ls::white, &ls::green, &ls::red);
+    silver.update(&ls::white, &ls::green, &ls::red);
 }
 
 void color::update(initializer_list<color*> colors){
