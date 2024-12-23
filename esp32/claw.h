@@ -29,6 +29,9 @@ namespace that handles claw movement
 }
 
 namespace storage {
+/*
+namespace that holds storage functions
+*/
     extern void divide(Side s);
     extern void unload(Side s);
     extern void reset();
@@ -39,5 +42,6 @@ namespace rgb {
 namespace that controls the onboard debug RGB LEDs [W.I.P.]
 */
     extern void setValue(Side s,uint8_t r, uint8_t g, uint8_t b);
+    extern void reset(Side s=Side::BOTH);
 }
 

@@ -77,6 +77,10 @@ void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
     }
 }
 
+void rgb::reset(Side s){
+    setValue(s, 0, 0, 0);
+}
+
 void storage::unload(Side s){
     if (s == Side::LEFT){
         output.println("Storage::unload LEFT");
