@@ -210,124 +210,81 @@ void setup(){
     attachInterrupt(T_E, isr, RISING);
 }
 
+const char* match(Side s){
+    switch (s){
+        case Side::LEFT:
+            return "LEFT";
+        case Side::RIGHT:
+            return "RIGHT";
+        case Side::BOTH:
+            return "BOTH";
+        default:
+            return "NONE";
+    }
+    return "";
+}
+
 void loop(){
-    // we start a thread to control the motors (line follower)
-    // using backed up values from the last light sensors reading
-    // to avoid race conditions between the acces and the new values
-    // due to reading the light values simultaneusly
+    
+
     thread t(lf::follow);
         ls::read(false);
+        color::update();
     t.join();
-    ls::update(); // update the data with the new values outside the thread
+    ls::update();
+    gyro::update();
 
-    color::update(); // update color detection
-    gyro::update();  // update gyro
-
-    //digitalWrite(PT_WHITE_REF, HIGH);
-    //delayMicroseconds(80);
-    //output.println(analogRead(PT_REF_R));
-    //digitalWrite(PT_WHITE_REF, LOW);
-    
-    //output.print("GreenL: "); output.print(ls::white.left.raw); //output.print("\tRedL: "); output.println(ls::red.left.value);
-    //output.print("\tGreenR: "); output.println(ls::white.right.raw); //output.print("\tRedR: "); output.println(ls::red.right.value);
-    //delay(10);
-    
-    /*if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
-        // avoid obstacle:
-        // go back and turn by 45 deg (right)
-        motor::stop();
-        motor::rev(200);
-        motor::gyro(-45);
-        motor::fwd(300);
-        // go fwd/turn until black is reached
-        motor::fwd(motor::motor::A, V_STD);
-        motor::fwd(motor::motor::B, 13);
-        delay(400);
-        do {
-            ls::white.read();
-            color::update({&color::black});
-        } while (color::black() == Side::NONE);
-        // turn left until one side is on Black
-        motor::fwd(250);
-        motor::gyro(-20);
-        motor::turn(V_STD);
-        do {
-            ls::white.read();
-            color::update({&color::black});
-        } while (!(color::black() & Side::RIGHT));
-    }*/
-
-    // We detect green using the difference between 
-    // red and green light values
-    // there is also a timeout since the last green green to
-    // avoid detecting the same crossing two times
-    if (color::green() != Side::NONE && millis() - last_green >= GREEN_TIMEOUT){
-        rgb::setValue(color::green(), 0, 255, 0);
-        Side l = color::green();
-        #ifdef DEBUG
-            output.println("Green Detected!");
-        #endif
-
-        // confirm the read values by reading 50ms more
-        // (note we are still moving forwards. this helps
-        // detecting double points when approaching unaligned)
-        motor::read_fwd(70, 100, {&color::green}); // reduce motor speed to allow better read resolution
-        bool left  = (color::green() & Side::LEFT)  || l & Side::LEFT;
-        bool right = (color::green() & Side::RIGHT) || l & Side::RIGHT;
-
-        motor::fwd(motor::motor::AB, 70);
-        // go fwd until there is no green
-        while (color::green() != Side::NONE){
-            ls::read();
-            color::update();
-        }
-        //motor::stop(true);
-
-        // check for black line
-        //motor::read_fwd(70, 50, {&color::black});
-        bool left_black  = ls::white.left.value  < 60;
-        bool right_black = ls::white.right.value < 70;
-        
-        // debug green detection on the onboard RGB LEDs
-
-        motor::stop();
-        
-        int16_t deg = 0; // how much to turn
-        deg += 80 * int(left && left_black);  // check if green and black was detected
-        deg += 80 * int(right && right_black);
-        if (right && !(left)){
-            deg *= -1;
-        }
-
-        rgb::setValue(Side::RIGHT,  0, left*255,  !left_black*255);
-        rgb::setValue(Side::LEFT, 0, right*255, !right_black*255);
-        menu::showWaiting((to_string(left_black) + " " + to_string(left) + " " + to_string(int(deg)) + " " + to_string(right) + " " + to_string(right_black)).c_str());
-        delay(1000);
-
-        // execute the turning      
-        motor::fwd(150);
-        if (shiftregister::get(SR_STBY1)){
-            motor::gyro(deg);
-        }
-        if(deg != 0) motor::fwd(120);
-        // set freeze
-        last_green = millis();
-
-        // reset LEDs
-        rgb::setValue(Side::BOTH, 0, 0, 0);
-        // reset color counters
-        color::green.reset();
-        color::black_b.reset();
+    if (color::silver()){
+        output.println("SILVER");
+        motor::fwd(500);
+        delay(5000);
     }
-    // Red line - stop and wait 6s
-    // if falsely detected, it will continue
-    // with only losing some time
-    if (color::red() != Side::NONE){
+
+    if (color::red()){
         motor::stop();
         rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(6000);
-        rgb::setValue(Side::BOTH, 0, 0, 0);
+        rgb::reset();
         color::red.reset();
     }
-    
+
+    if (color::green()){
+        Side green = color::green();
+        motor::fwd(motor::motor::AB, 70);
+        do {
+            ls::read();
+            color::update();
+            green = Side(green | color::green());
+        } while(color::green());
+        delay(100);
+        Side black = Side(color::black() | color::black_outer());
+        motor::stop();
+
+        Side turn = Side(green & black);
+        output.print("GREEN "); output.println(match(turn));
+        menu::showWaiting(match(turn));
+
+        int16_t deg = 90 * bool(turn & Side::LEFT);
+        deg += 90 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
+
+        if(deg != 0){
+            motor::fwd(170);
+            motor::gyro(deg);
+            motor::fwd(50);
+        }
+        color::green.reset();
+    }
+
+    if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+        motor::rev(100);
+        motor::gyro(-60);
+        motor::fwd(120);
+        motor::fwd(motor::motor::A, 20);
+        motor::fwd(motor::motor::A, 140);
+        while(!color::black()){
+            ls::read();
+            color::update();
+        }
+        motor::fwd(50);
+    }
 }
