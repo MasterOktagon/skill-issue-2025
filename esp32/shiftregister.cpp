@@ -53,7 +53,7 @@ void shiftregister::reset(){
     //}
     set(SR_STBY1, HIGH);
     set(SR_STBY2, HIGH);
-    output.println("SR Reset succesfull");
+    output.println("INFO: SR Reset succesfull");
 }
 
 bool shiftregister::get(uint8_t pin){

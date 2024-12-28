@@ -15,7 +15,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_1, HIGH);
   delay(10);
   if (!front.init()) {
-    output.println("MISSING TOF 1 FRONT!!!");
+    output.println("ERROR: Missing TOF 1 front!!!");
   }
   else {
     front.setAddress(TOF_ADDRESS1);
@@ -26,7 +26,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_2, HIGH);
   delay(10);
   if (!left.init()) {
-    output.println("MISSING TOF 2 LEFT!!!");
+    output.println("ERROR: Missing TOF 2 left!!!");
   }
   else {
     left.setAddress(TOF_ADDRESS2);
@@ -37,7 +37,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_4, HIGH);
   delay(10);
   if (!right.init()) {
-    output.println("MISSING TOF 4 RIGHT!!!");
+    output.println("ERROR: Missing TOF 4 right!!!");
   }
   else {
     right.setAddress(TOF_ADDRESS4);
@@ -48,7 +48,7 @@ void tof::setup(){
   shiftregister::set(SR_XSHT_3, HIGH);
   delay(10);
   if (!claw.init()) {
-    output.println("MISSING TOF 3 CLAW!!!");
+    output.println("ERROR: Missing TOF 3 claw!!!");
   }
   else {
     claw.setAddress(TOF_ADDRESS3);
@@ -56,7 +56,7 @@ void tof::setup(){
     claw.setDistanceMode(VL53L1X::Short);
   }
 
-  output.println("tofs active");
+  output.println("INFO: tofs active");
 }
 
 void tof::start_all(){

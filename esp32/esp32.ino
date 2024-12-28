@@ -57,37 +57,38 @@ void setup(){
     //#endif
 
     output.println("");
-    output.println("output init [115200] ...");
+    output.println("INFO: output init [115200] ...");
     
     // init SR
-    output.println("Shiftregister init...");
+    output.println("INFO: Shiftregister init...");
     shiftregister::setup();
     shiftregister::reset();
     motor::stop();
 
-    output.println("Wire init...");
+    output.println("INFO: Wire init...");
     Wire.begin(SDA, SCL);  // start i2c
     Wire.setClock(400000); // Fast mode
 
     // setup FastADC
     #ifdef FASTREAD
-        output.println("FADC begin...");
+        output.println("INFO: FADC begin...");
         fadc::begin();
     #endif
     
     // create lightSensor objects
     ls::setup();
 
-    output.println("Display init...");
+    output.println("INFO: Display init...");
     if (!menu::DisplayInit()){
         rgb::setValue(Side::BOTH, 255, 0, 0);
+        output.println("ERROR: Display init failed!");
     }
 
     tof::setup();
 
     // run the led test
     #ifdef LED_TEST
-        output.println("LED test (wwgr)");
+        output.println("INFO: LED test (wwgr)");
         digitalWrite(PT_WHITE_L, HIGH);
         delay(1500);
         digitalWrite(PT_WHITE_L, LOW);
@@ -105,22 +106,22 @@ void setup(){
     // start SPIFFS
     fs::setup();
 
-    output.println("Initializing gyro...");
+    output.println("INFO: Initializing gyro...");
     gyro::init();
 
-    output.println("PWM bus init");
+    output.println("INFO: PWM bus init");
     claw::setup();
     rgb::setValue(Side::BOTH, 0, 0, 0);
 
     #ifdef CLAW_TEST
-        output.println("Claw Test...");
-        output.println("Open");
+        output.println("INFO: Claw Test...");
+        output.println("\tOpen");
         claw::open();
-        output.println("Close");
+        output.println("\tClose");
         claw::close();
-        output.println("Wide");
+        output.println("\tWide");
         claw::wide();
-        output.println("Close");
+        output.println("\tClose");
         claw::close();
 
         claw::up();
@@ -128,7 +129,14 @@ void setup(){
     #endif
     #ifdef STORAGE_TEST
         storage::unload(Side::LEFT);
+        storage::divide(Side::LEFT);
+        delay(1500);
+        storage::unload(Side::RIGHT);
+        storage::divide(Side::RIGHT);
+        delay(1500);
     #endif
+    storage::reset();
+
     #ifndef NO_CLAW
         claw::up();
         claw::close();
@@ -144,13 +152,13 @@ void setup(){
         motor::rev(1000);
     #endif
 
-    output.println("Checking Buttons for failures...");
+    output.println("INFO: Checking Buttons for failures...");
     // if a button has failed (is pressed when it shouldn't be)
     // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
     if (!(digitalRead(T_L) && digitalRead(T_R))){
-        output.println("Button failure detected, disabling buttons!");
+        output.println("ERROR: Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
         rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(1000);
@@ -160,7 +168,7 @@ void setup(){
 
     
     // menu selection
-    output.println("Menu");
+    output.println("INFO: Menu");
 
     //digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
@@ -235,12 +243,13 @@ void loop(){
     gyro::update();
 
     if (color::silver()){
-        output.println("SILVER");
+        output.println("LFE: SILVER detected");
         motor::fwd(500);
         delay(5000);
     }
 
     if (color::red()){
+        output.println("LFE: RED detected");
         motor::stop();
         rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(6000);
@@ -261,7 +270,7 @@ void loop(){
         motor::stop();
 
         Side turn = Side(green & black);
-        output.print("GREEN "); output.println(match(turn));
+        output.print("LFE: GREEN detected"); output.println(match(turn));
         menu::showWaiting(match(turn));
 
         int16_t deg = 90 * bool(turn & Side::LEFT);
@@ -276,15 +285,23 @@ void loop(){
     }
 
     if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+        output.println("LFE: OBSTACLE detected");
         motor::rev(100);
-        motor::gyro(-60);
-        motor::fwd(120);
-        motor::fwd(motor::motor::A, 20);
-        motor::fwd(motor::motor::A, 140);
-        while(!color::black()){
-            ls::read();
-            color::update();
+        motor::gyro(-90);
+        motor::fwd(480);
+        motor::gyro(90);
+        while (true){
+            uint32_t timestamp = millis() + 1300;
+            motor::fwd(motor::motor::AB, V_STD);
+            while(timestamp > millis()){
+                ls::read();
+                color::update();
+                if(color::black() | color::black_outer()) goto end;
+            }
+            motor::gyro(90);
         }
-        motor::fwd(50);
+        end:
+        motor::fwd(200);
+        motor::gyro(-90);
     }
 }

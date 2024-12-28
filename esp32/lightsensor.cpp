@@ -31,9 +31,9 @@ void fs::setup(){
     /*
     call fs::setup in your setup routine. requires SPIFFS to work
     */
-    output.println("mounting SPIFFS");
+    output.println("INFO: mounting SPIFFS");
     if (!SPIFFS.begin(true)) { // NOTE: this will format your device to use SPIFFS
-        output.println("An Error has occurred while mounting SPIFFS");
+        output.println("ERROR: An Error has occurred while mounting SPIFFS");
     }
 }
 
@@ -147,7 +147,7 @@ void lightSensorArray::calibrate_turn(int iter){
 }
 
 string lightSensorArray::_str(){
-    string s = "LightSensorArray:\t{L_1 ";
+    string s = "INFO: LightSensorArray:\t{L_1 ";
     s += to_string(left_outer.get_min())  + "/" + to_string(left_outer.get_max())  + " \tL_0 ";
     s += to_string(left.get_min())        + "/" + to_string(left.get_max())        + " \tR_0 ";
     s += to_string(right.get_min())       + "/" + to_string(right.get_max())       + " \tR_1 ";
@@ -206,7 +206,7 @@ void lightSensorArray::load(String data){
     DeserializationError error = deserializeJson(doc, data);
 
     if (error) {
-        output.print(F("local deserializeJson() failed: "));
+        output.print(F("ERROR: local deserializeJson() failed: "));
         output.println(error.f_str());
         return;
     }
@@ -325,7 +325,7 @@ void ls::calibrate(uint16_t iterations, uint16_t delay_ms){
 void ls::save(){
     File file = SPIFFS.open("/calibration.json","w");
     if (!file){
-      output.println("ERROR opening write file!");
+      output.println("ERROR: opening write file!");
       file.close();
       return;
     }
@@ -349,7 +349,7 @@ void ls::load(){
     File f = SPIFFS.open("/calibration.json","r");
 
     if (!f){
-        output.println("ERROR opening read file!");
+        output.println("ERROR: opening read file!");
         f.close();
         return;
     }
@@ -358,7 +358,7 @@ void ls::load(){
     DeserializationError error = deserializeJson(doc, f.readString());
 
     if (error) {
-        output.print(F("global deserializeJson() failed: "));
+        output.print(F("ERROR: global deserializeJson() failed: "));
         output.println(error.f_str());
         return;
     }

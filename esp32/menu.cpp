@@ -97,7 +97,7 @@ namespace menu {
         const char * texts[menuOptions] = {"Run", "Calibrate", "Print Log"}; // text of the options
 
         bool in_menu = true;
-        while (in_menu){
+        while (in_menu && !button_failure){
             display.clearDisplay();
             display.setTextColor(SSD1306_WHITE);
             overlay();
@@ -118,6 +118,7 @@ namespace menu {
             if (!button_failure){
                 selected = (selected + digitalRead(T_L) - digitalRead(T_R)) % menuOptions;
                 if (selected < 0){selected = menuOptions-1;}
+                // output.print("\t"); output.println(texts[selected]);
                 delay(150);
             }
             delay(10);

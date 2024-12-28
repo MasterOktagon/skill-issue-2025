@@ -13,6 +13,7 @@
 
 // defines (comment out/in for features)
 #define DEBUG
+//#define LOGGER
 //#define BLE
 //#define MOT_STBY
 #define LF_USE_BACK
@@ -24,7 +25,7 @@
 #define NO_CLAW
 //#define CLAW_TEST
 //#define FASTREAD
-#define STORAGE_TEST
+//#define STORAGE_TEST
 
 // define the 'signal' type
 template <typename T, typename ... K>

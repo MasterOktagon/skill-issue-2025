@@ -34,7 +34,7 @@ Setup and initialize the MPU6050
 */
     byte status = mpu.begin();
     if(status != 0){
-        output.println(F("Fail to detect MPU6050!"));
+        output.println(F("ERROR: Fail to detect MPU6050!"));
         return false;
     }
     else{
