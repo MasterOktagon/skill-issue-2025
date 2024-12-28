@@ -32,9 +32,25 @@ namespace storage {
 /*
 namespace that holds storage functions
 */
-    extern void divide(Side s);
+    extern void divide(Side s, bool wide=false);
+    /*
+    turn the divider.
+    
+    [param s] Side to turn to. Side::LEFT clears the path to the left -> turns right
+    [param wide] turn wide (to push victims)
+    */
+
     extern void unload(Side s);
+    /*
+    unload side
+    
+    [param s] Side to unload. consistent with divide
+    */
+
     extern void reset();
+    /*
+    close unloading mechanism. same as unload(Side::NONE)
+    */
 }
 
 namespace rgb {

@@ -83,20 +83,50 @@ void rgb::reset(Side s){
 
 void storage::unload(Side s){
     if (s == Side::LEFT){
-        output.println("Storage::unload LEFT");
+        output.println("INFO: storage::unload LEFT");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 140);
         delay(2000);
         bus.sleep();
     }
     else if (s == Side::RIGHT){
-        output.println("Storage::unload RIGHT");
+        output.println("INFO: storage::unload RIGHT");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 528);
         delay(2000);
         bus.sleep();
     }
-    
+    else if (s == Side::NONE){
+        output.println("INFO: storage::unload NONE");
+        bus.wakeup();
+        bus.setPWM(SERVO2, 0, 334);
+        delay(2000);
+        bus.sleep();
+    }   
+}
+
+void storage::reset(){
+    unload(Side::NONE);
+}
+
+void storage::divide(Side s, bool wide){
+    if (s == Side::LEFT){
+        output.println("INFO: storage::divide LEFT");
+        bus.wakeup();
+        bus.setPWM(SERVO3, 0, 240 - 100 * wide);
+        delay(2000);
+        bus.sleep();
+    }
+    else if (s == Side::RIGHT){
+        output.println("INFO: storage::divide RIGHT");
+        bus.wakeup();
+        bus.setPWM(SERVO3, 0, 448 + 80 * wide);
+        delay(2000);
+        bus.sleep();
+    }
+    else {
+        output.println("WARNING: unknown/unimplemented storage::divide Side");
+    }
 }
 
 
