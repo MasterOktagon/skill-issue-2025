@@ -70,7 +70,7 @@ uint8_t rpi::status(){
     Wire.write(PI_STATUS);
     Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 1);
-    uint8_t status = Wire.read() == 0xFF;
+    uint8_t status = Wire.read();
     Wire.endTransmission();
     return status;
 }

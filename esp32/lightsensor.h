@@ -40,11 +40,7 @@ class that controls a single color light sensor
         int16_t value = 1; // current (old) calibrated value
         int16_t raw = 0;
         int16_t nvalue = 1; // new calibrated value
-        #ifdef FASTREAD
-            int16_t raw = 0;
-        #endif
-        //int16_t raw = 0;
-                
+                        
         int16_t vmin = 0x7FFF; // calibration minimum
         int16_t vmax = 0; // calibration maximum
         uint8_t sensor_pin;

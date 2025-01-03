@@ -157,14 +157,15 @@ void setup(){
     // we disable buttons by setting the button_failure flag
     pinMode(T_L, INPUT_PULLUP);
     pinMode(T_R, INPUT_PULLUP);
-    if (!(digitalRead(T_L) && digitalRead(T_R))){
+    if (!digitalRead(T_L) || !digitalRead(T_R)){
         output.println("ERROR: Button failure detected, disabling buttons!");
         menu::showWaiting("Button failure detected, disabling buttons!");
         rgb::setValue(Side::BOTH, 255, 0, 0);
         delay(1000);
         button_failure = true;
     }
-    //output.println(rpi::status());
+    output.print("PI: Status: ");
+    output.println(rpi::status());
 
     
     // menu selection
@@ -214,8 +215,10 @@ void setup(){
     output.println("red_b "); output.println(ls::red_b._str().c_str());
 
     timestamp = micros();
+    //shiftregister::set(SR_XSHT_2, HIGH);
     delay(2000);
     attachInterrupt(T_E, isr, RISING);
+    //tof::front.readSingle(false);
 }
 
 const char* match(Side s){
@@ -240,7 +243,6 @@ void loop(){
         color::update();
     t.join();
     ls::update();
-    gyro::update();
 
     if (color::silver()){
         output.println("LFE: SILVER detected");
@@ -270,7 +272,7 @@ void loop(){
         motor::stop();
 
         Side turn = Side(green & black);
-        output.print("LFE: GREEN detected"); output.println(match(turn));
+        output.print("LFE: GREEN detected "); output.println(match(turn));
         menu::showWaiting(match(turn));
 
         int16_t deg = 90 * bool(turn & Side::LEFT);
@@ -284,9 +286,9 @@ void loop(){
         color::green.reset();
     }
 
-    if (!(digitalRead(T_L) && digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
-        output.println("LFE: OBSTACLE detected");
+    if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
+        output.println("LFE: OBSTACLE detected");
         motor::gyro(-90);
         motor::fwd(480);
         motor::gyro(90);
@@ -304,4 +306,6 @@ void loop(){
         motor::fwd(200);
         motor::gyro(-90);
     }
+    //output.println(micros() - timestamp);
+    //timestamp = micros();
 }

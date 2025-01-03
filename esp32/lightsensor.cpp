@@ -100,7 +100,7 @@ void lightSensor::update(){
     /*
     switch the new value with the old value.
     this allows other threads to acces 'value' while reading (avoiding race conditions)
-    this function should be called after thread.join()
+    this function should be called after thread::join()
     */
     value = nvalue;
 }
