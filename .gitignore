@@ -3,6 +3,7 @@ __pycache__
 build/
 *.cmake
 venv/
+generated_tests/
 Makefile
 CMakeCache.*
 CMakeFiles/
