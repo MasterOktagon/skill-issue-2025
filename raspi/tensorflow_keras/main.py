@@ -3,37 +3,30 @@ import pathlib
 import numpy as np
 import pandas as pd
 from PIL import Image
-import tkinter as tk
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("Qt5agg")
 import time
 
+
 def show_result(df: pd.DataFrame):
-	def next_entry():
-		global _entry
-		global _im_label
-		if _entry==len(df.index):
-			return
-		_entry+=1
-		im = tk.PhotoImage(str(path / 'generated_tests' / 'ball_simple_one' / (str(_entry)+'.png')))
-		_im_label.configure(image=im)
-		_im_label.image = im
-		print(_im_label.info)
-
-	global _entry
-	_entry = 0
 	path = pathlib.Path(__file__).parents[1].resolve()
-	root = tk.Tk()
-	root.title("Result of Victim AI")
-	root.geometry('1000x600+50+50')
-
-	im = tk.PhotoImage(file=str(path / 'generated_tests' / 'ball_simple_one' / '0.png'))
-	global _im_label
-	_im_label = tk.Label(root, image=im)
-	_im_label.pack()
-
-	next_button = tk.Button(root, text="Next Entry", command=next_entry)
-	next_button.place(x=700,y=500)
-
-	root.mainloop()
+	i = 0
+	while True:
+		img = np.asarray(Image.open(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png'))))
+		imgplot = plt.imshow(img)
+		plt.show(block=False)
+		plt.pause(1)
+		ipt = input("")
+		plt.close()
+		if(ipt=="b"):
+			i-=1
+		if(ipt=="n"):
+			i+=1
+		if(ipt==""):
+			i+=1
+		if(ipt=="x"):
+			break
 
 
 
