@@ -9,16 +9,18 @@ matplotlib.use("Qt5agg")
 import time
 
 
-def show_result(df: pd.DataFrame):
+def show_result(ai: pd.DataFrame):
+	plt.ion()
+	plt.show(block=False)
+	plt.axis("off")
 	path = pathlib.Path(__file__).parents[1].resolve()
 	i = 0
 	while True:
 		img = np.asarray(Image.open(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png'))))
 		imgplot = plt.imshow(img)
-		plt.show(block=False)
-		plt.pause(1)
+		plt.text(100, 100, "ai kacke")
+		time.sleep(0.2)
 		ipt = input("")
-		plt.close()
 		if(ipt=="b"):
 			i-=1
 		if(ipt=="n"):

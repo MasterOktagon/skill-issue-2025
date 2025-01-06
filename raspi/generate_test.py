@@ -28,5 +28,5 @@ def one_ball(n,width,height):
 
 
 if __name__=="__main__":
-    n = 100
+    n = 1000
     one_ball(n,480,240)
