@@ -23,12 +23,12 @@
 #include "claw.h"
 #include "tof.h"
 #include "rpi_com.h"
+#include "room.h"
 
 using namespace std;
 
 #define GREEN_TIMEOUT 100
 
-bool button_failure = false; // wether buttons have a failure
 uint16_t last_green = 0;
 
 long timestamp;
@@ -179,6 +179,10 @@ void setup(){
             default:
                 break;
 
+            case 3:
+                zone::ignore(); 
+                break;
+
             case MENU_CALIBRATE:
 
                 menu::showWaiting("Calibrating...");
@@ -200,7 +204,9 @@ void setup(){
                 output.println("red_b "); output.println(ls::red_b._str().c_str());
 
                 ls::save(); // save values to a json file
+                
         }
+
     }
 
     ls::load();

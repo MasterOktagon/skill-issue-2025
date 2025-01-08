@@ -7,6 +7,8 @@
 #include "motor.h"
 #include "shiftregister.h"
 
+bool button_failure = false; // wether buttons have a failure
+
 void motor::stop(bool hard){
     // stop the motors
     digitalWrite(PWMA1, LOW);

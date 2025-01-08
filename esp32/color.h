@@ -41,7 +41,7 @@ namespace that deals with color detection
             /*
             Constructor
             */
-
+            
             void update(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r);
             /*
             run an update on this color check

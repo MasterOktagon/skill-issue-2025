@@ -89,12 +89,12 @@ namespace menu {
     }
 
 
-    #define menuOptions 3
+    #define menuOptions 4
 
     int menu(bool button_failure){
         int selected = 0;
-        const unsigned char * icons[menuOptions] = {iconRun, iconCalibrate, iconLog}; // icons to display in menu
-        const char * texts[menuOptions] = {"Run", "Calibrate", "Print Log"}; // text of the options
+        const unsigned char * icons[menuOptions] = {iconRun, iconCalibrate, iconLog, iconLog}; // icons to display in menu
+        const char * texts[menuOptions] = {"Run", "Calibrate", "Print Log", "Test"}; // text of the options
 
         bool in_menu = true;
         while (in_menu && !button_failure){

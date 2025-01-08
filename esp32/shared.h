@@ -53,8 +53,6 @@ enum Side {
     BOTH = 15
 };
 
-#define PWMBus Bonezegei_PCA9685 // no one wants to write so much
-
 /*class SerialWriter : public repr {
 
     File file;

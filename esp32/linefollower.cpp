@@ -43,7 +43,7 @@ int16_t lf::follow(){
 
         if (tof::front.dataReady()){
             tof_dist = tof::front.read(false);
-            output.print("TOF: "); output.println(tof_dist);
+            //output.print("TOF: "); output.println(tof_dist);
             tof::front.readSingle(false);
         }
 
@@ -51,8 +51,8 @@ int16_t lf::follow(){
 
         gyro::update();
 
-        motor::fwd(motor::motor::A, V_STD - mot_diff - d * D - i * I);
-        motor::fwd(motor::motor::B, V_STD + mot_diff + d * D + i * I);
+        motor::fwd(motor::motor::A, v - mot_diff - d * D - i * I);
+        motor::fwd(motor::motor::B, v + mot_diff + d * D + i * I);
     #endif
 
     return 0;

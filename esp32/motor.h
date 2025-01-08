@@ -17,11 +17,13 @@
 #undef A1
 #undef B1
 
+extern bool button_failure; // wether buttons have a failure
+
 namespace motor{
 /*
 This namespace holds all functions that directly influence motor movement
 */
-    
+
     #define V_STD 150 // standard speed
     
     enum motor{
