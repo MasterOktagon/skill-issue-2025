@@ -180,7 +180,10 @@ void setup(){
                 break;
 
             case 3:
-                zone::ignore(); 
+                delay(1500);
+                attachInterrupt(T_E, isr, RISING);
+                zone::ignore();
+                detachInterrupt(T_E);
                 break;
 
             case MENU_CALIBRATE:
@@ -190,7 +193,7 @@ void setup(){
 
                 attachInterrupt(T_E, isr, RISING);
                 thread t(cal_movement);
-                    ls::calibrate(7000, 0);
+                    ls::calibrate(5000, 0);
                 t.join();
                 detachInterrupt(T_E);
 
