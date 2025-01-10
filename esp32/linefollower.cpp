@@ -22,8 +22,9 @@
 using namespace std;
 
 #define INNER_FACTOR 2
-#define OUTER_FACTOR 2
-#define D            0.3
+#define OUTER_FACTOR 3
+
+#define D            0.6
 #define I            -0.0003
 
 int16_t last = 0;

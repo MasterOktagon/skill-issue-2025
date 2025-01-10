@@ -276,7 +276,7 @@ void loop(){
             color::update();
             green = Side(green | color::green());
         } while(color::green());
-        delay(100);
+        //delay(100);
         Side black = Side(color::black() | color::black_outer());
         motor::stop();
 
@@ -284,13 +284,13 @@ void loop(){
         output.print("LFE: GREEN detected "); output.println(match(turn));
         menu::showWaiting(match(turn));
 
-        int16_t deg = 90 * bool(turn & Side::LEFT);
-        deg += 90 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
+        int16_t deg = 80 * bool(turn & Side::LEFT);
+        deg += 80 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
             motor::fwd(170);
             motor::gyro(deg);
-            motor::fwd(50);
+            motor::fwd(20);
         }
         color::green.reset();
     }
