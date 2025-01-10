@@ -12,5 +12,6 @@ for i in range(100):
     ret, frame = cap.read()
     if ret:
         cv.imwrite(os.path.join(path, 'frame%d.jpg') % i, frame)
+    time.sleep(1)
 
 cap.release()
