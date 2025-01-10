@@ -19,10 +19,14 @@ def one_ball(n,width,height):
         x = rd.randint(0,width)
         y = rd.randint(r//2,height-r)
         im = Image.new("RGB", (width, height), white)
-        draw = ImageDraw.Draw(im)
-        draw.circle((x,y),r,black)
-        im.save(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png')))
-        data.append((x,y,r))
+        if rd.random()<0.92:
+            draw = ImageDraw.Draw(im)
+            draw.circle((x,y),r,black)
+            im.save(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png')))
+            data.append((x,y,r))
+        else:
+            im.save(str(path / 'generated_tests' / 'ball_simple_one' / (str(i)+'.png')))
+            data.append((-1,-1,0))
     df = pd.DataFrame(data=data, columns=columns)
     df.to_csv(str(path / 'generated_tests' / 'ball_simple_one' / 'df.csv'), index=False)
 
