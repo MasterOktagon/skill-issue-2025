@@ -8,17 +8,15 @@ def i2c(id, tick):
 
     s, b, d = pi.bsc_i2c(I2C_ADDR)
     if b:
-        if d[0] == ord('t'): # 116 send 'HH:MM:SS*'
+        if d[0] == 0xE0:
+            print("something")
 
             print("sent={} FR={} received={} [{}]".format(s>>16, s&0xfff,b,d))
 
-            s, b, d = pi.bsc_i2c(I2C_ADDR, "{}*".format(time.asctime()[11:19]))
+            s, b, d = pi.bsc_i2c(I2C_ADDR, 0x00)
 
-        elif d[0] == ord('d'): # 100 send 'Sun Oct 30*'
-
-            print("sent={} FR={} received={} [{}]".format(s>>16, s&0xfff,b,d))
-
-            s, b, d = pi.bsc_i2c(I2C_ADDR, "{}*".format(time.asctime()[:10]))
+        else:
+            print("nothing")
 
 pi = pigpio.pi()
 
