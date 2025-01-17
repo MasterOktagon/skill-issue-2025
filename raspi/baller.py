@@ -160,19 +160,209 @@ def custom_mse(y_true, y_pred):
     return result
 
 # Read CSV
-train_dataset = pd.read_csv('../input/ball-localization/dataset.csv')
+train_dataset = pd.read_csv('./images/train/dataset.csv')
 train_dataset.columns = ['path', 'ball_exists', 'x', 'y', 'w', 'h']
+test_dataset = pd.read_csv('./images/test/dataset.csv')
+test_dataset.columns = ['path', 'ball_exists', 'x', 'y', 'w', 'h']
 
 
 # List directories of files
-train_image_dir_hand = Path('../input/ball-localization/ball')
-train_filepaths_hand = list(train_image_dir_hand.glob(r'**/*.png'))
+train_image_dir_hand = Path('./images/train')
+train_filepaths_hand = list(train_image_dir_hand.glob(r'**/*.jpg'))
+test_image_dir_hand = Path('./images/test')
+test_filepaths_hand = list(train_image_dir_hand.glob(r'**/*.jpg'))
+
 
 # Create dataframe of {paths, labels}
 train_df_hand = grabPaths(train_filepaths_hand)
+test_df_hand = grabPaths(test_filepaths_hand)
 
-train_dataset['path'] = "../input/ball-localization/ball/" + train_dataset['path']
+train_dataset['path'] = "./images/train" + train_dataset['path']
+test_dataset['path'] = "./images/test" + test_dataset['path']
 
 
 # Resize boxes, keep zeros if no object exists
 train_dataset.iloc[:,2:] = resize_boxes(train_dataset.iloc[:,2:])
+test_dataset.iloc[:,2:] = resize_boxes(test_dataset.iloc[:,2:])
+
+
+# Create custom Generator for multiple output models
+class MultiOutputGen(tf.keras.utils.Sequence):
+    def __init__(self, input_gen, output_gen):
+        self.inpgen = input_gen
+        self.outgen = output_gen
+#         assert len(input_gen) == len(output_gen)
+
+    def __len__(self):
+        return len(self.inpgen)
+
+    def __getitem__(self, i):
+        images = self.inpgen[i]
+        start = i * images.shape[0]
+        end = (i+1) * images.shape[0]
+        classes_num = self.outgen.iloc[start:end,0].values
+        x = self.outgen.iloc[start:end,1]
+        y = self.outgen.iloc[start:end,2]
+        w = self.outgen.iloc[start:end,3]
+#         h = self.outgen.iloc[start:end,4]
+        return images, {'class_out':classes_num, 'box_out':np.array([x, y, w]).T}
+
+    def on_epoch_end(self):
+        self.inpgen.on_epoch_end()
+    
+# Class to visualize predictions during training
+class ConvergenceVisualization(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        global custom_test_gen
+        visualize_prediction(self.model, custom_test_gen)
+
+train_generator = tf.keras.preprocessing.image.ImageDataGenerator(
+    brightness_range=(0.8, 1.2),
+    rescale = 1./255.,
+)
+
+test_generator = tf.keras.preprocessing.image.ImageDataGenerator(
+    rescale = 1./255.,
+)
+
+train_images = train_generator.flow_from_dataframe(
+    dataframe=train_dataset,
+    x_col='path',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    color_mode='rgb',
+    class_mode=None,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+)
+
+test_images = test_generator.flow_from_dataframe(
+    dataframe=test_dataset,
+    x_col='path',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    color_mode='rgb',
+    class_mode=None,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+)
+
+# Create multi-output generator
+custom_train_gen = MultiOutputGen(train_images, train_dataset.iloc[:,1:])
+custom_test_gen = MultiOutputGen(test_images, test_dataset.iloc[:,1:])
+
+visualize_samples(custom_train_gen)
+
+# BEST MODEL
+
+inp = Input(shape=(IMG_HEIGHT,IMG_WIDTH,3), name='image')
+
+X = SeparableConv2D(64, (7,7), strides=2, padding='valid')(inp)
+X = MaxPooling2D(pool_size=(2,2), strides=2)(X)
+
+X = SeparableConv2D(192, (3,3), strides=1, padding='same')(X)
+X = MaxPooling2D(pool_size=(2,2), strides=2)(X)
+
+X = convblock(X, [16, 16, 16], pool='max')
+X = convblock(X, [32, 32, 32], pool='max')
+X = convblock(X, [64, 64, 64], pool='max')
+X = convblock(X, [128, 128, 128], pool='max')
+X = convblock(X, [256, 256, 256])
+
+X = Flatten()(X)
+boxX = Dense(512)(X)
+boxX = LeakyReLU()(boxX)
+
+classX = Dense(128)(X)
+classX = LeakyReLU()(classX)
+
+box_out = Dense(3, name='box_out')(boxX)
+class_out = Dense(1, name='class_out', activation='sigmoid')(classX)
+
+
+model = Model(inp, [class_out, box_out])
+model.summary()
+
+adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+
+model.compile(
+    loss={
+        "box_out":custom_mse,
+        'class_out':'binary_crossentropy'
+    },
+    metrics={
+        'class_out':'accuracy'
+    },
+    optimizer=adam
+)
+
+history = model.fit(
+    custom_train_gen,
+    epochs=EPOCHS,
+    validation_data=custom_test_gen,
+    callbacks=[
+        tf.keras.callbacks.LearningRateScheduler(lr_scheduler),
+        ConvergenceVisualization()
+    ]
+)
+
+# Accuracy & Loss Visualization
+
+#  Overall Loss
+train_overall_loss = history.history['loss']
+val_overall_loss = history.history['val_loss']
+
+# Classification Accuracy
+train_classification_acc = history.history['class_out_accuracy']
+val_classification_acc = history.history['val_class_out_accuracy']
+
+# Classification Loss
+train_classification_loss = history.history['class_out_loss']
+val_classification_loss = history.history['val_class_out_loss']
+
+# Bounding Box Loss
+train_bbox_loss = history.history['box_out_loss']
+val_bbox_loss = history.history['val_box_out_loss']
+
+epochs = range(1, len(history.history['loss'])+1)
+
+f, ax = plt.subplots(nrows=2,ncols=2,figsize=(18,15))
+    
+ax[0,0].plot(epochs, train_overall_loss,  marker='o', label='Training')
+ax[0,0].plot(epochs, val_overall_loss, marker='o', color = 'green', label='Validation')
+ax[0,0].set_title('Overall Loss')
+ax[0,0].set_xlabel('Epochs')
+ax[0,0].set_ylabel('Loss')
+ax[0,0].legend(loc='best')
+ax[0,0].grid(True)
+
+ax[0,1].plot(epochs, train_bbox_loss, marker='o', label='Training')
+ax[0,1].plot(epochs, val_bbox_loss, marker='o', color = 'green', label='Validation')
+ax[0,1].set_title('Bounding Box Loss')
+ax[0,1].set_xlabel('Epochs')
+ax[0,1].set_ylabel('Loss')
+ax[0,1].legend(loc='best')
+ax[0,1].grid(True)
+
+
+
+ax[1,0].plot(epochs, train_classification_acc,  marker='o', label='Training')
+ax[1,0].plot(epochs, val_classification_acc, marker='o', color = 'green', label='Validation')
+ax[1,0].set_title('Classification Accuracy')
+ax[1,0].set_xlabel('Epochs')
+ax[1,0].set_ylabel('Accuracy')
+ax[1,0].legend(loc='best')
+ax[1,0].grid(True)
+
+ax[1,1].plot(epochs, train_classification_loss, marker='o', label='Training')
+ax[1,1].plot(epochs, val_classification_loss, marker='o', color = 'green', label='Validation')
+ax[1,1].set_title('Classification Loss')
+ax[1,1].set_xlabel('Epochs')
+ax[1,1].set_ylabel('Loss')
+ax[1,1].legend(loc='best')
+ax[1,1].grid(True)
+
+plt.show()
+f.savefig('LossAndAccuracy.eps', format='eps')
+plt.close()
+
+model.save("test ball detection.h5")
+
