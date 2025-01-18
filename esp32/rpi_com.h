@@ -16,7 +16,8 @@ struct Victim {
 /*
 Victim positionon image
 */
-    uint16_t x,y,r = 0;
+    int8_t angle = 0;
+    uint8_t dist = 0;
 };
 
 namespace rpi {

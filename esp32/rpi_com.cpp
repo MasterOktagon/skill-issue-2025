@@ -46,16 +46,15 @@ void rpi::stop_ai(){
 Victim rpi::get_victim(){
     Wire.beginTransmission(PI_ADDRESS);
     Wire.write(PI_READ | Ai::VICTIMS);
-    Wire.endTransmission(false);
+    //Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 12);
     Victim victim;
     if (Wire.read() == 0x00) {
         throw AINotStartedException(Ai::VICTIMS);
     }
     else {
-        victim.x = Wire.read() | (Wire.read() << 8);
-        victim.y = Wire.read() | (Wire.read() << 8);
-        victim.r = Wire.read() | (Wire.read() << 8);
+        victim.angle = Wire.read();
+        victim.dist = Wire.read();
     }
     Wire.endTransmission();
     return victim;
@@ -68,7 +67,7 @@ uint8_t rpi::status(){
         return 0x00;
     }*/
     Wire.write(PI_STATUS);
-    Wire.endTransmission(false);
+    //Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 1);
     uint8_t status = Wire.read();
     Wire.endTransmission();

@@ -171,10 +171,11 @@ void setup(){
     // menu selection
     output.println("INFO: Menu");
 
-    //digitalWrite(PT_GREEN, HIGH);
+    digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
     rgb::setValue(Side::BOTH, 0,0,0);
     while((selected = menu::menu(button_failure)) != MENU_RUN){
+        Serial.println("sdfdfsfdfs");
         switch (selected){
             default:
                 break;
@@ -224,7 +225,7 @@ void setup(){
     output.println("red_b "); output.println(ls::red_b._str().c_str());
 
     timestamp = micros();
-    //shiftregister::set(SR_XSHT_2, HIGH);
+    shiftregister::set(SR_XSHT_2, HIGH);
     delay(2000);
     attachInterrupt(T_E, isr, RISING);
     //tof::front.readSingle(false);
