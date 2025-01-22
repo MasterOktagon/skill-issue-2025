@@ -269,7 +269,7 @@ void loop(){
         color::red.reset();
     }
 
-    /*if (color::green()){
+    if (color::green()){
         Side green = color::green();
         motor::fwd(motor::motor::AB, 70);
         do {
@@ -315,7 +315,12 @@ void loop(){
         end:
         motor::fwd(200);
         motor::gyro(-90);
-    }*/
+    }
+
+    if(color::black() == Side::BOTH){
+        motor::fwd(100);
+        color::black.reset();
+    }
     //output.println(micros() - timestamp);
     //timestamp = micros();
 }

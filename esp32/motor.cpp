@@ -39,7 +39,7 @@ void motor::stop(motor m, bool hard){
         }
     }
     if (m & motor::B1){
-        digitalWrite(PWMB1+10, LOW);
+        digitalWrite(PWMB1, LOW);
         if (!hard){
             shiftregister::set(SR_BIN1_F, LOW, false);
             shiftregister::set(SR_BIN1_R, LOW, false);
@@ -53,7 +53,7 @@ void motor::stop(motor m, bool hard){
         }
     }
     if (m & motor::B2){
-        digitalWrite(PWMB2+10, LOW);
+        digitalWrite(PWMB2, LOW);
         if (!hard){
             shiftregister::set(SR_BIN2_F, LOW, false);
             shiftregister::set(SR_BIN2_R, LOW, false);

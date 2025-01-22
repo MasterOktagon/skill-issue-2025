@@ -25,7 +25,8 @@ using namespace std;
 #define OUTER_FACTOR 3
 #define BACK_FACTOR  2
 
-#define D            0.6
+#define P            1
+#define D            0.9
 #define I            -0.0003
 
 int16_t last = 0;
@@ -42,7 +43,7 @@ int16_t lf::follow(){
         int16_t diff_outer = (ls::white.left_outer.value - ls::white.right_outer.value) * OUTER_FACTOR;
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
 
-        int16_t mot_diff = max_abs(diff + diff_outer,diff_back); // TODO: maybe change diff_outer to negative factor
+        int16_t mot_diff = diff + diff_outer; // TODO: maybe change diff_outer to negative factor
 
         int16_t d = mot_diff - last;
         last = mot_diff;
@@ -59,8 +60,8 @@ int16_t lf::follow(){
 
         gyro::update();
 
-        motor::fwd(motor::motor::A, v - mot_diff - d * D - i * I);
-        motor::fwd(motor::motor::B, v + mot_diff + d * D + i * I);
+        motor::fwd(motor::motor::A, v - mot_diff * P - d * D - i * I);
+        motor::fwd(motor::motor::B, v + mot_diff * P + d * D + i * I);
     #endif
 
     return 0;
