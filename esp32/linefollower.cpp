@@ -24,6 +24,7 @@ using namespace std;
 #define INNER_FACTOR 2
 #define OUTER_FACTOR 3
 #define BACK_FACTOR  2
+#define GREEN_FACTOR -1
 
 #define P            0.8
 #define D            0.6
@@ -42,26 +43,32 @@ int16_t lf::follow(){
         int16_t diff       = (ls::white.left.value - ls::white.right.value)             * INNER_FACTOR;
         int16_t diff_outer = (ls::white.left_outer.value - ls::white.right_outer.value) * OUTER_FACTOR;
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
+        int16_t diff_green = ((ls::green.left.value - ls::green.right.value) - (ls::red.left.value - ls::red.right.value)) * GREEN_FACTOR;
 
-        int16_t mot_diff = diff + diff_outer + diff_back; // TODO: maybe change diff_outer to negative factor
+        int16_t mot_diff = diff + diff_outer + diff_back + diff_green; // TODO: maybe change diff_outer to negative factor
 
         int16_t d = mot_diff - last;
         last = mot_diff;
 
         static int64_t i = i + mot_diff;
 
-        if (tof::front.dataReady()){
-            tof_dist = tof::front.read(false);
-            //output.print("TOF: "); output.println(tof_dist);
-            tof::front.readSingle(false);
-        }
+        //if (tof::front.dataReady()){
+        //    tof_dist = tof::front.read(false);
+        //    //output.print("TOF: "); output.println(tof_dist);
+        //    tof::front.readSingle(false);
+        //}
 
-        int16_t v = tof_dist > 140 || tof_dist == 0 ? V_STD : 80;
+        int16_t v = V_STD;//tof_dist > 140 || tof_dist == 0 ? V_STD : 80;
 
         gyro::update();
 
-        motor::fwd(motor::motor::A, v - mot_diff * P - d * D - i * I);
-        motor::fwd(motor::motor::B, v + mot_diff * P + d * D + i * I);
+        int16_t correction = mot_diff * P - d * D - i * I;
+        if(abs(correction) <= 10) correction = 0;
+
+        motor::fwd(motor::motor::A, v - correction);
+        motor::fwd(motor::motor::B, v + correction*1.1);
+        //Serial.println(correction);
+        //delay(1);
     #endif
 
     return 0;

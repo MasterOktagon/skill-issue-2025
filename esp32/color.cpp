@@ -60,7 +60,18 @@ bool green_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray*
             //return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
         default:
             //return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
-            return g->right.value - r->right.value >= GREEN_THRESHOLD;
+            return g->right.value - r->right.value + 4 >= GREEN_THRESHOLD;
+    }
+}
+
+bool green_detection_outer(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
+    switch (s){
+        case Side::LEFT:
+            return g->left_outer.value - r->left_outer.value >= GREEN_THRESHOLD;
+            //return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
+        default:
+            //return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
+            return g->right_outer.value - r->right_outer.value >= GREEN_THRESHOLD;
     }
 }
 
@@ -110,6 +121,7 @@ color::color color::green = color(green_detection);
 color::color color::black = color(black_detection);
 color::color color::black_outer = color(black_detection_outer);
 color::color color::silver = color(silver_detection);
+color::color color::green_outer = color(green_detection_outer);
 
 void color::update(){
     red.update(&ls::white, &ls::green, &ls::red);
@@ -117,6 +129,7 @@ void color::update(){
     black.update(&ls::white, &ls::green, &ls::red);
     black_outer.update(&ls::white, &ls::green, &ls::red);
     silver.update(&ls::white, &ls::green, &ls::red);
+    green_outer.update(&ls::white, &ls::green, &ls::red);
 }
 
 void color::update(initializer_list<color*> colors){

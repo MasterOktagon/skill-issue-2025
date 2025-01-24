@@ -274,13 +274,13 @@ void loop(){
     }
 
     if (color::green()){
-        Side green = color::green();
+        Side green = Side(color::green() | color::green_outer());
         menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
         do {
             ls::read();
             color::update();
-            green = Side(green | color::green());
+            green = Side(green | color::green() | color::green_outer());
         } while(color::green());
         motor::read_fwd(70, 5, {&color::black, &color::black_outer});
         Side black = Side(color::black() | color::black_outer());
@@ -294,14 +294,14 @@ void loop(){
         deg += 80 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
-            motor::fwd(200);
+            motor::fwd(300);
             motor::gyro(deg);
-            //motor::fwd(20);
+            motor::fwd(20);
         }
         color::green.reset();
     }
 
-    //output.print(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    output.println(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
     //output.print("\t");
     //output.println(ls::red.right.value);
     //delay(10);

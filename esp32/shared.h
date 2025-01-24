@@ -15,7 +15,7 @@
 #define DEBUG
 //#define LOGGER
 //#define BLE
-#define MOT_STBY
+//#define MOT_STBY
 #define LF_USE_BACK
 #define LF_ACTIVE
 //#define USE_TIMESCALE
