@@ -25,12 +25,12 @@ using namespace std;
 #define OUTER_FACTOR 3
 #define BACK_FACTOR  2
 
-#define P            1
-#define D            0.9
-#define I            -0.0003
+#define P            0.8
+#define D            0.6
+#define I            -0.0005
 
 int16_t last = 0;
-uint16_t tof_dist;
+uint16_t tof_dist = 0;
 
 int16_t max_abs(int16_t a, int16_t b){
     if (abs(a) > abs(b)) return a;
@@ -43,7 +43,7 @@ int16_t lf::follow(){
         int16_t diff_outer = (ls::white.left_outer.value - ls::white.right_outer.value) * OUTER_FACTOR;
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
 
-        int16_t mot_diff = diff + diff_outer; // TODO: maybe change diff_outer to negative factor
+        int16_t mot_diff = diff + diff_outer + diff_back; // TODO: maybe change diff_outer to negative factor
 
         int16_t d = mot_diff - last;
         last = mot_diff;

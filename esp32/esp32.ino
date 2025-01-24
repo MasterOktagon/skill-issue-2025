@@ -43,7 +43,7 @@ void cal_movement(){
         int v = ((millis() - timestamp) % 4000) >= 2000 ? -70 : 70;
         //output.println(v);
         motor::fwd(motor::motor::AB, v);
-        delay(1);
+        delay(10);
     }
     motor::stop();
 }
@@ -196,6 +196,7 @@ void setup(){
                 thread t(cal_movement);
                     ls::calibrate(5000, 0);
                 t.join();
+                //cal_movement();
                 detachInterrupt(T_E);
 
                 // Print min/max values
@@ -228,7 +229,7 @@ void setup(){
     shiftregister::set(SR_XSHT_2, HIGH);
     delay(2000);
     attachInterrupt(T_E, isr, RISING);
-    //tof::front.readSingle(false);
+    tof::front.readSingle(false);
 }
 
 const char* match(Side s){
@@ -255,9 +256,12 @@ void loop(){
     ls::update();
 
     if (color::silver()){
+        motor::stop();
         output.println("LFE: SILVER detected");
+        menu::showWaiting("ZONE");
         motor::fwd(500);
         delay(5000);
+        zone::ignore();
     }
 
     if (color::red()){
@@ -271,13 +275,14 @@ void loop(){
 
     if (color::green()){
         Side green = color::green();
+        menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
         do {
             ls::read();
             color::update();
             green = Side(green | color::green());
         } while(color::green());
-        //delay(100);
+        motor::read_fwd(70, 5, {&color::black, &color::black_outer});
         Side black = Side(color::black() | color::black_outer());
         motor::stop();
 
@@ -289,13 +294,17 @@ void loop(){
         deg += 80 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
-            motor::fwd(170);
+            motor::fwd(200);
             motor::gyro(deg);
-            motor::fwd(20);
+            //motor::fwd(20);
         }
         color::green.reset();
     }
 
+    //output.print(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    //output.print("\t");
+    //output.println(ls::red.right.value);
+    //delay(10);
     if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");

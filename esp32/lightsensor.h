@@ -123,6 +123,11 @@ namespace that holds all functions for all light sensors
     extern lightSensorArray white, green, red; // front light sensors
     extern lightSensorArray white_b, green_b, red_b; // back light sensors
     extern lightSensorArray* all[6];
+
+    extern int16_t rg_max_l;
+    extern int16_t rg_min_l;
+    extern int16_t rg_max_r;
+    extern int16_t rg_min_r;
     
     extern void setup();
     /*

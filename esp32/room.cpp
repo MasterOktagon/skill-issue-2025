@@ -1,3 +1,4 @@
+#include "esp32-hal-gpio.h"
 #include "Pins.h"
 #include "shiftregister.h"
 
@@ -32,9 +33,13 @@ void zone::ignore(){
             return;
         }
 
-        if((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){
-            motor::fwd(motor::motor::A, 70);
-            delay(100);
+        if((!digitalRead(T_L)) && !button_failure){
+            while (digitalRead(T_R)){
+                motor::fwd(motor::motor::A, 70);
+                delay(50);
+                motor::rev(50);
+            }
+            motor::fwd(80);
             motor::rev(250);
             motor::gyro(-90, V_STD);
         }

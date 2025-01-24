@@ -115,6 +115,7 @@ void lightSensor::calibrate_turn(int iter){
 
     //output.println(sensor_pin);
     int16_t val = analogRead(sensor_pin); // read light sensor value
+    value = val;
     if (iter > ITER_SKIP){
         // update min/max values
         vmax = max(vmax, val);
@@ -309,6 +310,11 @@ void ls::update(initializer_list<lightSensorArray*> ls){
     }
 }
 
+int16_t ls::rg_min_l = 0x7FFF;
+int16_t ls::rg_max_l = 0;
+int16_t ls::rg_min_r = 0x7FFF;
+int16_t ls::rg_max_r = 0;
+
 void ls::calibrate(uint16_t iterations, uint16_t delay_ms){
     output.print("Calibrating...");
     for(uint16_t i = 0; i < iterations; i++){
@@ -319,6 +325,10 @@ void ls::calibrate(uint16_t iterations, uint16_t delay_ms){
         }
         delay(delay_ms);
     }
+    rg_max_l = max(rg_max_l, (int16_t(green.left.value -  red.left.value)));
+    rg_min_l = min(rg_min_l, (int16_t(green.left.value -  red.left.value)));
+    rg_max_r = max(rg_max_r, (int16_t(green.right.value - red.right.value)));
+    rg_min_r = min(rg_min_r, (int16_t(green.right.value - red.right.value)));
     output.println("Succes!");
 }
 
@@ -338,6 +348,11 @@ void ls::save(){
     doc["white_b"] = white_b.save();
     doc["green_b"] = green_b.save();
     doc["red_b"]   = red_b.save();
+
+    doc["rg_max_l"] = rg_max_l;
+    doc["rg_min_l"] = rg_min_l;
+    doc["rg_max_r"] = rg_max_r;
+    doc["rg_min_r"] = rg_min_r;
 
     serializeJson(doc, file);
 
@@ -369,6 +384,11 @@ void ls::load(){
     white_b.load(doc["white_b"]);
     green_b.load(doc["green_b"]);
     red_b.load(doc["red_b"]);
+
+    rg_max_l = doc["rg_max_l"];
+    rg_min_l = doc["rg_min_l"];
+    rg_max_r = doc["rg_max_r"];
+    rg_min_r = doc["rg_min_r"];
 
     f.close();
 }

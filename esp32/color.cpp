@@ -56,9 +56,11 @@ bool red_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r
 bool green_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){
         case Side::LEFT:
-            return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
+            return g->left.value - r->left.value >= GREEN_THRESHOLD;
+            //return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
         default:
-            return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
+            //return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
+            return g->right.value - r->right.value >= GREEN_THRESHOLD;
     }
 }
 

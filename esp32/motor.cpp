@@ -79,7 +79,7 @@ void motor::fwd(motor m, int16_t v){
     stop(m); return;
   }
   // clamp the speed
-  v = min(max(v, int16_t(-200)), int16_t(200));
+  v = int16_t(min(max(int(v),-200),200));
 
   // control the motors
   bool rev = v < 0; // wether to reverse *IN1 and *IN2
