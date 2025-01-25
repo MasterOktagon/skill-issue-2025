@@ -174,45 +174,49 @@ void setup(){
     digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
     rgb::setValue(Side::BOTH, 0,0,0);
-    while((selected = menu::menu(button_failure)) != MENU_RUN){
-        Serial.println("sdfdfsfdfs");
-        switch (selected){
-            default:
-                break;
+    #ifdef MENU
+        while((selected = menu::menu(button_failure)) != MENU_RUN){
+            Serial.println("sdfdfsfdfs");
+            switch (selected){
+                default:
+                    break;
 
-            case 3:
-                delay(1500);
-                attachInterrupt(T_E, isr, RISING);
-                zone::ignore();
-                detachInterrupt(T_E);
-                break;
+                case 3:
+                    delay(1500);
+                    attachInterrupt(T_E, isr, RISING);
+                    zone::ignore();
+                    detachInterrupt(T_E);
+                    break;
 
-            case MENU_CALIBRATE:
+                case MENU_CALIBRATE:
 
-                menu::showWaiting("Calibrating...");
-                delay(1500);
+                    menu::showWaiting("Calibrating...");
+                    delay(1500);
 
-                attachInterrupt(T_E, isr, RISING);
-                thread t(cal_movement);
-                    ls::calibrate(5000, 0);
-                t.join();
-                //cal_movement();
-                detachInterrupt(T_E);
+                    attachInterrupt(T_E, isr, RISING);
+                    thread t(cal_movement);
+                        ls::calibrate(5000, 0);
+                    t.join();
+                    //cal_movement();
+                    detachInterrupt(T_E);
 
-                // Print min/max values
-                output.print("white "); output.println(ls::white._str().c_str());
-                output.print("green "); output.println(ls::green._str().c_str());
-                output.println("red "); output.println(ls::red._str().c_str());
-                output.println("");
-                output.print("white_b "); output.println(ls::white_b._str().c_str());
-                output.print("green_b "); output.println(ls::green_b._str().c_str());
-                output.println("red_b "); output.println(ls::red_b._str().c_str());
+                    // Print min/max values
+                    output.print("white "); output.println(ls::white._str().c_str());
+                    output.print("green "); output.println(ls::green._str().c_str());
+                    output.println("red "); output.println(ls::red._str().c_str());
+                    output.println("");
+                    output.print("white_b "); output.println(ls::white_b._str().c_str());
+                    output.print("green_b "); output.println(ls::green_b._str().c_str());
+                    output.println("red_b "); output.println(ls::red_b._str().c_str());
 
-                ls::save(); // save values to a json file
-                
+                    ls::save(); // save values to a json file
+                    
+            }
+
         }
-
-    }
+    #else
+        delay(1500);
+    #endif
 
     ls::load();
 
@@ -246,6 +250,8 @@ const char* match(Side s){
     return "";
 }
 
+unsigned long green_freeze = 0;
+
 void loop(){
     
 
@@ -255,7 +261,7 @@ void loop(){
     t.join();
     ls::update();
 
-    if (color::silver()){
+    if (color::silver() && green_freeze < millis()){
         while (color::silver() != Side::BOTH){
             motor::fwd(motor::motor(Side::BOTH & ~color::silver()), 80);
             color::silver.update(nullptr, nullptr, nullptr);
@@ -264,10 +270,14 @@ void loop(){
         motor::stop();
         output.println("LFE: SILVER detected");
         menu::showWaiting("ZONE");
-        motor::fwd(1000);
+        motor::fwd(800);
         //delay(5000);
         zone::ignore();
+        
+        motor::fwd(300);
         color::silver.reset();
+        shiftregister::set(SR_XSHT_1, LOW, false);
+        shiftregister::set(SR_XSHT_4, HIGH);
     }
 
     if (color::red()){
@@ -279,7 +289,13 @@ void loop(){
         color::red.reset();
     }
 
-    if (color::green()){
+    if ((abs(mpu.getGyroX()) > 40) /*|| (10<abs(gyro::y) && abs(gyro::y)<15)*/){
+        output.println("Bumpa-di-bump-bump");
+        menu::showWaiting("Bumpa-di-bump-bump");
+        green_freeze = millis() + 1000;
+    }
+
+    if (color::green() && green_freeze < millis()){
         Side green = Side(color::green());
         menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
@@ -309,13 +325,14 @@ void loop(){
 
     //output.println(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
     //output.print("\t");
-    //output.println(ls::red.right.value);
+    //output.println(mpu.getGyroY());
     //delay(10);
     if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");
-        motor::gyro(-90);
-        motor::fwd(480);
+        motor::gyro(-80);
+
+        /*motor::fwd(600);
         motor::gyro(90);
         while (true){
             uint32_t timestamp = millis() + 1300;
@@ -329,6 +346,18 @@ void loop(){
         }
         end:
         motor::fwd(200);
+        motor::gyro(-45);*/
+        unsigned long timestamp = millis() + 2700;
+        motor::fwd(motor::motor::A, 250);
+        motor::fwd(motor::motor::B, 57);
+        while(timestamp > millis()){
+                ls::read();
+                color::update();
+                //if(/*(color::black() || color::black_outer()) && (timestamp-4000) > millis()*/) break;
+        }
+        //motor::fwd(motor::motor::A, 250);
+        //motor::fwd(motor::motor::B, 50);
+        delay(300);
         motor::gyro(-90);
     }
 

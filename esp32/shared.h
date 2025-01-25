@@ -26,6 +26,7 @@
 //#define CLAW_TEST
 //#define FASTREAD
 //#define STORAGE_TEST
+//#define MENU
 
 // define the 'signal' type
 template <typename T, typename ... K>

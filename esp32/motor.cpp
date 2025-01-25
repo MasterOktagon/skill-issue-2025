@@ -148,6 +148,7 @@ void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
             Serial.println(abs(angle));
         }
         stop();
+        gyro::reset();
     #endif
 }
 
