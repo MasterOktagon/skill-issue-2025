@@ -28,24 +28,28 @@ void zone::ignore(){
             tof::left.readSingle(false);
         }
 
-        if(color::black() || color::black_outer()){
+        if(color::black() | color::black_outer()){
             motor::fwd(100);
             return;
         }
 
         if((!digitalRead(T_L)) && !button_failure){
-            while (digitalRead(T_R)){
+            //motor::stop();
+            motor::rev(100);
+            while (!digitalRead(T_L)){
+                motor::rev(100);
                 motor::fwd(motor::motor::A, 70);
-                delay(50);
-                motor::rev(50);
+                motor::fwd(motor::motor::B, 40);
+                while (digitalRead(T_L) && digitalRead(T_R));
             }
+            //motor::gyro(15);
             motor::fwd(80);
             motor::rev(250);
             motor::gyro(-90, V_STD);
         }
 
         if(tof_dist > 300 || tof_dist == 0){
-            motor::fwd(400);
+            motor::fwd(550);
             motor::gyro(90, V_STD);
             tof_dist = 100;
             motor::fwd(motor::motor::AB, V_STD);
@@ -53,7 +57,7 @@ void zone::ignore(){
                 ls::read();
                 color::update();
 
-                if(color::black() || color::black_outer()){
+                if(color::black() | color::black_outer()){
                     motor::fwd(100);
                     motor::stop();
                     return;

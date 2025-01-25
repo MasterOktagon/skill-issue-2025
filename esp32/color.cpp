@@ -60,7 +60,7 @@ bool green_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray*
             //return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
         default:
             //return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
-            return g->right.value - r->right.value + 4 >= GREEN_THRESHOLD;
+            return g->right.value - r->right.value + 7 >= GREEN_THRESHOLD;
     }
 }
 

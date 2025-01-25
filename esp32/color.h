@@ -19,7 +19,7 @@ using namespace std;
 #define RED_THRESHOLD 50        // Thresholds to detect a color
 #define GREEN_THRESHOLD 11     // ..
 #define BLACK_THRESHOLD 50      // ..
-#define SILVER_THRESHOLD 500    // ..
+#define SILVER_THRESHOLD 450    // ..
 
 namespace color{
 /*

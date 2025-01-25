@@ -256,12 +256,18 @@ void loop(){
     ls::update();
 
     if (color::silver()){
+        while (color::silver() != Side::BOTH){
+            motor::fwd(motor::motor(Side::BOTH & ~color::silver()), 80);
+            color::silver.update(nullptr, nullptr, nullptr);
+        }
+        delay(200);
         motor::stop();
         output.println("LFE: SILVER detected");
         menu::showWaiting("ZONE");
-        motor::fwd(500);
-        delay(5000);
+        motor::fwd(1000);
+        //delay(5000);
         zone::ignore();
+        color::silver.reset();
     }
 
     if (color::red()){
@@ -274,13 +280,13 @@ void loop(){
     }
 
     if (color::green()){
-        Side green = Side(color::green() | color::green_outer());
+        Side green = Side(color::green());
         menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
         do {
             ls::read();
             color::update();
-            green = Side(green | color::green() | color::green_outer());
+            green = Side(green | color::green());
         } while(color::green());
         motor::read_fwd(70, 5, {&color::black, &color::black_outer});
         Side black = Side(color::black() | color::black_outer());
@@ -290,18 +296,18 @@ void loop(){
         output.print("LFE: GREEN detected "); output.println(match(turn));
         menu::showWaiting(match(turn));
 
-        int16_t deg = 80 * bool(turn & Side::LEFT);
-        deg += 80 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
+        int16_t deg = 85 * bool(turn & Side::LEFT);
+        deg += 85 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
-            motor::fwd(300);
+            motor::fwd(400);
             motor::gyro(deg);
             motor::fwd(20);
         }
         color::green.reset();
     }
 
-    output.println(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    //output.println(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
     //output.print("\t");
     //output.println(ls::red.right.value);
     //delay(10);
@@ -326,10 +332,10 @@ void loop(){
         motor::gyro(-90);
     }
 
-    if(color::black() == Side::BOTH){
-        motor::fwd(100);
-        color::black.reset();
-    }
+    //if(color::black() == Side::BOTH){
+    //    motor::fwd(100);
+    //    color::black.reset();
+    //}
     //output.println(micros() - timestamp);
     //timestamp = micros();
 }

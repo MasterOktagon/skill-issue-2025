@@ -76,7 +76,7 @@ void motor::hardstop(){
 
 void motor::fwd(motor m, int16_t v){
   if (v > 200) v = 200;
-  else if (v < -200) v = -200;
+  else if (v < -180) v = -180;
 
   // control the motors
   bool rev = v < 0; // wether to reverse *IN1 and *IN2
@@ -132,6 +132,8 @@ void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
             return;
         }
         if (reset_gyro){
+            stop();
+            mpu.calcGyroOffsets();
             gyro::reset();
         }
         int sign = 1;

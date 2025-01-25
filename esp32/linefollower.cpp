@@ -21,14 +21,14 @@
 
 using namespace std;
 
-#define INNER_FACTOR 2
-#define OUTER_FACTOR 3
-#define BACK_FACTOR  2
+#define INNER_FACTOR 1
+#define OUTER_FACTOR 5
+#define BACK_FACTOR  1
 #define GREEN_FACTOR -1
 
-#define P            0.8
-#define D            0.6
-#define I            -0.0005
+#define P            1
+#define D            1
+#define I            -0.0001
 
 int16_t last = 0;
 uint16_t tof_dist = 0;
@@ -45,7 +45,7 @@ int16_t lf::follow(){
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
         int16_t diff_green = ((ls::green.left.value - ls::green.right.value) - (ls::red.left.value - ls::red.right.value)) * GREEN_FACTOR;
 
-        int16_t mot_diff = diff + diff_outer + diff_back + diff_green; // TODO: maybe change diff_outer to negative factor
+        int16_t mot_diff = max_abs(diff + diff_outer,diff_back) + diff_green; // TODO: maybe change diff_outer to negative factor
 
         int16_t d = mot_diff - last;
         last = mot_diff;
@@ -62,11 +62,12 @@ int16_t lf::follow(){
 
         gyro::update();
 
-        int16_t correction = mot_diff * P - d * D - i * I;
+        int16_t correction = (mot_diff * P - d * D - i * I)*0.7;
         if(abs(correction) <= 10) correction = 0;
+        if(abs(correction) >= 170) v = -40;
 
         motor::fwd(motor::motor::A, v - correction);
-        motor::fwd(motor::motor::B, v + correction*1.1);
+        motor::fwd(motor::motor::B, v + correction);
         //Serial.println(correction);
         //delay(1);
     #endif
