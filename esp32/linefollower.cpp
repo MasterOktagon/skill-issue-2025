@@ -65,10 +65,12 @@ int16_t lf::follow(){
         int16_t correction = (mot_diff * P - d * D - i * I)*0.7;
         if(abs(correction) <= 10) correction = 0;
         if(abs(correction) >= 170) v = -40;
+        correction = max(int16_t(-200), min(int16_t(200),correction));
+        if (abs(gyro::x) > 15) {correction *= 0.3;} 
 
         motor::fwd(motor::motor::A, v - correction);
         motor::fwd(motor::motor::B, v + correction);
-        //Serial.println(correction);
+        Serial.println(correction);
         //delay(1);
     #endif
 

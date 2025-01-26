@@ -19,7 +19,8 @@ void zone::ignore(){
     motor::fwd(1000);
     tof::left.readSingle(false);
     while (true){
-        motor::fwd(motor::motor::AB, V_STD);
+        motor::fwd(motor::motor::A, V_STD + ((tof_dist != 0? tof_dist : 90)-90));
+        motor::fwd(motor::motor::B, V_STD - ((tof_dist != 0? tof_dist : 90)-90));
         ls::read();
         color::update();
 

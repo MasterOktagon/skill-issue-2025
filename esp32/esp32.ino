@@ -289,7 +289,8 @@ void loop(){
         color::red.reset();
     }
 
-    if ((abs(mpu.getGyroX()) > 40) /*|| (10<abs(gyro::y) && abs(gyro::y)<15)*/){
+    auto gy = mpu.getGyroY();
+    if ((abs(mpu.getGyroX()) > 40) /*|| (-80>gy)*/){
         output.println("Bumpa-di-bump-bump");
         menu::showWaiting("Bumpa-di-bump-bump");
         green_freeze = millis() + 1000;
@@ -320,13 +321,13 @@ void loop(){
             motor::gyro(deg);
             motor::fwd(20);
         }
-        color::green.reset();
     }
 
-    //output.println(ls::green.right.value - ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
-    //output.print("\t");
+    output.print(ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    output.print("\t");
+    output.println(ls::green.right.value);
     //output.println(mpu.getGyroY());
-    //delay(10);
+    //output.println();
     if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");
