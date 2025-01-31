@@ -1,5 +1,8 @@
 import time
 import pigpio
+from picamera2 import Picamera2
+
+camera = Picamera2()
 
 I2C_ADDR=0x18
 
@@ -28,7 +31,9 @@ pi.bsc_i2c(I2C_ADDR)
 
 while  True:
     print("wating")
-    time.sleep(1)
+    #time.sleep(1)
+    frame = camera.capture_array("main")
+    print(frame)
 
 e.cancel()
 
