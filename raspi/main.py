@@ -23,11 +23,11 @@ pi = pigpio.pi()
 if not pi.connected:
     print("no i2c connection")
     exit()
+e = pi.event_callback(pigpio.EVENT_BSC, i2c)
 pi.bsc_i2c(I2C_ADDR)
 
 while  True:
-    e = pi.event_callback(pigpio.EVENT_BSC, i2c)
-    
+    print("wating")
     time.sleep(1000)
 
 e.cancel()
