@@ -23,14 +23,12 @@ pi = pigpio.pi()
 if not pi.connected:
     print("no i2c connection")
     exit()
+pi.bsc_i2c(I2C_ADDR)
 
-# Respond to BSC slave activity
-
-e = pi.event_callback(pigpio.EVENT_BSC, i2c)
-
-pi.bsc_i2c(I2C_ADDR) # Configure BSC as I2C slave
-
-time.sleep(10000)
+while  True:
+    e = pi.event_callback(pigpio.EVENT_BSC, i2c)
+    
+    time.sleep(1000)
 
 e.cancel()
 
