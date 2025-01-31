@@ -261,111 +261,26 @@ void loop(){
     t.join();
     ls::update();
 
-    if (color::silver() && green_freeze < millis()){
-        while (color::silver() != Side::BOTH){
-            motor::fwd(motor::motor(Side::BOTH & ~color::silver()), 80);
-            color::silver.update(nullptr, nullptr, nullptr);
-        }
-        delay(200);
-        motor::stop();
-        output.println("LFE: SILVER detected");
-        menu::showWaiting("ZONE");
-        motor::fwd(800);
-        //delay(5000);
-        zone::ignore();
-        
-        motor::fwd(300);
-        color::silver.reset();
-        shiftregister::set(SR_XSHT_1, LOW, false);
-        shiftregister::set(SR_XSHT_4, HIGH);
-    }
+    
 
-    if (color::red()){
-        output.println("LFE: RED detected");
-        motor::stop();
-        rgb::setValue(Side::BOTH, 255, 0, 0);
-        delay(6000);
-        rgb::reset();
-        color::red.reset();
-    }
-
-    auto gy = mpu.getGyroY();
-    if ((abs(mpu.getGyroX()) > 40) /*|| (-80>gy)*/){
-        output.println("Bumpa-di-bump-bump");
-        menu::showWaiting("Bumpa-di-bump-bump");
-        green_freeze = millis() + 1000;
-    }
-
-    if (color::green() && green_freeze < millis()){
-        Side green = Side(color::green());
-        menu::showWaiting(match(green));
-        motor::fwd(motor::motor::AB, 70);
-        do {
-            ls::read();
-            color::update();
-            green = Side(green | color::green());
-        } while(color::green());
-        motor::read_fwd(70, 5, {&color::black, &color::black_outer});
-        Side black = Side(color::black() | color::black_outer());
-        motor::stop();
-
-        Side turn = Side(green & black);
-        output.print("LFE: GREEN detected "); output.println(match(turn));
-        menu::showWaiting(match(turn));
-
-        int16_t deg = 85 * bool(turn & Side::LEFT);
-        deg += 85 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
-
-        if(deg != 0){
-            motor::fwd(400);
-            motor::gyro(deg);
-            motor::fwd(20);
-        }
-    }
-
-    output.print(ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
-    output.print("\t");
-    output.println(ls::green.right.value);
+    //output.print(ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    //output.print("\t");
+    //output.println(ls::green.right.value);
     //output.println(mpu.getGyroY());
     //output.println();
     if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");
         motor::gyro(-80);
-
-        /*motor::fwd(600);
-        motor::gyro(90);
-        while (true){
-            uint32_t timestamp = millis() + 1300;
-            motor::fwd(motor::motor::AB, V_STD);
-            while(timestamp > millis()){
-                ls::read();
-                color::update();
-                if(color::black() | color::black_outer()) goto end;
-            }
-            motor::gyro(90);
-        }
-        end:
-        motor::fwd(200);
-        motor::gyro(-45);*/
         unsigned long timestamp = millis() + 2700;
         motor::fwd(motor::motor::A, 250);
         motor::fwd(motor::motor::B, 57);
         while(timestamp > millis()){
                 ls::read();
                 color::update();
-                //if(/*(color::black() || color::black_outer()) && (timestamp-4000) > millis()*/) break;
+                if((color::black() || color::black_outer()) && (timestamp-4000) < millis()) break;
         }
-        //motor::fwd(motor::motor::A, 250);
-        //motor::fwd(motor::motor::B, 50);
         delay(300);
-        motor::gyro(-90);
+        motor::gyro(-45);
     }
-
-    //if(color::black() == Side::BOTH){
-    //    motor::fwd(100);
-    //    color::black.reset();
-    //}
-    //output.println(micros() - timestamp);
-    //timestamp = micros();
 }
