@@ -13,7 +13,7 @@ def i2c(id, tick):
 
             print("sent={} FR={} received={} [{}]".format(s>>16, s&0xfff,b,d))
 
-            s, b, d = pi.bsc_i2c(I2C_ADDR, 0x00)
+            s, b, d = pi.bsc_i2c(I2C_ADDR, [0x00])
 
         else:
             print("nothing")
