@@ -1,6 +1,7 @@
 import time
 import pigpio
 from picamera2 import Picamera2
+import os
 
 camera = Picamera2()
 
@@ -29,6 +30,11 @@ if not pi.connected:
 e = pi.event_callback(pigpio.EVENT_BSC, i2c)
 pi.bsc_i2c(I2C_ADDR)
 print(camera.start())
+
+path = "./recorded_images/"
+for i in range(400,600,1):
+    camera.capture_file(str(os.path.join(path, 'frame%d.jpg') % i))
+    time.sleep(1)
 
 while  True:
     print("wating")
