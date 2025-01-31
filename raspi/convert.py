@@ -42,6 +42,7 @@ from PIL import Image
 path = (pathlib.Path(__file__).parent.resolve() / 'recorded_images')
 paths = []
 
+# drehen, abschneiden zum resizen und ab 400 nicht trainieren?
 for i in range(0,400):
     im = Image.open(path / str("frame"+str(i)+".jpg"))
     im = im.resize((640,264))
