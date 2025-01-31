@@ -28,7 +28,7 @@ pi.bsc_i2c(I2C_ADDR)
 
 while  True:
     print("wating")
-    time.sleep(1000)
+    time.sleep(1)
 
 e.cancel()
 
