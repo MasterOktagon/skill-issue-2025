@@ -26,9 +26,9 @@ if not pi.connected:
 e = pi.event_callback(pigpio.EVENT_BSC, i2c)
 pi.bsc_i2c(I2C_ADDR)
 
-#while  True:
-print("wating")
-time.sleep(15)
+while  True:
+    print("wating")
+    time.sleep(1)
 
 e.cancel()
 
