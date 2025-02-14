@@ -19,8 +19,9 @@ last_corner_angle = 0
 last_corner_dist = 0
 last_corner_time = 0
 
-num_balls = 0
-num_corners = 0
+balls_active = False
+corners_active = False
+living_rescued = False
 
 def i2c(id, tick):
     global pi
@@ -46,12 +47,17 @@ def i2c(id, tick):
 				if time.time()-last_ball_time<1:	# time anpassen
 					msg = 1
 				s, b, d = pi.bsc_i2c(I2C_ADDR, [msg])
+			case 0xF1:
+				print("balls activate")
+				balls_active = True
+				corners_active = False
+			case 0xF2:
+				print("corner activate")
+				balls_active = False
+				corners_active = True
 			case 0x21:
-				print("ball rescued")
-				num_balls+=1
-			case 0x22:
 				print("corner delivered")
-				num_corners+=1
+				living_rescued = True
 			case _:
 				print("nothing")
 
@@ -77,9 +83,10 @@ TRUST = 0.5         # verändern?
 while  True:
     print("wating")
     #time.sleep(1)
-	if num_balls<3:
+	if balls_active:
+		last_ball_time = time.time()
 		frame = np.array(camera.capture_array())
-		print(frame.shape)
+		#print(frame.shape)
 		yp_class, yp_box = model.predict(frame)
 		print("Model Prediction Class: ", yp_class)
 		print("Model Prediction Box: ", yp_box)
@@ -88,6 +95,10 @@ while  True:
 			print("Ball Angle", angle)
 		else:
 			print("no Ball")
+	elif corners_active:
+		pass
+	else:
+		pass
 
 
 

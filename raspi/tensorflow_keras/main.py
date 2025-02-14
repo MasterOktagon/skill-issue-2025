@@ -64,6 +64,7 @@ def visualize_evaluation(model, name):
     im = Image.open("./images/valid/"+name)
     image = np.asarray(im)
     image = np.expand_dims(image, axis=0)
+	image /= 255.
     print(image.shape)
     
     # Set y_true & y_pred for class & bounding box
@@ -78,7 +79,7 @@ def visualize_evaluation(model, name):
     print("Ball Angle", angle)
 
     # Plot bounding box on image & show it
-    image_plotted = plot_bbox(image, yt_box, yp_box, norm=False) #True?
+    image_plotted = plot_bbox(image[0], yt_box[0], yp_box[0], norm=False) #True?
     plt.imshow(image_plotted)
     plt.axis('off')
     
