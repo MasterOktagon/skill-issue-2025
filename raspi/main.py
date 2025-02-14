@@ -9,24 +9,51 @@ camera = Picamera2()
 
 I2C_ADDR=0x18
 
-last_class = 0
-last_angle = 0
-last_dist = 0
+last_ball_class = 0
+last_ball_angle = 0
+last_ball_dist = 0
+last_ball_time = 0
+
+last_corner_class = 0
+last_corner_angle = 0
+last_corner_dist = 0
+last_corner_time = 0
+
+num_balls = 0
+num_corners = 0
 
 def i2c(id, tick):
     global pi
 
     s, b, d = pi.bsc_i2c(I2C_ADDR)
     if b:
-        if d[0] == 0xE0:
-            print("something")
+        match d[0]:
+			case 0xE0:
+				print("status requested")
 
-            print("sent={} FR={} received={} [{}]".format(s>>16, s&0xfff,b,d))
+				print("sent={} FR={} received={} [{}]".format(s>>16, s&0xfff,b,d))
 
-            s, b, d = pi.bsc_i2c(I2C_ADDR, [0x00])
-
-        else:
-            print("nothing")
+				s, b, d = pi.bsc_i2c(I2C_ADDR, [0x00])
+			case 0x11:
+				print("ball read")
+				msg = 0x00
+				if time.time()-last_ball_time<1:	# time anpassen
+					msg = 1
+				s, b, d = pi.bsc_i2c(I2C_ADDR, [msg])
+			case 0x12:
+				print("corner read")
+				msg = 0x00
+				if time.time()-last_ball_time<1:	# time anpassen
+					msg = 1
+				s, b, d = pi.bsc_i2c(I2C_ADDR, [msg])
+			case 0x21:
+				print("ball rescued")
+				num_balls+=1
+			case 0x22:
+				print("corner delivered")
+				num_corners+=1
+			case _:
+				print("nothing")
 
 pi = pigpio.pi()
 
@@ -50,16 +77,17 @@ TRUST = 0.5         # verändern?
 while  True:
     print("wating")
     #time.sleep(1)
-    frame = np.array(camera.capture_array())
-    print(frame.shape)
-    yp_class, yp_box = model.predict(frame)
-    print("Model Prediction Class: ", yp_class)
-    print("Model Prediction Box: ", yp_box)
-    if(yp_class>TRUST):
-        angle = (yp_box[0][0]+yp_box[0][2]/2)/640 *camera_fov - camera_fov/2
-        print("Ball Angle", angle)
-    else:
-        print("no Ball")
+	if num_balls<3:
+		frame = np.array(camera.capture_array())
+		print(frame.shape)
+		yp_class, yp_box = model.predict(frame)
+		print("Model Prediction Class: ", yp_class)
+		print("Model Prediction Box: ", yp_box)
+		if(yp_class>TRUST):
+			angle = (yp_box[0][0]+yp_box[0][2]/2)/640 *camera_fov - camera_fov/2
+			print("Ball Angle", angle)
+		else:
+			print("no Ball")
 
 
 
