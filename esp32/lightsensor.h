@@ -14,7 +14,7 @@
 #include "Pins.h"
 #include "shared.h"
 
-#define LED_DELAY 100 // delay between turning on the LED and reading in us
+#define LED_DELAY 150 // delay between turning on the LED and reading in us
 #define ITER_SKIP 100 // The first x readings are corrupted for no visible reason. Skip these readings when calibrating
 
 using namespace std;

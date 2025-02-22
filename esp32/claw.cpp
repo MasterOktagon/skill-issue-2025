@@ -24,7 +24,7 @@ void claw::setup(){
 
 void claw::up(){
     bus.wakeup();
-    bus.setPWM(SERVO4, 0, 245);
+    bus.setPWM(SERVO4, 0, 70);
     delay(2000);
     bus.sleep();
 }

@@ -184,7 +184,7 @@ void setup(){
                 case 3:
                     delay(1500);
                     attachInterrupt(T_E, isr, RISING);
-                    zone::ignore();
+                    zone::takeVictim(0);//ignore();
                     detachInterrupt(T_E);
                     break;
 
@@ -261,9 +261,45 @@ void loop(){
     t.join();
     ls::update();
 
-    
+    if (color::red()){
+        output.println("LFE: RED detected");
+        motor::stop();
+        menu::showWaiting("RED");
+        rgb::setValue(Side::BOTH, 255, 0, 0);
+        delay(6000);
+        rgb::reset();
+        color::red.reset();
+    }
 
-    //output.print(ls::red.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
+    if (color::green() && green_freeze < millis()){
+        Side green = Side(color::green());
+        menu::showWaiting(match(green));
+        motor::fwd(motor::motor::AB, 70);
+        do {
+            ls::read();
+            color::update();
+            green = Side(green | color::green());
+        } while(color::green());
+        motor::read_fwd(70, 5, {&color::black, &color::black_outer});
+        Side black = Side(color::black() | color::black_outer());
+        motor::stop();
+
+        Side turn = Side(green & black);
+        output.print("LFE: GREEN detected "); output.println(match(turn));
+        menu::showWaiting(match(turn));
+
+        int16_t deg = 85 * bool(turn & Side::LEFT);
+        deg += 85 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
+
+        if(deg != 0){
+            motor::fwd(400);
+            motor::gyro(deg);
+            motor::fwd(20);
+        }
+        color::green.reset();
+    }
+
+    //output.println(ls::red.right.value - ls::green.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
     //output.print("\t");
     //output.println(ls::green.right.value);
     //output.println(mpu.getGyroY());

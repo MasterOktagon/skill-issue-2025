@@ -16,7 +16,7 @@ namespace tof {
 /*
 implements a high-level acces to the time-of-flight sensors
 */
-    extern VL53L1X front, left, right, back;
+    extern VL53L1X front, left, right, claw;
 
     void setup();
     /*
@@ -33,6 +33,17 @@ implements a high-level acces to the time-of-flight sensors
     stop continuous reading on all ToFs
     */
 
+    enum tof {
+        FRONT,
+        LEFT,
+        RIGHT,
+        CLAW
+    };
+
+    void enable(tof);
+    /*
+    enable a certain TOF
+    */
 }
 
 

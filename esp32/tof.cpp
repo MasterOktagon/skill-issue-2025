@@ -6,12 +6,12 @@
 
 
 namespace tof {
-    VL53L1X front, left, right, back;
+    VL53L1X front, left, right, claw;
 }
 
 
 void tof::setup(){
-  VL53L1X front = VL53L1X();
+  front = VL53L1X();
   shiftregister::set(SR_XSHT_2, HIGH);
   delay(10);
   if (!front.init()) {
@@ -22,7 +22,7 @@ void tof::setup(){
     front.setTimeout(500);
     front.setDistanceMode(VL53L1X::Short);
   }
-  VL53L1X left = VL53L1X();
+  left = VL53L1X();
   shiftregister::set(SR_XSHT_2, LOW, false);
   shiftregister::set(SR_XSHT_1, HIGH);
   delay(10);
@@ -46,7 +46,7 @@ void tof::setup(){
     right.setTimeout(500);
     right.setDistanceMode(VL53L1X::Short);
   }
-  VL53L1X claw = VL53L1X();
+  claw = VL53L1X();
   shiftregister::set(SR_XSHT_4, LOW, false);
   shiftregister::set(SR_XSHT_3, HIGH);
   delay(10);
@@ -69,5 +69,12 @@ void tof::start_all(){
 
 void tof::stop_all(){
 
+}
+
+void tof::enable(tof t){
+    shiftregister::set(SR_XSHT_2, t == tof::FRONT, false);
+    shiftregister::set(SR_XSHT_1, t == tof::LEFT, false);
+    shiftregister::set(SR_XSHT_3, t == tof::CLAW, false);
+    shiftregister::set(SR_XSHT_4, t == tof::RIGHT);
 }
 

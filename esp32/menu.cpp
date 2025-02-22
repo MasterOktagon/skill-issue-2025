@@ -1,3 +1,4 @@
+#include "rpi_com.h"
 
 
 //
@@ -76,6 +77,9 @@ namespace menu {
             display.print(String(BATPercent));
             display.print("%");
         #endif
+        if (rpi::status() == 0){
+            display.print("   PI");
+        }
     }
 
     void showWaiting(const char* msg){

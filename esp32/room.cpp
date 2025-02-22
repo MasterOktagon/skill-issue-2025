@@ -1,3 +1,4 @@
+#include "shared.h"
 #include "esp32-hal-gpio.h"
 #include "Pins.h"
 #include "shiftregister.h"
@@ -8,6 +9,7 @@
 #include "lightsensor.h"
 #include "tof.h"
 #include "shiftregister.h"
+#include "claw.h"
 
 void zone::ignore(){
     int16_t tof_dist = 100;
@@ -83,6 +85,23 @@ void zone::ignore(){
 
         
     }
+}
+
+bool zone::takeVictim(int8_t turn){
+
+    motor::gyro(turn, V_STD);
+    claw::down(); claw::open();
+    tof::enable(tof::tof::CLAW);
+    motor::fwd(motor::motor::AB, V_STD);
+    uint16_t tof_data;
+    do {
+        tof_data = tof::claw.readSingle();
+    } while (tof_data > 69 || tof_data == 0);
+    motor::stop();
+    claw::close();
+    claw::up();
+
+    return false;
 }
 
 

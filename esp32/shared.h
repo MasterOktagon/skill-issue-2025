@@ -22,7 +22,7 @@
 //#define RASP_COMM
 //#define LED_TEST
 //#define MOT_TEST
-#define NO_CLAW
+//#define NO_CLAW
 //#define CLAW_TEST
 //#define FASTREAD
 //#define STORAGE_TEST
