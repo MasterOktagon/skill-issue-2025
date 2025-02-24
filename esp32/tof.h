@@ -34,6 +34,7 @@ implements a high-level acces to the time-of-flight sensors
     */
 
     enum tof {
+        OFF,
         FRONT,
         LEFT,
         RIGHT,

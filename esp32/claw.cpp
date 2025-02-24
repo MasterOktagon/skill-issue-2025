@@ -25,43 +25,43 @@ void claw::setup(){
 void claw::up(){
     bus.wakeup();
     bus.setPWM(SERVO4, 0, 70);
-    delay(2000);
-    bus.sleep();
+    //delay(2000);
+    //bus.sleep();
 }
 
 void claw::down(){
     bus.wakeup();
-    bus.setPWM(SERVO4, 0, 528);
-    delay(2000);
-    bus.sleep();
+    bus.setPWM(SERVO4, 0, 520);
+    //delay(2000);
+    //bus.sleep();
 }
 
 void claw::half(){
     bus.wakeup();
     bus.setPWM(SERVO4, 0, 260);
-    delay(2000);
-    bus.sleep();
+    //delay(2000);
+    //bus.sleep();
 }
 
 void claw::open(){
     bus.wakeup();
     bus.setPWM(SERVO5, 0, 250);
-    delay(2000);
-    bus.sleep();
+    //delay(2000);
+    //bus.sleep();
 }
 
 void claw::wide(){
     bus.wakeup();
     bus.setPWM(SERVO5, 0, 140);
-    delay(2000);
-    bus.sleep();
+    //delay(2000);
+    //bus.sleep();
 }
 
 void claw::close(){
     bus.wakeup();
     bus.setPWM(SERVO5, 0, 528);
-    delay(2000);
-    bus.sleep();
+    //delay(2000);
+    //bus.sleep();
 }
 
 void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
@@ -87,21 +87,21 @@ void storage::unload(Side s){
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 140);
         delay(2000);
-        bus.sleep();
+        //bus.sleep();
     }
     else if (s == Side::RIGHT){
         output.println("INFO: storage::unload RIGHT");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 528);
         delay(2000);
-        bus.sleep();
+        //bus.sleep();
     }
     else if (s == Side::NONE){
         output.println("INFO: storage::unload NONE");
         bus.wakeup();
         bus.setPWM(SERVO2, 0, 334);
         delay(2000);
-        bus.sleep();
+        //bus.sleep();
     }   
 }
 
@@ -115,14 +115,14 @@ void storage::divide(Side s, bool wide){
         bus.wakeup();
         bus.setPWM(SERVO3, 0, 240 - 100 * wide);
         delay(2000);
-        bus.sleep();
+        //bus.sleep();
     }
     else if (s == Side::RIGHT){
         output.println("INFO: storage::divide RIGHT");
         bus.wakeup();
         bus.setPWM(SERVO3, 0, 448 + 80 * wide);
         delay(2000);
-        bus.sleep();
+        //bus.sleep();
     }
     else {
         output.println("WARNING: unknown/unimplemented storage::divide Side");

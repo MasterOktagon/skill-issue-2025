@@ -58,6 +58,13 @@ void setup(){
 
     output.println("");
     output.println("INFO: output init [115200] ...");
+
+    output.println("INFO: Resetting LEDs ...");
+    digitalWrite(PT_RED,       LOW);
+    digitalWrite(PT_GREEN,     LOW);
+    digitalWrite(PT_WHITE_L,   LOW);
+    digitalWrite(PT_WHITE_R,   LOW);
+    digitalWrite(PT_WHITE_REF, LOW);
     
     // init SR
     output.println("INFO: Shiftregister init...");
@@ -285,6 +292,7 @@ void loop(){
         motor::stop();
 
         Side turn = Side(green & black);
+        rgb::setValue(turn, 0, 255, 0);
         output.print("LFE: GREEN detected "); output.println(match(turn));
         menu::showWaiting(match(turn));
 
@@ -292,11 +300,13 @@ void loop(){
         deg += 85 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
-            motor::fwd(400);
+            motor::fwd(200);
             motor::gyro(deg);
-            motor::fwd(20);
+            //motor::fwd(20);
+            green_freeze = millis() + 250;
         }
         color::green.reset();
+        rgb::reset();
     }
 
     //output.println(ls::red.right.value - ls::green.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);

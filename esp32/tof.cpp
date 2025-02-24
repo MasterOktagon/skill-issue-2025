@@ -12,7 +12,7 @@ namespace tof {
 
 void tof::setup(){
   front = VL53L1X();
-  shiftregister::set(SR_XSHT_2, HIGH);
+  enable(tof::FRONT);
   delay(10);
   if (!front.init()) {
     output.println("ERROR: Missing TOF 1 front!!!");
@@ -23,8 +23,7 @@ void tof::setup(){
     front.setDistanceMode(VL53L1X::Short);
   }
   left = VL53L1X();
-  shiftregister::set(SR_XSHT_2, LOW, false);
-  shiftregister::set(SR_XSHT_1, HIGH);
+  enable(tof::LEFT);
   delay(10);
   if (!left.init()) {
     output.println("ERROR: Missing TOF 2 left!!!");
@@ -35,8 +34,7 @@ void tof::setup(){
     left.setDistanceMode(VL53L1X::Short);
   }
   VL53L1X right = VL53L1X();
-  shiftregister::set(SR_XSHT_1, LOW, false);
-  shiftregister::set(SR_XSHT_4, HIGH);
+  enable(tof::RIGHT);
   delay(10);
   if (!right.init()) {
     output.println("ERROR: Missing TOF 4 right!!!");
@@ -47,8 +45,7 @@ void tof::setup(){
     right.setDistanceMode(VL53L1X::Short);
   }
   claw = VL53L1X();
-  shiftregister::set(SR_XSHT_4, LOW, false);
-  shiftregister::set(SR_XSHT_3, HIGH);
+  enable(tof::CLAW);
   delay(10);
   if (!claw.init()) {
     output.println("ERROR: Missing TOF 3 claw!!!");
@@ -58,7 +55,7 @@ void tof::setup(){
     claw.setTimeout(500);
     claw.setDistanceMode(VL53L1X::Short);
   }
-  shiftregister::set(SR_XSHT_3, LOW);
+  enable(tof::OFF);
 
   output.println("INFO: tofs active");
 }

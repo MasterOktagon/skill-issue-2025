@@ -1,3 +1,4 @@
+#include "esp32-hal-gpio.h"
 #include "Pins.h"
 
 //
@@ -25,7 +26,7 @@
 
 using namespace std;
 
-uint8_t last_led = PT_GREEN; // which led was turned on lastly
+uint8_t last_led = PT_GREEN; // which led was turned on lastly.
 
 void fs::setup(){
     /*
@@ -50,6 +51,8 @@ lightSensor::lightSensor(){
 
 void lightSensor::led_on(){
     //if (led_pin != last_led){
+        //digitalWrite(last_led, LOW);
+        //delayMicroseconds(delay);
         digitalWrite(led_pin, HIGH);
         delayMicroseconds(delay); // Delay because your LED needs time to turn on
 

@@ -7,6 +7,8 @@
 #include "motor.h"
 #include "shiftregister.h"
 
+#define MOT_CORRECTION 2
+
 bool button_failure = false; // wether buttons have a failure
 
 void motor::stop(bool hard){
@@ -84,22 +86,22 @@ void motor::fwd(motor m, int16_t v){
   if (m & motor::A1){
     shiftregister::set(SR_AIN1_F,  rev, false);
     shiftregister::set(SR_AIN1_R, !rev, false);
-    analogWrite(PWMA1, v);
+    analogWrite(PWMA1, v-MOT_CORRECTION);
   }
   if (m & motor::A2){
     shiftregister::set(SR_AIN2_F,  rev, false);
     shiftregister::set(SR_AIN2_R, !rev, false);
-    analogWrite(PWMA2, v);
+    analogWrite(PWMA2, v-MOT_CORRECTION);
   }
   if (m & motor::B1){
     shiftregister::set(SR_BIN1_F,  rev, false);
     shiftregister::set(SR_BIN1_R, !rev, false);
-    analogWrite(PWMB1, v);
+    analogWrite(PWMB1, v+MOT_CORRECTION);
   }
   if (m & motor::B2){
     shiftregister::set(SR_BIN2_F,  rev, false);
     shiftregister::set(SR_BIN2_R, !rev, false);
-    analogWrite(PWMB2, v);
+    analogWrite(PWMB2, v+MOT_CORRECTION);
   }
 
   shiftregister::shift();

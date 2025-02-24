@@ -91,14 +91,16 @@ bool zone::takeVictim(int8_t turn){
 
     motor::gyro(turn, V_STD);
     claw::down(); claw::open();
-    tof::enable(tof::tof::CLAW);
+    tof::enable(tof::tof::RIGHT);
     motor::fwd(motor::motor::AB, V_STD);
     uint16_t tof_data;
     do {
         tof_data = tof::claw.readSingle();
+        output.println(tof_data);
     } while (tof_data > 69 || tof_data == 0);
     motor::stop();
     claw::close();
+    delay(1500);
     claw::up();
 
     return false;
