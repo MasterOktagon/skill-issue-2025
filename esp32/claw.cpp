@@ -23,44 +23,44 @@ void claw::setup(){
 }
 
 void claw::up(){
-    bus.wakeup();
+    //bus.wakeup();
     bus.setPWM(SERVO4, 0, 70);
-    //delay(2000);
+    delay(500);
     //bus.sleep();
 }
 
 void claw::down(){
-    bus.wakeup();
-    bus.setPWM(SERVO4, 0, 520);
-    //delay(2000);
+    //bus.wakeup();
+    bus.setPWM(SERVO4, 0, 508);
+    delay(500);
     //bus.sleep();
 }
 
 void claw::half(){
-    bus.wakeup();
+    //bus.wakeup();
     bus.setPWM(SERVO4, 0, 260);
-    //delay(2000);
+    delay(500);
     //bus.sleep();
 }
 
 void claw::open(){
-    bus.wakeup();
+    //bus.wakeup();
     bus.setPWM(SERVO5, 0, 250);
-    //delay(2000);
+    delay(500);
     //bus.sleep();
 }
 
 void claw::wide(){
-    bus.wakeup();
+    //bus.wakeup();
     bus.setPWM(SERVO5, 0, 140);
-    //delay(2000);
+    delay(500);
     //bus.sleep();
 }
 
 void claw::close(){
-    bus.wakeup();
+    //bus.wakeup();
     bus.setPWM(SERVO5, 0, 528);
-    //delay(2000);
+    delay(500);
     //bus.sleep();
 }
 
@@ -84,23 +84,23 @@ void rgb::reset(Side s){
 void storage::unload(Side s){
     if (s == Side::LEFT){
         output.println("INFO: storage::unload LEFT");
-        bus.wakeup();
+        //bus.wakeup();
         bus.setPWM(SERVO2, 0, 140);
         delay(2000);
         //bus.sleep();
     }
     else if (s == Side::RIGHT){
         output.println("INFO: storage::unload RIGHT");
-        bus.wakeup();
+        //bus.wakeup();
         bus.setPWM(SERVO2, 0, 528);
         delay(2000);
         //bus.sleep();
     }
     else if (s == Side::NONE){
         output.println("INFO: storage::unload NONE");
-        bus.wakeup();
-        bus.setPWM(SERVO2, 0, 334);
-        delay(2000);
+        //bus.wakeup();
+        bus.setPWM(SERVO2, 0, 330);
+        delay(100);
         //bus.sleep();
     }   
 }
@@ -112,14 +112,14 @@ void storage::reset(){
 void storage::divide(Side s, bool wide){
     if (s == Side::LEFT){
         output.println("INFO: storage::divide LEFT");
-        bus.wakeup();
+        //bus.wakeup();
         bus.setPWM(SERVO3, 0, 240 - 100 * wide);
         delay(2000);
         //bus.sleep();
     }
     else if (s == Side::RIGHT){
         output.println("INFO: storage::divide RIGHT");
-        bus.wakeup();
+        //bus.wakeup();
         bus.setPWM(SERVO3, 0, 448 + 80 * wide);
         delay(2000);
         //bus.sleep();

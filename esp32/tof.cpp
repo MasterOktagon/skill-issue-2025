@@ -15,10 +15,9 @@ void tof::setup(){
   enable(tof::FRONT);
   delay(10);
   if (!front.init()) {
-    output.println("ERROR: Missing TOF 1 front!!!");
+    output.println("ERROR: Missing TOF 2 front!!!");
   }
   else {
-    front.setAddress(TOF_ADDRESS1);
     front.setTimeout(500);
     front.setDistanceMode(VL53L1X::Short);
   }
@@ -26,10 +25,9 @@ void tof::setup(){
   enable(tof::LEFT);
   delay(10);
   if (!left.init()) {
-    output.println("ERROR: Missing TOF 2 left!!!");
+    output.println("ERROR: Missing TOF 1 left!!!");
   }
   else {
-    left.setAddress(TOF_ADDRESS2);
     left.setTimeout(500);
     left.setDistanceMode(VL53L1X::Short);
   }
@@ -40,7 +38,6 @@ void tof::setup(){
     output.println("ERROR: Missing TOF 4 right!!!");
   }
   else {
-    right.setAddress(TOF_ADDRESS4);
     right.setTimeout(500);
     right.setDistanceMode(VL53L1X::Short);
   }
@@ -51,7 +48,6 @@ void tof::setup(){
     output.println("ERROR: Missing TOF 3 claw!!!");
   }
   else {
-    claw.setAddress(TOF_ADDRESS3);
     claw.setTimeout(500);
     claw.setDistanceMode(VL53L1X::Short);
   }

@@ -1,3 +1,4 @@
+#include "esp32-hal-adc.h"
 #include "shared.h"
 #include "esp32-hal-gpio.h"
 #include "Pins.h"
@@ -88,20 +89,39 @@ void zone::ignore(){
 }
 
 bool zone::takeVictim(int8_t turn){
-
+    pinMode(MS, INPUT_PULLUP);
+    
     motor::gyro(turn, V_STD);
-    claw::down(); claw::open();
-    tof::enable(tof::tof::RIGHT);
+    claw::wide(); claw::down(); claw::open();
+    tof::enable(tof::tof::CLAW);
     motor::fwd(motor::motor::AB, V_STD);
     uint16_t tof_data;
     do {
         tof_data = tof::claw.readSingle();
-        output.println(tof_data);
-    } while (tof_data > 69 || tof_data == 0);
+    } while (tof_data > 69 || tof_data == 0); // 0 == timeout
+    delay(100);
     motor::stop();
     claw::close();
     delay(1500);
     claw::up();
+
+    if (analogRead(FLEX) >= 3170){
+        output.println("INFO: Victim rescued");
+        if (digitalRead(MS) + digitalRead(MS) == 0){
+            storage::divide(LEFT);
+        }
+        else {
+            storage::divide(RIGHT);
+        }
+
+        claw::wide();
+        delay(1000);
+        claw::close();
+        return true;
+    }
+    else {
+        output.println("WARNING: Victim not rescued");
+    }
 
     return false;
 }

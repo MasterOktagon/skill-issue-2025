@@ -137,10 +137,10 @@ void setup(){
     #ifdef STORAGE_TEST
         storage::unload(Side::LEFT);
         storage::divide(Side::LEFT);
-        delay(1500);
+        //delay(1500);
         storage::unload(Side::RIGHT);
         storage::divide(Side::RIGHT);
-        delay(1500);
+        //delay(1500);
     #endif
     storage::reset();
 

@@ -7,7 +7,7 @@
 #include "motor.h"
 #include "shiftregister.h"
 
-#define MOT_CORRECTION 2
+#define MOT_CORRECTION -2
 
 bool button_failure = false; // wether buttons have a failure
 
