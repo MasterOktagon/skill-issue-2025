@@ -75,7 +75,7 @@ print(camera.start())
 #     camera.capture_file(str(os.path.join(path, 'frame%d.jpg') % i))
 #     time.sleep(1)
 
-model = tf.keras.models.load_model("ball_detection_V2.keras")
+model = tf.keras.models.load_model("ball_detection_cuda.keras")
 
 camera_fov = 53.50  # richtig?
 TRUST = 0.5         # verändern?
@@ -85,8 +85,8 @@ while  True:
     #time.sleep(1)
     if balls_active:
         last_ball_time = time.time()
-        frame = np.array(camera.capture_array())
-        #print(frame.shape)
+        frame = np.expand_dims(np.array(camera.capture_array())/255, axis=0)
+        print(frame.shape)
         yp_class, yp_box = model.predict(frame)
         print("Model Prediction Class: ", yp_class)
         print("Model Prediction Box: ", yp_box)
