@@ -87,9 +87,9 @@ while  True:
     if balls_active:
         last_ball_time = time.time()
         frame = np.array(camera.capture_array())
-		frame = frame.crop((0,150,640,66))
-		frame = frame.transpose(Image.FLIP_TOP_BOTTOM)
-		frame = np.expand_dims(frame/255, axis=0)
+        frame = frame.crop((0,150,640,66))
+        frame = frame.transpose(Image.FLIP_TOP_BOTTOM)
+        frame = np.expand_dims(frame/255, axis=0)
         print(frame.shape)
         yp_class, yp_box = model.predict(frame)
         print("Model Prediction Class: ", yp_class)
