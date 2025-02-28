@@ -92,7 +92,8 @@ def visualize_prediction(model, data):
 def lr_scheduler(epoch, lr):
     if epoch > 10:
         lr = lr * tf.math.exp(-0.1)
-    return lr
+        print(lr)
+    return float(lr)
 
 # Function to calculate MSE Loss function
 # for samples where object exists
