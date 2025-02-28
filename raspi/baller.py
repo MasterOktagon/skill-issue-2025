@@ -3,31 +3,32 @@ import os
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 from pathlib import Path
 from PIL import Image, ImageDraw
 from tensorflow.keras import backend as K
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Input, Dense, Add, Conv2D, SeparableConv2D
 from tensorflow.keras.layers import BatchNormalization, AveragePooling2D
 from tensorflow.keras.layers import LeakyReLU, MaxPooling2D, Flatten
 from tensorflow.keras.models import Model
 
-IMG_HEIGHT = 640
-IMG_WIDTH = 264
-X_FACTOR = IMG_WIDTH / 600 # Scale of resizing images
-Y_FACTOR = IMG_HEIGHT / 600 # Scale of resizing images
+IMG_HEIGHT = 264
+IMG_WIDTH = 640
+X_FACTOR = 1
+Y_FACTOR = 1
 BATCH_SIZE = 128
-EPOCHS = 25
+EPOCHS = 30    # maybe mehr?
 learning_rate = 0.003
 train_dataset_path = './images/train/'
 test_dataset_path = './images/test/'
 
 # Function to read images names and store them in a DataFrame
 def grabPaths(filepath):
-    labels = [str(filepath[i]).split("/")[-1] for i in range(len(filepath))]
+    labels = [str(filepath[i]).split("/")[-1] \
+            for i in range(len(filepath))]
 
     filepath = pd.Series(filepath, name='path').astype(str)
     
@@ -42,36 +43,7 @@ def grabPaths(filepath):
 def resize_boxes(boxes):
     boxes = np.array(boxes).astype(np.float32)
     boxes = boxes * X_FACTOR
-    return boxes
-
-
-# Function to draw bounding box given an image & coordinates
-def plot_bbox(image, yt_box, yp_box=None, norm=False):
-    # If image is normalized (/255.) reconstruct (inverse) the operation
-    if norm:
-        image = image * 255.
-        image = image.astype("uint8")
-    
-    # Convert image to array if not converted
-    try:
-        pil_img = Image.fromarray(image)
-    except:
-        pil_img = Image.fromarray(image.astype('uint8'))
-        
-    draw_img = ImageDraw.Draw(pil_img)
-    
-    x1, y1, w = yt_box
-    h = w
-    x2, y2 = x1+w, y1+h
-    draw_img.rectangle((x1, y1, x2, y2), outline='green')
-    
-    # If y_pred box is given, draw it
-    if yp_box is not None:
-        x1, y1, w = yp_box
-        h = w
-        x2, y2 = x1+w, y1+h
-        draw_img.rectangle((x1, y1, x2, y2), outline='red')
-    return pil_img
+    return (np.rint(boxes)).astype(int)
 
 
 # Function to build convolutionl block
@@ -99,25 +71,6 @@ def convblock(previous_layer, n_filters, filter_windows=(3,3,3), padding='same',
     
     return x
 
-# Function to show samples
-def visualize_samples(datagen, row_col_len=4, figsize=None):
-    figsize = figsize or np.array((row_col_len, row_col_len)) * 4
-    fig, ax = plt.subplots(row_col_len, row_col_len, figsize=figsize)
-    for i in range(row_col_len):
-        for j in range(row_col_len):
-            batch_index = np.random.randint(0, BATCH_SIZE/2)
-            output_classes = np.array(datagen[batch_index][1]['class_out'])
-            classes_true = np.where(output_classes == 1)[0]
-            sample_index = classes_true[np.random.randint(0, classes_true.shape[0])]
-            image = datagen[batch_index][0][sample_index]
-            box = datagen[batch_index][1]['box_out'][sample_index]
-            plotted_box = plot_bbox(image, box, norm=True)
-            ax[i,j].imshow(plotted_box)
-            ax[i,j].set_axis_off()
-    plt.show()
-    
-
-
 # Function to make a prediction during training
 def visualize_prediction(model, data):    
     # Select a sample where an object exists
@@ -129,28 +82,22 @@ def visualize_prediction(model, data):
     image = np.array([data[0][0][sample_index]])
     
     # Set y_true & y_pred for class & bounding box
-    yt_box = np.array([custom_test_gen[0][1]['box_out'][sample_index]])
     yt_class = np.array([custom_test_gen[0][1]['class_out'][sample_index]])
     yp_class, yp_box = model.predict(image)
 
-    # Plot bounding box on image & show it
-    image_plotted = plot_bbox(image[0], yt_box[0], yp_box[0], norm=True) 
-    plt.imshow(image_plotted)
-    plt.axis('off')
     
     # Print y_true class & y_pred class
     print("Class: y_true=", yt_class, " | y_pred=", int(yp_class >= 0.5))
-    plt.show()
-
 
 # Function to reduce learning rate during training        
 def lr_scheduler(epoch, lr):
     if epoch > 10:
-        lr = lr * tf.math.exp(-0.15)
+        lr = lr * tf.math.exp(-0.1)
     return lr
 
 # Function to calculate MSE Loss function
 # for samples where object exists
+@tf.keras.utils.register_keras_serializable()
 def custom_mse(y_true, y_pred):
     mask = K.not_equal(K.sum(y_true, axis=1), 0.0)
     y_true_custom = y_true[mask]
@@ -172,13 +119,12 @@ train_filepaths_hand = list(train_image_dir_hand.glob(r'**/*.jpg'))
 test_image_dir_hand = Path('./images/test')
 test_filepaths_hand = list(train_image_dir_hand.glob(r'**/*.jpg'))
 
-
 # Create dataframe of {paths, labels}
 train_df_hand = grabPaths(train_filepaths_hand)
 test_df_hand = grabPaths(test_filepaths_hand)
 
-train_dataset['path'] = "./images/train" + train_dataset['path']
-test_dataset['path'] = "./images/test" + test_dataset['path']
+train_dataset['path'] = "./images/train/" + train_dataset['path']
+test_dataset['path'] = "./images/test/" + test_dataset['path']
 
 
 # Resize boxes, keep zeros if no object exists
@@ -249,7 +195,6 @@ test_images = test_generator.flow_from_dataframe(
 custom_train_gen = MultiOutputGen(train_images, train_dataset.iloc[:,1:])
 custom_test_gen = MultiOutputGen(test_images, test_dataset.iloc[:,1:])
 
-visualize_samples(custom_train_gen)
 
 # BEST MODEL
 
@@ -279,7 +224,7 @@ class_out = Dense(1, name='class_out', activation='sigmoid')(classX)
 
 
 model = Model(inp, [class_out, box_out])
-model.summary()
+
 
 adam = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
@@ -304,65 +249,11 @@ history = model.fit(
     ]
 )
 
-# Accuracy & Loss Visualization
+print("Train Overall loss: ", history.history['loss'][-1])
+print("Validate Overall loss: ", history.history['val_loss'][-1])
 
-#  Overall Loss
-train_overall_loss = history.history['loss']
-val_overall_loss = history.history['val_loss']
-
-# Classification Accuracy
-train_classification_acc = history.history['class_out_accuracy']
-val_classification_acc = history.history['val_class_out_accuracy']
-
-# Classification Loss
-train_classification_loss = history.history['class_out_loss']
-val_classification_loss = history.history['val_class_out_loss']
-
-# Bounding Box Loss
-train_bbox_loss = history.history['box_out_loss']
-val_bbox_loss = history.history['val_box_out_loss']
-
-epochs = range(1, len(history.history['loss'])+1)
-
-f, ax = plt.subplots(nrows=2,ncols=2,figsize=(18,15))
-    
-ax[0,0].plot(epochs, train_overall_loss,  marker='o', label='Training')
-ax[0,0].plot(epochs, val_overall_loss, marker='o', color = 'green', label='Validation')
-ax[0,0].set_title('Overall Loss')
-ax[0,0].set_xlabel('Epochs')
-ax[0,0].set_ylabel('Loss')
-ax[0,0].legend(loc='best')
-ax[0,0].grid(True)
-
-ax[0,1].plot(epochs, train_bbox_loss, marker='o', label='Training')
-ax[0,1].plot(epochs, val_bbox_loss, marker='o', color = 'green', label='Validation')
-ax[0,1].set_title('Bounding Box Loss')
-ax[0,1].set_xlabel('Epochs')
-ax[0,1].set_ylabel('Loss')
-ax[0,1].legend(loc='best')
-ax[0,1].grid(True)
-
-
-
-ax[1,0].plot(epochs, train_classification_acc,  marker='o', label='Training')
-ax[1,0].plot(epochs, val_classification_acc, marker='o', color = 'green', label='Validation')
-ax[1,0].set_title('Classification Accuracy')
-ax[1,0].set_xlabel('Epochs')
-ax[1,0].set_ylabel('Accuracy')
-ax[1,0].legend(loc='best')
-ax[1,0].grid(True)
-
-ax[1,1].plot(epochs, train_classification_loss, marker='o', label='Training')
-ax[1,1].plot(epochs, val_classification_loss, marker='o', color = 'green', label='Validation')
-ax[1,1].set_title('Classification Loss')
-ax[1,1].set_xlabel('Epochs')
-ax[1,1].set_ylabel('Loss')
-ax[1,1].legend(loc='best')
-ax[1,1].grid(True)
-
-plt.show()
-f.savefig('LossAndAccuracy.eps', format='eps')
-plt.close()
-
-model.save("test ball detection.h5")
+model.save("ball_detection_cuda.keras")
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()
+open("ball_detection_cuda.tflite", "wb").write(tflite_model)
 
