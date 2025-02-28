@@ -4,6 +4,7 @@ from picamera2 import Picamera2
 import os
 import numpy as np
 import tensorflow as tf
+from PIL import Image
 
 camera = Picamera2()
 
@@ -85,7 +86,10 @@ while  True:
     #time.sleep(1)
     if balls_active:
         last_ball_time = time.time()
-        frame = np.expand_dims(np.array(camera.capture_array())/255, axis=0)
+        frame = np.array(camera.capture_array())
+		frame = frame.crop((0,150,640,66))
+		frame = frame.transpose(Image.FLIP_TOP_BOTTOM)
+		frame = np.expand_dims(frame/255, axis=0)
         print(frame.shape)
         yp_class, yp_box = model.predict(frame)
         print("Model Prediction Class: ", yp_class)
