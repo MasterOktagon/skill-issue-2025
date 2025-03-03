@@ -87,7 +87,7 @@ print(camera.start())
 #     camera.capture_file(str(os.path.join(path, 'frame%d.jpg') % i))
 #     time.sleep(1)
 
-model = tf.keras.models.load_model("ball_detection_cuda.keras")
+model = tf.keras.models.load_model("ball_detection_V2.keras")
 
 camera_fov = 53.50  # richtig?
 TRUST = 0.5         # verändern?
