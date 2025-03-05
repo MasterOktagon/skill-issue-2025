@@ -24,11 +24,11 @@ using namespace std;
 #define INNER_FACTOR 2
 #define OUTER_FACTOR 3
 #define BACK_FACTOR  1
-#define GREEN_FACTOR -1
+#define GREEN_FACTOR -1.5
 
-#define P            1
-#define D            0.5
-#define I            0
+#define P            1.66
+#define D            0.6
+#define I            -0.01
 
 #define MAX_I        10000
 
@@ -45,7 +45,7 @@ int16_t lf::follow(){
         int16_t diff       = (ls::white.left.value - ls::white.right.value)             * INNER_FACTOR;
         int16_t diff_outer = (ls::white.left_outer.value - ls::white.right_outer.value) * OUTER_FACTOR;
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
-        int16_t diff_green = ((ls::green.left.value - ls::green.right.value) - (ls::red.left.value - ls::red.right.value)) * GREEN_FACTOR;
+        int16_t diff_green = ((ls::green.left.value - ls::green.right.value) - (ls::green.left.value - ls::red.right.value)) * GREEN_FACTOR;
 
         int16_t mot_diff = max_abs(diff + diff_outer,diff_back) + diff_green; // TODO: maybe change diff_outer to negative factor
 

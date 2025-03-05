@@ -1,4 +1,5 @@
 #pragma once
+#include "rpi_com.h"
 
 //
 // ROOM.h
@@ -11,9 +12,13 @@ namespace zone {
     /*
     skip the room
     */
-    extern bool takeVictim(int8_t turn);
+    extern bool takeVictim(Victim v);
     /*
     take a victim
+    */
+    extern void loop();
+    /*
+    zone main loop
     */
 }
 

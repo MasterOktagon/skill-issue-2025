@@ -115,5 +115,50 @@ enum Side {
     #define output Serial
 #endif
 
+class timer : public repr {
+    public:
+    unsigned long start_time = 0;
+    unsigned long len = 0;
+    unsigned long cpassed = 0;
+    bool cexpired = true;
+
+    virtual string _str(){
+        return string("<timer ") + to_string(cpassed) + "/" + to_string(len) + ">";
+    }
+
+    timer(){}
+    timer(unsigned long len){
+        this->len = len;
+        start_time = millis();
+        cexpired = false;
+        cpassed = 0;
+    }
+
+    void update(){
+        cpassed = millis() - start_time;
+        cexpired = cpassed > len;
+    }
+
+    unsigned long passed(){
+        update();
+        return cpassed;
+    }
+
+    bool expired(){
+        update();
+        return cexpired;
+    }
+
+    void reset(){
+        start_time = millis();
+        cexpired = false;
+    }
+
+    void set(unsigned long l){
+        len = l;
+        start_time = millis();
+        cexpired = false;
+    }
+};
 
 

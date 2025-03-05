@@ -19,13 +19,15 @@
 
 extern bool button_failure; // wether buttons have a failure
 
+// 'cm' suffix
+extern int16_t operator ""cm (unsigned long long int);
+
 namespace motor{
 /*
 This namespace holds all functions that directly influence motor movement
 */
-
     #define V_STD 120 // standard speed
-    
+
     enum motor{
         /*
         This enum holds all possible motors as a possible value. A is left and 

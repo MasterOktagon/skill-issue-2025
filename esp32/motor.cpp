@@ -11,6 +11,10 @@
 
 bool button_failure = false; // wether buttons have a failure
 
+int16_t operator ""cm (unsigned long long int a){
+    return (int16_t) (a * (V_STD/120) * 1000/18);
+}
+
 void motor::stop(bool hard){
     // stop the motors
     digitalWrite(PWMA1, LOW);
@@ -175,11 +179,12 @@ bool motor::sensor_fwd(int16_t v, uint32_t time, initializer_list<color::color*>
 }
 
 void motor::read_fwd(int16_t v, uint32_t time, initializer_list<color::color*> colors){
-    uint32_t timestamp = millis();
+    //uint32_t timestamp = millis();
+    timer t(time);
     fwd(motor::AB, v);
     do {
         ls::read();
         color::update(colors);
-    } while (millis() - timestamp < time);
+    } while (/*millis() - timestamp < time*/ !t.expired());
     stop();
 }

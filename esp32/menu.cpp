@@ -77,9 +77,11 @@ namespace menu {
             display.print(String(BATPercent));
             display.print("%");
         #endif
-        if (rpi::status() == 0){
+        uint8_t b = rpi::status();
+        if (b == 0){
             display.print("   PI");
         }
+        delay(100);
     }
 
     void showWaiting(const char* msg){
@@ -102,6 +104,7 @@ namespace menu {
 
         bool in_menu = true;
         while (in_menu && !button_failure){
+
             display.clearDisplay();
             display.setTextColor(SSD1306_WHITE);
             overlay();

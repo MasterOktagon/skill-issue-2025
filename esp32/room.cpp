@@ -1,3 +1,4 @@
+#include "rpi_com.h"
 #include "esp32-hal-adc.h"
 #include "shared.h"
 #include "esp32-hal-gpio.h"
@@ -88,7 +89,8 @@ void zone::ignore(){
     }
 }
 
-bool zone::takeVictim(int8_t turn){
+bool zone::takeVictim(Victim v){
+    int8_t turn = v.angle;
     pinMode(MS, INPUT_PULLUP);
     
     motor::gyro(turn, V_STD);
@@ -126,5 +128,22 @@ bool zone::takeVictim(int8_t turn){
     return false;
 }
 
+void zone::loop(){
+    motor::stop();
+    output.println("INFO: Zone program started");
+
+    uint8_t victim_counter = 0;
+    
+    rpi::start_ai(rpi::Ai::VICTIMS);
+    while (victim_counter < 3) {
+        if (rpi::status != 0x00) break;
+        
+        Victim v = rpi::get_victim();
+        if (! (v.angle == 0 && v.dist == 0) ){
+            victim_counter += uint8_t(takeVictim(v));
+        }
+    }
+    rpi::stop_ai();
+}
 
 

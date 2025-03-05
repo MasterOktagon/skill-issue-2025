@@ -9,6 +9,7 @@
 #include <Wire.h>
 #include "Pins.h"
 #include <exception>
+#include "shared.h"
 
 #define PI_START  0xF0
 #define PI_STATUS 0xE0
@@ -47,7 +48,7 @@ Victim rpi::get_victim(){
     Wire.beginTransmission(PI_ADDRESS);
     Wire.write(PI_READ | Ai::VICTIMS);
     //Wire.endTransmission(false);
-    Wire.requestFrom(PI_ADDRESS, 12);
+    Wire.requestFrom(PI_ADDRESS, 2);
     Victim victim;
     if (Wire.read() == 0x00) {
         throw AINotStartedException(Ai::VICTIMS);
@@ -62,14 +63,15 @@ Victim rpi::get_victim(){
 }
 uint8_t rpi::status(){
     Wire.beginTransmission(PI_ADDRESS);
-    if (!Wire.available()){
+    /*if (!Wire.available()){
         Wire.endTransmission();
         return 0xFF;
-    }
+    }*/
     Wire.write(PI_STATUS);
     //Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 1);
     uint8_t status = Wire.read();
+    output.println(status);
     Wire.endTransmission();
     return status;
 }

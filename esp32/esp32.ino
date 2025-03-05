@@ -30,6 +30,8 @@ using namespace std;
 #define GREEN_TIMEOUT 100
 
 uint16_t last_green = 0;
+timer green_freeze;
+timer white_timer;
 
 long timestamp;
 
@@ -50,6 +52,7 @@ void cal_movement(){
 
 // gets executed before loop
 void setup(){
+
     // begin output connection (DEBUG)
     Serial.begin(115200);
     //#ifndef DEBUG
@@ -74,7 +77,7 @@ void setup(){
 
     output.println("INFO: Wire init...");
     Wire.begin(SDA, SCL);  // start i2c
-    Wire.setClock(400000); // Fast mode
+    Wire.setClock(100000); // Fast mode
 
     // setup FastADC
     #ifdef FASTREAD
@@ -172,8 +175,8 @@ void setup(){
         button_failure = true;
     }
     output.print("PI: Status: ");
+    Wire.setTimeout(1000000);
     output.println(rpi::status());
-
     
     // menu selection
     output.println("INFO: Menu");
@@ -189,10 +192,10 @@ void setup(){
                     break;
 
                 case 3:
-                    delay(1500);
-                    attachInterrupt(T_E, isr, RISING);
-                    zone::takeVictim(0);//ignore();
-                    detachInterrupt(T_E);
+                    //delay(1500);
+                    //attachInterrupt(T_E, isr, RISING);
+                    zone::loop();
+                    //detachInterrupt(T_E);
                     break;
 
                 case MENU_CALIBRATE:
@@ -241,6 +244,8 @@ void setup(){
     delay(2000);
     attachInterrupt(T_E, isr, RISING);
     tof::front.readSingle(false);
+    green_freeze.reset();
+    white_timer.set(1400);
 }
 
 const char* match(Side s){
@@ -257,7 +262,7 @@ const char* match(Side s){
     return "";
 }
 
-unsigned long green_freeze = 0;
+//unsigned long green_freeze = 0;
 
 void loop(){
     
@@ -278,7 +283,25 @@ void loop(){
         color::red.reset();
     }
 
-    if (color::green() && green_freeze < millis()){
+    if (color::silver()){
+        motor::stop();
+        menu::showWaiting("SILVER");
+        output.println("LFE: Silver detected");
+        delay(1000);
+    }
+
+    if (color::white() != Side::BOTH){
+        white_timer.reset();
+    }
+    else if (white_timer.expired()){
+        motor::stop();
+        menu::showWaiting("GAP");
+        output.println("LFE: Gap detected");
+        delay(2000);
+        white_timer.reset();
+    }
+
+    if (color::green() && /*green_freeze < millis()*/ green_freeze.expired() ){
         Side green = Side(color::green());
         menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
@@ -303,7 +326,8 @@ void loop(){
             motor::fwd(200);
             motor::gyro(deg);
             //motor::fwd(20);
-            green_freeze = millis() + 250;
+            //green_freeze = millis() + 250;
+            green_freeze.set(250);
         }
         color::green.reset();
         rgb::reset();
@@ -318,15 +342,15 @@ void loop(){
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");
         motor::gyro(-80);
-        unsigned long timestamp = millis() + 2700;
         motor::fwd(motor::motor::A, 250);
-        motor::fwd(motor::motor::B, 57);
-        while(timestamp > millis()){
+        motor::fwd(motor::motor::B, 45);
+        timer turn_timer(6000);
+        while( !turn_timer.expired() ){
                 ls::read();
                 color::update();
-                if((color::black() || color::black_outer()) && (timestamp-4000) < millis()) break;
+                if((color::black() || color::black_outer()) && turn_timer.passed() > 2000) break;
         }
-        delay(300);
-        motor::gyro(-45);
+        delay(500);
+        motor::gyro(-60);
     }
 }
