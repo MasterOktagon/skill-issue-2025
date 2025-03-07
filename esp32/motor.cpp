@@ -149,9 +149,10 @@ void motor::gyro(int16_t angle, uint16_t v, bool reset_gyro){
         turn(v * -sign);
         while (abs(angle) > abs(gyro::z)){
             gyro::update();
-            Serial.print(abs(gyro::z));
-            Serial.print("\t");
-            Serial.println(abs(angle));
+            output.print("GYRO: ");
+            output.print(abs(gyro::z));
+            output.print("\t/\t");
+            output.println(abs(angle));
         }
         stop();
         gyro::reset();

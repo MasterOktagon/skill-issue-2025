@@ -59,5 +59,6 @@ namespace that controls the onboard debug RGB LEDs [W.I.P.]
 */
     extern void setValue(Side s,uint8_t r, uint8_t g, uint8_t b);
     extern void reset(Side s=Side::BOTH);
+    extern void highbeam(bool status);
 }
 

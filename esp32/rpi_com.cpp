@@ -61,6 +61,32 @@ Victim rpi::get_victim(){
     return victim;
 
 }
+
+int8_t rpi::get_corner_green(){
+    Wire.beginTransmission(PI_ADDRESS);
+    Wire.write(PI_READ | Ai::CORNERS);
+    //Wire.endTransmission(false);
+    Wire.requestFrom(PI_ADDRESS, 2);
+    int8_t w = Wire.read(); Wire.read();
+    output.println(w);
+    Wire.endTransmission();
+    return w;
+
+}
+
+int8_t rpi::get_corner_red(){
+    Wire.beginTransmission(PI_ADDRESS);
+    Wire.write(PI_READ | Ai::CORNERS);
+    //Wire.endTransmission(false);
+    Wire.requestFrom(PI_ADDRESS, 2);
+    Wire.read();
+    int8_t w = Wire.read(); 
+    output.println(w);
+    Wire.endTransmission();
+    return w;
+
+}
+
 uint8_t rpi::status(){
     Wire.beginTransmission(PI_ADDRESS);
     /*if (!Wire.available()){
@@ -71,7 +97,6 @@ uint8_t rpi::status(){
     //Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 1);
     uint8_t status = Wire.read();
-    output.println(status);
     Wire.endTransmission();
     return status;
 }

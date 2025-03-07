@@ -36,7 +36,9 @@ timer white_timer;
 long timestamp;
 
 void IRAM_ATTR isr(){
-    esp_restart();
+    static uint8_t counter = 0;
+    counter++;
+    if (counter > 1) esp_restart();
 }
 
 void cal_movement(){
@@ -122,6 +124,7 @@ void setup(){
     output.println("INFO: PWM bus init");
     claw::setup();
     rgb::setValue(Side::BOTH, 0, 0, 0);
+    rgb::highbeam(LOW);
 
     #ifdef CLAW_TEST
         output.println("INFO: Claw Test...");
@@ -175,7 +178,7 @@ void setup(){
         button_failure = true;
     }
     output.print("PI: Status: ");
-    Wire.setTimeout(1000000);
+    Wire.setTimeout(100000);
     output.println(rpi::status());
     
     // menu selection
@@ -192,10 +195,52 @@ void setup(){
                     break;
 
                 case 3:
-                    //delay(1500);
-                    //attachInterrupt(T_E, isr, RISING);
-                    zone::loop();
-                    //detachInterrupt(T_E);
+                    delay(1500);
+                    attachInterrupt(T_E, isr, RISING);
+                    //rgb::highbeam(HIGH);
+                    //zone::loop();
+                    rpi::start_ai(rpi::Ai::CORNERS);
+                    motor::fwd(motor::motor::AB,100);
+                    while (true){
+                        int8_t corners = rpi::get_corner_red();
+                        if (corners != 0xFF){
+                            output.println(corners);
+                            if (abs(corners) > 10) {
+                                motor::fwd(motor::motor::A, V_STD + corners*2 );
+                                motor::fwd(motor::motor::B, V_STD - corners*2 );
+                            }
+
+                            if(!digitalRead(T_L) || !digitalRead(T_R)) break;
+                        }
+                        else {motor::stop();}
+                        delay(10);
+                    }
+                    output.println("INFO: Corner detected");
+                    motor::stop();
+                    while(digitalRead(T_L) || digitalRead(T_R)){
+                        while(digitalRead(T_R)){
+                            motor::fwd(motor::motor::A, V_STD);
+                            motor::rev(motor::motor::B, 70);
+                        }
+                        while(digitalRead(T_L)){
+                            motor::fwd(motor::motor::B, V_STD);
+                            motor::rev(motor::motor::A, 70);
+                        }
+                        delay(10);
+                    }
+                    motor::fwd(motor::motor::A, V_STD);
+                    delay(500);
+                    motor::fwd(motor::motor::B, V_STD);
+                    delay(500);
+                    motor::stop();
+
+                    motor::rev(7cm);
+                    motor::gyro(180);
+                    motor::rev(7cm);
+                    storage::unload(Side::LEFT);
+                    storage::unload(Side::NONE);
+
+                    detachInterrupt(T_E);
                     break;
 
                 case MENU_CALIBRATE:
@@ -245,7 +290,7 @@ void setup(){
     attachInterrupt(T_E, isr, RISING);
     tof::front.readSingle(false);
     green_freeze.reset();
-    white_timer.set(1400);
+    white_timer.set(25cm);
 }
 
 const char* match(Side s){
@@ -265,7 +310,7 @@ const char* match(Side s){
 //unsigned long green_freeze = 0;
 
 void loop(){
-    
+    static int16_t last_gap_correction;
 
     thread t(lf::follow);
         ls::read(false);
@@ -292,12 +337,15 @@ void loop(){
 
     if (color::white() != Side::BOTH){
         white_timer.reset();
+        last_gap_correction = 5;
     }
     else if (white_timer.expired()){
         motor::stop();
         menu::showWaiting("GAP");
         output.println("LFE: Gap detected");
-        delay(2000);
+        motor::rev(25cm);
+        motor::gyro(last_gap_correction);
+        last_gap_correction *= -1.5;
         white_timer.reset();
     }
 

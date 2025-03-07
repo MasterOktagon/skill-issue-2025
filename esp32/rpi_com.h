@@ -60,6 +60,20 @@ namespace that holds raspberry pi comm fucntions
     [return] nearest victim information
     */
 
+    extern int8_t get_corner_green();
+    /*
+    get the data from the corner "ai"
+
+    [return] corner angle for both corners or 0xFF each
+    */
+
+    extern int8_t get_corner_red();
+    /*
+    get the data from the corner "ai"
+
+    [return] corner angle for both corners or 0xFF each
+    */
+
     extern uint8_t status();
     /*
     get the pi's status message

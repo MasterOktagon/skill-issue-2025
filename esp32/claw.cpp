@@ -23,48 +23,49 @@ void claw::setup(){
 }
 
 void claw::up(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO4, 0, 70);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void claw::down(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO4, 0, 508);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void claw::half(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO4, 0, 260);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void claw::open(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO5, 0, 250);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void claw::wide(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO5, 0, 140);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void claw::close(){
-    //bus.wakeup();
+    bus.wakeup();
     bus.setPWM(SERVO5, 0, 528);
     delay(500);
-    //bus.sleep();
+    bus.sleep();
 }
 
 void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
+    //bus.wakeup();
     if (s & Side::LEFT){
         bus.setPWM(RED_L, 0, 4095 - 8*r);
         bus.setPWM(GREEN_L, 0, 4095 - 8*g);
@@ -75,6 +76,7 @@ void rgb::setValue(Side s, uint8_t r, uint8_t g, uint8_t b){
         bus.setPWM(GREEN_R, 0, 4095 - 8*g);
         bus.setPWM(BLUE_R, 0, 4095 - 8*b);
     }
+    //bus.sleep();
 }
 
 void rgb::reset(Side s){
@@ -82,6 +84,8 @@ void rgb::reset(Side s){
 }
 
 void storage::unload(Side s){
+    output.println("INFO:j");
+    bus.wakeup();
     if (s == Side::LEFT){
         output.println("INFO: storage::unload LEFT");
         //bus.wakeup();
@@ -102,7 +106,8 @@ void storage::unload(Side s){
         bus.setPWM(SERVO2, 0, 330);
         delay(100);
         //bus.sleep();
-    }   
+    }
+    bus.sleep();
 }
 
 void storage::reset(){
@@ -110,6 +115,7 @@ void storage::reset(){
 }
 
 void storage::divide(Side s, bool wide){
+    bus.wakeup();
     if (s == Side::LEFT){
         output.println("INFO: storage::divide LEFT");
         //bus.wakeup();
@@ -127,6 +133,11 @@ void storage::divide(Side s, bool wide){
     else {
         output.println("WARNING: unknown/unimplemented storage::divide Side");
     }
+    bus.sleep();
+}
+
+void rgb::highbeam(bool status){
+    bus.setPWM(SERVO1, 0, 255*int(status));
 }
 
 

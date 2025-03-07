@@ -43,7 +43,7 @@ namespace menu {
 
     bool DisplayInit(){
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADRESS)) {
-        output.println("SSD1306 allocation failed!");
+        output.println("ERROR: SSD1306 allocation failed!");
             return false;
         }
         display.display();
@@ -78,7 +78,7 @@ namespace menu {
             display.print("%");
         #endif
         uint8_t b = rpi::status();
-        if (b == 0){
+        if (b == 0x00){
             display.print("   PI");
         }
         delay(100);
@@ -123,9 +123,11 @@ namespace menu {
                 return selected;
             }
             if (!button_failure){
+                auto last = selected;
+                if (!digitalRead(T_L) && !digitalRead(T_R)) return selected;
                 selected = (selected + digitalRead(T_L) - digitalRead(T_R)) % menuOptions;
                 if (selected < 0){selected = menuOptions-1;}
-                // output.print("\t"); output.println(texts[selected]);
+                if(last != selected) {output.print("\t- "); output.println(texts[selected]);}
                 delay(150);
             }
             delay(10);
