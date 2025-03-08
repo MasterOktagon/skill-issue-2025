@@ -2,7 +2,7 @@ import pandas as pd
 import pathlib
 import numpy as np
 
-file = ((pathlib.Path(__file__).parent.resolve() / 'images/valid') / '_annotations.csv')
+file = ((pathlib.Path(__file__).parent.resolve() / 'images/validate') / '_annotations.csv')
 df = pd.read_csv(file)
 df.drop(columns=['width', 'height'], inplace=True)
 df.rename(columns={'class':'ball_exists'}, inplace=True)
@@ -44,8 +44,20 @@ paths = []
 
 # drehen, abschneiden zum resizen und ab 400 nicht trainieren
 for i in range(0,400):
-    im = Image.open(path / str("frame"+str(i)+".jpg"))
-    #im = im.resize((640,264))
+    try:
+        im = Image.open(path / str("frame"+str(i)+".jpg"))
+    except:
+        continue
+    im = im.rotate(180)
+    im = im.crop((0,150,640,414))
+    paths.append(str("frame"+str(i)+".jpg"))
+    im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
+
+for i in range(600,1200):
+    try:
+        im = Image.open(path / str("frame"+str(i)+".jpg"))
+    except:
+        continue
     im = im.rotate(180)
     im = im.crop((0,150,640,414))
     paths.append(str("frame"+str(i)+".jpg"))

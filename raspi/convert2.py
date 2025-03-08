@@ -47,9 +47,34 @@ from PIL import Image
 path = (pathlib.Path(__file__).parent.resolve() / 'recorded_images')
 paths = []
 
-# drehen, abschneiden zum resizen und ab 400 nicht trainieren
+# drehen, abschneiden zum resizen und 400 bis 599 nicht trainieren und testen
 for i in range(0,400):
-    im = Image.open(path / str("frame"+str(i)+".jpg"))
+    try:
+        im = Image.open(path / str("frame"+str(i)+".jpg"))
+    except:
+        continue
+    im = im.rotate(180)
+    im2 = im.copy()
+    im3 = im.copy()
+    im = im.crop((0,150,640,414))
+    paths.append(str("frame"+str(i)+".jpg"))
+    im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
+
+    im2 = im2.crop((0, 180, 420, 430))
+    im2 = im2.resize((640,264))
+    paths.append(str("frame"+str(i)+"_2.jpg"))
+    im2.save(str(file.parent / ("frame"+str(i)+'_2.jpg')))
+
+    im3 = im3.crop((220, 180, 640, 430))
+    im3 = im3.resize((640,264))
+    paths.append(str("frame"+str(i)+"_3.jpg"))
+    im3.save(str(file.parent / ("frame"+str(i)+'_3.jpg')))
+
+for i in range(600,1200):
+    try:
+        im = Image.open(path / str("frame"+str(i)+".jpg"))
+    except:
+        continue
     im = im.rotate(180)
     im2 = im.copy()
     im3 = im.copy()
