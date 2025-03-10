@@ -2,7 +2,7 @@ import pandas as pd
 import pathlib
 import numpy as np
 
-file = ((pathlib.Path(__file__).parent.resolve() / 'images/validate') / '_annotations.csv')
+file = ((pathlib.Path(__file__).parent.resolve() / 'images/train') / '_annotations.csv')
 df = pd.read_csv(file)
 df.drop(columns=['width', 'height'], inplace=True)
 df.rename(columns={'class':'ball_exists'}, inplace=True)
@@ -37,7 +37,7 @@ df.drop(columns=['xmin','xmax','ymin','ymax'], inplace=True)
 for i in df.index:
     if i in mult[2]:
         j = np.where(mult[2] == i)
-        if mult[3][j]>2:
+        if mult[3][j]>1:
             df.drop(i, inplace=True)
         else: continue
     else: df.drop(i, inplace=True)
@@ -56,7 +56,7 @@ for i in range(0,400):
     im = im.rotate(180)
     im2 = im.copy()
     im3 = im.copy()
-    im = im.crop((0,150,640,414))
+    im = im.crop((0,170,640,434))
     paths.append(str("frame"+str(i)+".jpg"))
     im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
 
@@ -65,10 +65,10 @@ for i in range(0,400):
     paths.append(str("frame"+str(i)+"_2.jpg"))
     im2.save(str(file.parent / ("frame"+str(i)+'_2.jpg')))
 
-    im3 = im3.crop((220, 180, 640, 430))
-    im3 = im3.resize((640,264))
-    paths.append(str("frame"+str(i)+"_3.jpg"))
-    im3.save(str(file.parent / ("frame"+str(i)+'_3.jpg')))
+    # im3 = im3.crop((220, 180, 640, 430))
+    # im3 = im3.resize((640,264))
+    # paths.append(str("frame"+str(i)+"_3.jpg"))
+    # im3.save(str(file.parent / ("frame"+str(i)+'_3.jpg')))
 
 for i in range(600,1200):
     try:
@@ -78,7 +78,7 @@ for i in range(600,1200):
     im = im.rotate(180)
     im2 = im.copy()
     im3 = im.copy()
-    im = im.crop((0,150,640,414))
+    im = im.crop((0,170,640,434))
     paths.append(str("frame"+str(i)+".jpg"))
     im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
 
@@ -87,10 +87,10 @@ for i in range(600,1200):
     paths.append(str("frame"+str(i)+"_2.jpg"))
     im2.save(str(file.parent / ("frame"+str(i)+'_2.jpg')))
 
-    im3 = im3.crop((220, 180, 640, 430))
-    im3 = im3.resize((640,264))
-    paths.append(str("frame"+str(i)+"_3.jpg"))
-    im3.save(str(file.parent / ("frame"+str(i)+'_3.jpg')))
+    # im3 = im3.crop((220, 180, 640, 430))
+    # im3 = im3.resize((640,264))
+    # paths.append(str("frame"+str(i)+"_3.jpg"))
+    # im3.save(str(file.parent / ("frame"+str(i)+'_3.jpg')))
 
 df2 = pd.DataFrame([], columns=['path', 'ball_exists', 'x', 'y', 'w', 'h'])
 df2['path'] = paths

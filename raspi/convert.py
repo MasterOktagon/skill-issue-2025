@@ -49,7 +49,7 @@ for i in range(0,400):
     except:
         continue
     im = im.rotate(180)
-    im = im.crop((0,150,640,414))
+    im = im.crop((0,170,640,434))
     paths.append(str("frame"+str(i)+".jpg"))
     im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
 
@@ -59,7 +59,7 @@ for i in range(600,1200):
     except:
         continue
     im = im.rotate(180)
-    im = im.crop((0,150,640,414))
+    im = im.crop((0,170,640,434))
     paths.append(str("frame"+str(i)+".jpg"))
     im.save(str(file.parent / ("frame"+str(i)+'.jpg')))
 
