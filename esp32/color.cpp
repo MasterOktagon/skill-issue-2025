@@ -56,11 +56,11 @@ bool red_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r
 bool green_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){
         case Side::LEFT:
-            return g->left.value - r->left.value >= GREEN_THRESHOLD;
+            return g->left.value - r->left.value >= GREEN_THRESHOLD - 3;
             //return g->left.raw - r->left.raw >= GREEN_THRESHOLD;
         default:
             //return g->right.raw - r->right.raw >= GREEN_THRESHOLD-2;
-            return g->right.value - r->right.value + 7 >= GREEN_THRESHOLD;
+            return g->right.value - r->right.value >= GREEN_THRESHOLD;
     }
 }
 
@@ -80,18 +80,18 @@ bool green_detection_outer(lightSensorArray* w, lightSensorArray* g, lightSensor
 bool black_detection(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){
         case Side::LEFT:
-            return w->left.value <= BLACK_THRESHOLD;
+            return w->left.value < BLACK_THRESHOLD;
         default:
-            return w->right.value <= BLACK_THRESHOLD;
+            return w->right.value < BLACK_THRESHOLD;
     }
 }
 
 bool black_detection_outer(lightSensorArray* w, lightSensorArray* g, lightSensorArray* r, Side s){
     switch (s){
         case Side::LEFT:
-            return w->left_outer.value <= BLACK_THRESHOLD;
+            return w->left_outer.value < BLACK_THRESHOLD;
         default:
-            return w->right_outer.value <= BLACK_THRESHOLD;
+            return w->right_outer.value < BLACK_THRESHOLD;
     }
 }
 

@@ -15,6 +15,7 @@
 #define PI_STATUS 0xE0
 #define PI_STOP   0x00
 #define PI_READ   0x10
+#define PI_RESET  0x30
 
 rpi::AINotStartedException::AINotStartedException(Ai ai){
     this->ai = ai;
@@ -34,6 +35,7 @@ const char * rpi::AINotStartedException::what(){
 
 void rpi::start_ai(Ai ai){
     Wire.beginTransmission(PI_ADDRESS);
+    // Wire.write(PI_START | ai);
     Wire.write(PI_START | ai);
     Wire.endTransmission();
 }
@@ -44,19 +46,25 @@ void rpi::stop_ai(){
     Wire.endTransmission();
 }
 
+void rpi::reset_signal(){
+    Wire.beginTransmission(PI_ADDRESS);
+    Wire.write(PI_RESET);
+    Wire.endTransmission();
+}
+
 Victim rpi::get_victim(){
     Wire.beginTransmission(PI_ADDRESS);
     Wire.write(PI_READ | Ai::VICTIMS);
     //Wire.endTransmission(false);
     Wire.requestFrom(PI_ADDRESS, 2);
     Victim victim;
-    if (Wire.read() == 0x00) {
-        throw AINotStartedException(Ai::VICTIMS);
-    }
-    else {
+    // if (Wire.read() == 0x00) {
+    //     throw AINotStartedException(Ai::VICTIMS);
+    // }
+    // else {
         victim.angle = Wire.read();
         victim.dist = Wire.read();
-    }
+    // }
     Wire.endTransmission();
     return victim;
 

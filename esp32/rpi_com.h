@@ -52,6 +52,11 @@ namespace that holds raspberry pi comm fucntions
     stop any ai
     */
 
+    extern void reset_signal();
+    /*
+    send a reset signal to the pi
+    */
+
     extern Victim get_victim();
     /*
     get the data from the victim ai

@@ -26,7 +26,7 @@ namespace motor{
 /*
 This namespace holds all functions that directly influence motor movement
 */
-    #define V_STD 120 // standard speed
+    #define V_STD 100 // standard speed
 
     enum motor{
         /*

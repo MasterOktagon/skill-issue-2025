@@ -12,6 +12,8 @@
 #include "tof.h"
 #include "shiftregister.h"
 #include "claw.h"
+#include "menu.h"
+#include <thread>
 
 void zone::ignore(){
     int16_t tof_dist = 100;
@@ -90,25 +92,54 @@ void zone::ignore(){
 }
 
 bool zone::takeVictim(Victim v){
+    output.println("ball aufnehmen");
     int8_t turn = v.angle;
     pinMode(MS, INPUT_PULLUP);
-    
-    motor::gyro(turn, V_STD);
-    claw::wide(); claw::down(); claw::open();
+
+    if(v.dist < 200){
+        motor::fwd(motor::motor::A, V_STD + v.angle);
+        motor::fwd(motor::motor::B, V_STD - v.angle);
+        timer t(150);
+        while (!t.expired()){
+            ls::read();
+            color::update();
+
+            if (color::black() || color::silver() /*|| !digitalRead(T_L) || !digitalRead(T_R)*/) {
+                motor::rev(5cm);
+                motor::gyro(180);
+                color::silver.reset(); color::black.reset();
+            }
+        }
+        
+        motor::stop();
+        return false;
+    }
+    if (abs(turn) > 5) motor::gyro(turn, V_STD);
+    motor::rev(200);
+    claw::wide(); claw::down(); delay(200); claw::open();
+    int16_t a = analogRead(FLEX);
     tof::enable(tof::tof::CLAW);
     motor::fwd(motor::motor::AB, V_STD);
     uint16_t tof_data;
+    timer timeout(1200);
     do {
         tof_data = tof::claw.readSingle();
+        if (timeout.expired()){
+            motor::stop();
+            claw::up();
+            claw::close();
+            return false;
+        }
     } while (tof_data > 69 || tof_data == 0); // 0 == timeout
-    delay(100);
+    delay(200);
     motor::stop();
     claw::close();
     delay(1500);
     claw::up();
 
-    if (analogRead(FLEX) >= 3170){
+    if (abs(analogRead(FLEX) - a) > 70){
         output.println("INFO: Victim rescued");
+        menu::showWaiting("Victim rescued");
         if (digitalRead(MS) + digitalRead(MS) == 0){
             storage::divide(LEFT);
         }
@@ -121,28 +152,107 @@ bool zone::takeVictim(Victim v){
         claw::close();
         return true;
     }
-    else {
+    else { 
         output.println("WARNING: Victim not rescued");
+        menu::showWaiting("Victim not rescued");
     }
 
     return false;
 }
 
+void thread_fn(Victim v , uint8_t* counter){
+    if (! (v.angle == 0 && v.dist == 0) ){
+        *counter += uint8_t(zone::takeVictim(v));
+    }
+}
+
+void zone::unload(fsignal<int8_t> detect_fn){
+    rpi::start_ai(rpi::Ai::CORNERS);
+    motor::fwd(motor::motor::AB,100);
+    while (true){
+        int8_t corners = detect_fn();
+        if (corners != 0x7E){
+            output.println(corners);
+            if (abs(corners) > 10) {
+                motor::fwd(motor::motor::A, V_STD + corners*2 );
+                motor::fwd(motor::motor::B, V_STD - corners*2 );
+            }
+
+            if(!digitalRead(T_L) || !digitalRead(T_R)) break;
+        }
+        else {motor::stop();}
+        delay(10);
+    }
+    output.println("INFO: Corner detected");
+    motor::stop();
+    while(digitalRead(T_L) || digitalRead(T_R)){
+        while(digitalRead(T_R)){
+            motor::fwd(motor::motor::A, V_STD);
+            motor::rev(motor::motor::B, 70);
+        }
+        while(digitalRead(T_L)){
+            motor::fwd(motor::motor::B, V_STD);
+            motor::rev(motor::motor::A, 70);
+        }
+        delay(10);
+    }
+    motor::fwd(motor::motor::A, V_STD);
+    delay(500);
+    motor::fwd(motor::motor::B, V_STD);
+    delay(500);
+    motor::stop();
+
+    motor::rev(7cm);
+    motor::gyro(180);
+    motor::rev(7cm);
+    storage::unload(Side::LEFT);
+    storage::unload(Side::NONE);
+                    
+}
+
 void zone::loop(){
     motor::stop();
+    rgb::highbeam(HIGH);
     output.println("INFO: Zone program started");
 
     uint8_t victim_counter = 0;
     
     rpi::start_ai(rpi::Ai::VICTIMS);
+    Victim last, v;
     while (victim_counter < 3) {
-        if (rpi::status != 0x00) break;
-        
-        Victim v = rpi::get_victim();
-        if (! (v.angle == 0 && v.dist == 0) ){
-            victim_counter += uint8_t(takeVictim(v));
-        }
+        output.println("uwu");
+
+        v = rpi::get_victim();
+        timer frametime(500);
+        thread_fn(v, &victim_counter);
+        while (!frametime.expired());
+
+        /*if (last.angle == 0 && last.dist == 0 && v.angle == 0 && v.dist == 0){
+            timer t(600);
+            motor::fwd(motor::motor::AB, V_STD);
+            motor::gyro(45);
+            while (!t.expired()){
+                ls::read();
+                color::update();
+
+                if (color::black() || color::silver() || !digitalRead(T_L) || !digitalRead(T_R)) {
+                    motor::rev(5cm);
+                    motor::gyro(180);
+                    color::silver.reset(); color::black.reset();
+                }
+            }
+        }*/
+
+        last = v;
+        zone::unload(rpi::get_corner_green);
+        zone::unload(rpi::get_corner_red);
+        motor::fwd(5cm);
+        motor::gyro(90);
+        zone::ignore();
     }
+
+
+
     rpi::stop_ai();
 }
 

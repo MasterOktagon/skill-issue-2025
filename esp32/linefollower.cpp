@@ -1,3 +1,4 @@
+#include "color.h"
 
 //
 // LINEFOLLOWER.cpp
@@ -22,11 +23,11 @@
 using namespace std;
 
 #define INNER_FACTOR 2
-#define OUTER_FACTOR 3
+#define OUTER_FACTOR 4
 #define BACK_FACTOR  1
-#define GREEN_FACTOR -1.5
+#define GREEN_FACTOR 10
 
-#define P            1.66
+#define P            1.5
 #define D            0.6
 #define I            -0.01
 
@@ -45,7 +46,7 @@ int16_t lf::follow(){
         int16_t diff       = (ls::white.left.value - ls::white.right.value)             * INNER_FACTOR;
         int16_t diff_outer = (ls::white.left_outer.value - ls::white.right_outer.value) * OUTER_FACTOR;
         int16_t diff_back  = (ls::white_b.left.value - ls::white_b.right.value)         * BACK_FACTOR;
-        int16_t diff_green = ((ls::green.left.value - ls::green.right.value) - (ls::green.left.value - ls::red.right.value)) * GREEN_FACTOR;
+        int16_t diff_green = ((ls::green.left.value - ls::red.left.value) - (ls::green.right.value - ls::red.right.value)) * GREEN_FACTOR;
 
         int16_t mot_diff = max_abs(diff + diff_outer,diff_back) + diff_green; // TODO: maybe change diff_outer to negative factor
 
@@ -53,6 +54,9 @@ int16_t lf::follow(){
         last = mot_diff;
 
         static int64_t i = i + mot_diff;
+
+        //if(color::black_outer() == Side::LEFT) mot_diff += 100;
+        //else if(color::black_outer() == Side::RIGHT) mot_diff -= 100;
 
         //if (tof::front.dataReady()){
         //    tof_dist = tof::front.read(false);
@@ -70,8 +74,6 @@ int16_t lf::follow(){
 
         motor::fwd(motor::motor::A, v - correction);
         motor::fwd(motor::motor::B, v + correction);
-        //Serial.println(correction);
-        //delay(1);
     #endif
 
     return 0;

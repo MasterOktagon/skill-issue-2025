@@ -153,6 +153,7 @@ void setup(){
     #ifndef NO_CLAW
         claw::up();
         claw::close();
+        storage::divide(LEFT);
     #endif
 
     #ifdef MOT_STBY
@@ -179,6 +180,7 @@ void setup(){
     }
     output.print("PI: Status: ");
     Wire.setTimeout(100000);
+    rpi::reset_signal();
     output.println(rpi::status());
     
     // menu selection
@@ -197,49 +199,7 @@ void setup(){
                 case 3:
                     delay(1500);
                     attachInterrupt(T_E, isr, RISING);
-                    //rgb::highbeam(HIGH);
-                    //zone::loop();
-                    rpi::start_ai(rpi::Ai::CORNERS);
-                    motor::fwd(motor::motor::AB,100);
-                    while (true){
-                        int8_t corners = rpi::get_corner_red();
-                        if (corners != 0xFF){
-                            output.println(corners);
-                            if (abs(corners) > 10) {
-                                motor::fwd(motor::motor::A, V_STD + corners*2 );
-                                motor::fwd(motor::motor::B, V_STD - corners*2 );
-                            }
-
-                            if(!digitalRead(T_L) || !digitalRead(T_R)) break;
-                        }
-                        else {motor::stop();}
-                        delay(10);
-                    }
-                    output.println("INFO: Corner detected");
-                    motor::stop();
-                    while(digitalRead(T_L) || digitalRead(T_R)){
-                        while(digitalRead(T_R)){
-                            motor::fwd(motor::motor::A, V_STD);
-                            motor::rev(motor::motor::B, 70);
-                        }
-                        while(digitalRead(T_L)){
-                            motor::fwd(motor::motor::B, V_STD);
-                            motor::rev(motor::motor::A, 70);
-                        }
-                        delay(10);
-                    }
-                    motor::fwd(motor::motor::A, V_STD);
-                    delay(500);
-                    motor::fwd(motor::motor::B, V_STD);
-                    delay(500);
-                    motor::stop();
-
-                    motor::rev(7cm);
-                    motor::gyro(180);
-                    motor::rev(7cm);
-                    storage::unload(Side::LEFT);
-                    storage::unload(Side::NONE);
-
+                    zone::loop();
                     detachInterrupt(T_E);
                     break;
 
@@ -326,16 +286,18 @@ void loop(){
         delay(6000);
         rgb::reset();
         color::red.reset();
+        white_timer.reset();
     }
 
     if (color::silver()){
         motor::stop();
         menu::showWaiting("SILVER");
         output.println("LFE: Silver detected");
-        delay(1000);
+        zone::loop();
+        white_timer.reset();
     }
 
-    if (color::white() != Side::BOTH){
+    /*if (color::white() != Side::BOTH){
         white_timer.reset();
         last_gap_correction = 5;
     }
@@ -345,45 +307,45 @@ void loop(){
         output.println("LFE: Gap detected");
         motor::rev(25cm);
         motor::gyro(last_gap_correction);
-        last_gap_correction *= -1.5;
+        last_gap_correction *= -2;
         white_timer.reset();
-    }
+    }*/
 
-    if (color::green() && /*green_freeze < millis()*/ green_freeze.expired() ){
-        Side green = Side(color::green());
+    if ((color::green() || color::green_outer()) && green_freeze.expired() ){
+        Side green = Side(color::green() | color::green_outer());
         menu::showWaiting(match(green));
         motor::fwd(motor::motor::AB, 70);
         do {
             ls::read();
             color::update();
-            green = Side(green | color::green());
-        } while(color::green());
-        motor::read_fwd(70, 5, {&color::black, &color::black_outer});
+            green = Side((green | color::green()) | color::green_outer());
+        } while(color::green() | color::black_outer());
+        motor::read_fwd(70, 15, {&color::black, &color::black_outer});
         Side black = Side(color::black() | color::black_outer());
         motor::stop();
 
         Side turn = Side(green & black);
-        rgb::setValue(turn, 0, 255, 0);
+        rgb::setValue(green, 0, 255, 0);
         output.print("LFE: GREEN detected "); output.println(match(turn));
-        menu::showWaiting(match(turn));
+        menu::showWaiting(match(green));
 
         int16_t deg = 85 * bool(turn & Side::LEFT);
         deg += 85 * bool(turn & Side::RIGHT) * (turn & Side::LEFT ? 1 : -1);
 
         if(deg != 0){
-            motor::fwd(200);
+            motor::fwd(300);
             motor::gyro(deg);
             //motor::fwd(20);
-            //green_freeze = millis() + 250;
             green_freeze.set(250);
         }
         color::green.reset();
         rgb::reset();
+        white_timer.reset();
     }
 
-    //output.println(ls::red.right.value - ls::green.right.value);//float((ls::green.left.raw - ls::red.left.raw)) / (ls::rg_min_l - ls::rg_max_l) * -100);
-    //output.print("\t");
-    //output.println(ls::green.right.value);
+    //output.println(ls::green.left.value - ls::red.left.value);
+    //output.println("\t");
+    //output.println(match(color::green()));
     //output.println(mpu.getGyroY());
     //output.println();
     if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
@@ -398,7 +360,8 @@ void loop(){
                 color::update();
                 if((color::black() || color::black_outer()) && turn_timer.passed() > 2000) break;
         }
-        delay(500);
+        delay(350);
         motor::gyro(-60);
+        white_timer.reset();
     }
 }

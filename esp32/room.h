@@ -20,6 +20,7 @@ namespace zone {
     /*
     zone main loop
     */
+    extern void unload(fsignal<int8_t> fn);
 }
 
 
