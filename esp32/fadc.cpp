@@ -1,7 +1,7 @@
 
 #include <Arduino.h>
 #include <esp32-hal-adc.h>
-#include <hal/adc_hal.h>
+//#include <hal/adc_hal.h>
 #include <driver/periph_ctrl.h>
 #include <driver/adc.h>
 //#include <esp_adc_cal.h>
@@ -17,7 +17,7 @@
 #define ADC_BUSY() !((bool)SENS.sar_meas1_ctrl2.meas1_done_sar)
 
 using namespace std;
-
+/*
 const int8_t gpio_to_channel[21] = {
     -1,
     ADC1_GPIO1_CHANNEL, ADC1_GPIO2_CHANNEL, ADC1_GPIO3_CHANNEL, ADC1_GPIO4_CHANNEL, ADC1_GPIO5_CHANNEL,
@@ -78,7 +78,7 @@ void fadc::begin(){
     // Enable ADC
     //periph_module_enable(PERIPH_SARADC_MODULE);
     //adc_power_acquire();
-}
+}*/
 
 
 

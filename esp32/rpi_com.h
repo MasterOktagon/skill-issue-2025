@@ -95,5 +95,58 @@ namespace that holds raspberry pi comm fucntions
 
 }
 
+#include <NimBLEDevice.h>
+namespace opta {
+    #define SERVICE_UUID        "0987654321"
+    #define CHARACTERISTIC_UUID "1"
+    #define TARGET_NAME         "Se Arm"
 
+    static NimBLERemoteCharacteristic* status = nullptr;
+    static NimBLEClient* client = nullptr;
+    static bool connected = false;
+
+    inline void connect() {
+        NimBLEDevice::init("");
+        NimBLEScan* pScan = NimBLEDevice::getScan();
+        NimBLEDevice::setPower(ESP_PWR_LVL_P9); // Max power if needed
+        NimBLEScanResults results = pScan->getResults(1000);
+
+        NimBLEUUID serviceUuid(SERVICE_UUID);
+
+        for (int i = 0; i < results.getCount(); i++) {
+            const NimBLEAdvertisedDevice* device = results.getDevice(i);
+            Serial.println(); Serial.print(i); Serial.print(": "); Serial.print(device->getAddress().toString().c_str());
+
+            if (device->getAddress().toString() == "a8:61:0a:4e:64:0c") {
+              if (client != nullptr) NimBLEDevice::deleteClient(client);
+                Serial.println("\nINFO: Found device with correct name");
+                client = NimBLEDevice::createClient();
+
+                if (!client) { // Make sure the client was created
+                    Serial.println("ERROR: Failed to create client!");
+                    break;
+                }
+
+                if (client->connect(device)) {
+                    connected = true;
+                    NimBLERemoteService *pService = client->getService(serviceUuid);
+
+                    if (pService != nullptr) {
+                        status = pService->getCharacteristic(CHARACTERISTIC_UUID);
+                    } else {
+                      Serial.println("ERROR: Service unknown!");
+                    }
+                } else {
+                  Serial.println("ERROR: Failed to connect!");
+                }
+                //NimBLEDevice::deleteClient(pClient);
+            }
+        }
+        if(!connected){
+          Serial.println("\n...failed!");
+        } else {
+          Serial.println("\n...succes!");
+        }
+    }
+}
 

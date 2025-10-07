@@ -178,8 +178,12 @@ void setup(){
         delay(1000);
         button_failure = true;
     }
+
+    output.print("INFO: Connecting to Opta...");
+    opta::connect();
+
     output.print("PI: Status: ");
-    Wire.setTimeout(100000);
+    Wire.setTimeout(1000);
     rpi::reset_signal();
     output.println(rpi::status());
     
@@ -283,7 +287,17 @@ void loop(){
         motor::stop();
         menu::showWaiting("RED");
         rgb::setValue(Side::BOTH, 255, 0, 0);
-        delay(6000);
+        if (!opta::client->isConnected()){
+            opta::connect();
+        }
+        if (opta::client->isConnected()){
+            opta::status->writeValue(true);
+            Serial.print("INFO: waiting for opta...");
+            delay(100);
+            while (opta::status->readValue<bool>());
+            Serial.println("complete!");
+        }
+
         rgb::reset();
         color::red.reset();
         white_timer.reset();
