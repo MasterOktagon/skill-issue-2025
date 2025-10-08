@@ -320,7 +320,7 @@ void loop(){
             //while (true);//opta::status->readValue<bool>());
             Serial.println("complete!");
         //}
-        delay(45000);
+        delay(25000);
         rgb::reset();
         color::red.reset();
         white_timer.reset();
