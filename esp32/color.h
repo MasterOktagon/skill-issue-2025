@@ -20,7 +20,7 @@ using namespace std;
 #define GREEN_THRESHOLD 25      // ..
 #define BLACK_THRESHOLD 35      // ..
 #define SILVER_THRESHOLD 200    // ..
-#define WHITE_THRESHOLD  75     // ..
+#define WHITE_THRESHOLD  90     // ..
 
 namespace color{
 /*

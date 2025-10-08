@@ -187,8 +187,8 @@ void setup(){
         button_failure = true;
     }
 
-    output.print("INFO: Connecting to Opta...");
-    opta::connect();
+    //output.print("INFO: Connecting to Opta...");
+    //opta::connect();
 
     output.print("PI: Status: ");
     Wire.setTimeout(1000);
@@ -200,7 +200,7 @@ void setup(){
 
     //digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
-    rgb::setValue(Side::BOTH, 0,0,0);
+    rgb::setValue(Side::BOTH, 255,0,0);
 
     #ifdef MENU
         while((selected = menu::menu(button_failure)) != MENU_RUN){
@@ -285,27 +285,69 @@ const char* match(Side s){
 //unsigned long green_freeze = 0;
 
 void loop(){
-
-  /*while (true){
       ls::read();
-      output.print("white ");   output.print(ls::white.left.raw); output.print("/");     output.print(ls::white.right.raw);
+      color::update();
+      /*output.print("white ");   output.print(ls::white.left.raw); output.print("/");     output.print(ls::white.right.raw);
       output.print(" \tgreen "); output.print(ls::green.left.value); output.print(" / "); output.print(ls::green.right.value);
       output.print(" \tred ");   output.print(ls::red.left.value);   output.print(" / "); output.print(ls::red.right.value);
-      output.print(" \tdiff ");  output.print(ls::green.left.value - ls::red.left.value); output.print(" / "); output.println(ls::green.right.value - ls::red.right.value);
+      output.print(" \tdiff ");  output.print(ls::white.left.value - ls::white.right.value);
+      output.print(" \tdiff:o ");  output.println(ls::white.left_outer.value - ls::white.right_outer.value);*/
      // output.println("");
      // output.print("white_b "); output.println(ls::white_b.raw);
      // output.print("green_b "); output.println(ls::green_b._str().c_str());
      // output.println("red_b "); output.println(ls::red_b._str().c_str());
+     //delay(10);
+      if (color::red()){
+        output.println("LFE: RED detected");
+        motor::rev(25);
+        menu::showWaiting("RED");
+        rgb::setValue(Side::BOTH, 255, 0, 0);
+        /*if (!opta::client->isConnected()){
+            opta::connect();
+        }
+        if (opta::client->isConnected()){*/
+            Serial.print("Can write: ");
+            opta::connect();
+            //Serial.println(opta::status->canWrite());
+            if (opta::status->writeValue(true)){
+              
+            } else {
+              Serial.println("ERROR: could not write value!");
+            }
+            Serial.print("INFO: waiting for opta...");
+            delay(2000);
+            opta::disconnect();
+            //while (true);//opta::status->readValue<bool>());
+            Serial.println("complete!");
+        //}
+        delay(45000);
+        rgb::reset();
+        color::red.reset();
+        white_timer.reset();
+      }
 
-    }*/
+    int16_t correction = (ls::white.left.value - ls::white.right.value) + (ls::white.left_outer.value - ls::white.right_outer.value)*2;
+
+    //if (color::white() & Side::BOTH){
+    //  motor::fwd(motor::motor::AB, V_STD);
+    //} else {
+      motor::fwd(motor::motor::A, V_STD - correction);
+      motor::fwd(motor::motor::B, V_STD + correction);
+    //}
+    Serial.println(correction);
+
+    return;
 
     static int16_t last_gap_correction;
 
-    thread t(lf::follow);
+    /*thread t(lf::follow);
         ls::read(false);
         color::update();
     t.join();
-    ls::update();
+    ls::update();*/
+    //ls::read();
+    //color::update();
+    //lf::follow();
 
     if (color::red()){
         output.println("LFE: RED detected");
@@ -322,6 +364,7 @@ void loop(){
             while (opta::status->readValue<bool>());
             Serial.println("complete!");
         }
+        delay(1000);
 
         rgb::reset();
         color::red.reset();
@@ -349,7 +392,7 @@ void loop(){
         last_gap_correction *= -2;
         white_timer.reset();
     }*/
-
+  /*
     if ((color::green() || color::green_outer()) && green_freeze.expired() ){
         Side green = Side(color::green() | color::green_outer());
         menu::showWaiting(match(green));
@@ -403,4 +446,5 @@ void loop(){
         motor::gyro(-60);
         white_timer.reset();
     }*/
+  
 }

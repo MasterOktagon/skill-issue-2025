@@ -27,7 +27,7 @@ using namespace std;
 #define BACK_FACTOR  0
 #define GREEN_FACTOR 7
 
-#define P            1.0
+#define P            0.9
 #define D            0.6
 #define I            -0.01
 
@@ -68,7 +68,7 @@ int16_t lf::follow(){
 
         gyro::update();
 
-        int16_t correction = (mot_diff * P - d * D - i * I)*0.5;
+        int16_t correction = (mot_diff * P - d * D - i * I)*0.4;
         if(abs(correction) <= 10) correction = 0;
         if(abs(correction) >= 170) v = -40;
 

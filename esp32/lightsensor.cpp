@@ -252,10 +252,10 @@ namespace ls{
     );
 
     lightSensorArray green(
-        lightSensor(PT_GREEN, PT_L_1, 100),
-        lightSensor(PT_GREEN, PT_L_0, 100),
-        lightSensor(PT_GREEN, PT_R_0, 100),
-        lightSensor(PT_GREEN, PT_R_1, 100)
+        lightSensor(PT_GREEN, PT_L_1),
+        lightSensor(PT_GREEN, PT_L_0),
+        lightSensor(PT_GREEN, PT_R_0),
+        lightSensor(PT_GREEN, PT_R_1)
     );
 
     lightSensorArray green_b(

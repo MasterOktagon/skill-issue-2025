@@ -97,8 +97,8 @@ namespace that holds raspberry pi comm fucntions
 
 #include <NimBLEDevice.h>
 namespace opta {
-    #define SERVICE_UUID        "0987654321"
-    #define CHARACTERISTIC_UUID "1"
+    #define SERVICE_UUID        "00000000-0000-0000-0000--000987654321"
+    #define CHARACTERISTIC_UUID "0001"
     #define TARGET_NAME         "Se Arm"
 
     static NimBLERemoteCharacteristic* status = nullptr;
@@ -128,11 +128,15 @@ namespace opta {
                 }
 
                 if (client->connect(device)) {
+                    client->discoverAttributes();
                     connected = true;
-                    NimBLERemoteService *pService = client->getService(serviceUuid);
+                    NimBLERemoteService *pService = client->getServices(true)[2];
 
                     if (pService != nullptr) {
                         status = pService->getCharacteristic(CHARACTERISTIC_UUID);
+                        if (status == nullptr){
+                          Serial.println("ERROR: Characteristic unknown!");
+                        }
                     } else {
                       Serial.println("ERROR: Service unknown!");
                     }
@@ -147,6 +151,10 @@ namespace opta {
         } else {
           Serial.println("\n...succes!");
         }
+    }
+
+    inline void disconnect(){
+      client->disconnect();
     }
 }
 
