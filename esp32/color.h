@@ -16,8 +16,8 @@
 using namespace std;
 
 #define CHECK_LEN 7             // check lenght required to detect a color
-#define RED_THRESHOLD 30        // Thresholds to detect a color
-#define GREEN_THRESHOLD 11      // ..
+#define RED_THRESHOLD 80        // Thresholds to detect a color
+#define GREEN_THRESHOLD 25      // ..
 #define BLACK_THRESHOLD 35      // ..
 #define SILVER_THRESHOLD 200    // ..
 #define WHITE_THRESHOLD  75     // ..

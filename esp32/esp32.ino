@@ -32,6 +32,7 @@ using namespace std;
 uint16_t last_green = 0;
 timer green_freeze;
 timer white_timer;
+static bool calibrating = false;
 
 long timestamp;
 
@@ -43,7 +44,7 @@ void IRAM_ATTR isr(){
 
 void cal_movement(){
     unsigned long timestamp = millis();
-    while(millis() - timestamp < 20000){
+    while(calibrating){
         int v = ((millis() - timestamp) % 4000) >= 2000 ? -70 : 70;
         //output.println(v);
         motor::fwd(motor::motor::AB, v);
@@ -63,6 +64,12 @@ void setup(){
 
     output.println("");
     output.println("INFO: output init [115200] ...");
+
+    pinMode(PT_RED, OUTPUT);
+    pinMode(PT_GREEN, OUTPUT);
+    pinMode(PT_WHITE_L, OUTPUT);
+    pinMode(PT_WHITE_R, OUTPUT);
+    pinMode(PT_WHITE_REF, OUTPUT);
 
     output.println("INFO: Resetting LEDs ...");
     digitalWrite(PT_RED,       LOW);
@@ -86,6 +93,7 @@ void setup(){
         output.println("INFO: FADC begin...");
         fadc::begin();
     #endif
+    //analogReadResolution(16);
     
     // create lightSensor objects
     ls::setup();
@@ -190,9 +198,10 @@ void setup(){
     // menu selection
     output.println("INFO: Menu");
 
-    digitalWrite(PT_GREEN, HIGH);
+    //digitalWrite(PT_GREEN, HIGH);
     int selected = 0;
     rgb::setValue(Side::BOTH, 0,0,0);
+
     #ifdef MENU
         while((selected = menu::menu(button_failure)) != MENU_RUN){
             Serial.println("sdfdfsfdfs");
@@ -213,8 +222,10 @@ void setup(){
                     delay(1500);
 
                     attachInterrupt(T_E, isr, RISING);
+                    calibrating = true;
                     thread t(cal_movement);
                         ls::calibrate(5000, 0);
+                        calibrating = false;
                     t.join();
                     //cal_movement();
                     detachInterrupt(T_E);
@@ -274,6 +285,20 @@ const char* match(Side s){
 //unsigned long green_freeze = 0;
 
 void loop(){
+
+  /*while (true){
+      ls::read();
+      output.print("white ");   output.print(ls::white.left.raw); output.print("/");     output.print(ls::white.right.raw);
+      output.print(" \tgreen "); output.print(ls::green.left.value); output.print(" / "); output.print(ls::green.right.value);
+      output.print(" \tred ");   output.print(ls::red.left.value);   output.print(" / "); output.print(ls::red.right.value);
+      output.print(" \tdiff ");  output.print(ls::green.left.value - ls::red.left.value); output.print(" / "); output.println(ls::green.right.value - ls::red.right.value);
+     // output.println("");
+     // output.print("white_b "); output.println(ls::white_b.raw);
+     // output.print("green_b "); output.println(ls::green_b._str().c_str());
+     // output.println("red_b "); output.println(ls::red_b._str().c_str());
+
+    }*/
+
     static int16_t last_gap_correction;
 
     thread t(lf::follow);
@@ -303,13 +328,13 @@ void loop(){
         white_timer.reset();
     }
 
-    if (color::silver()){
+    /*if (color::silver()){
         motor::stop();
         menu::showWaiting("SILVER");
         output.println("LFE: Silver detected");
         zone::loop();
         white_timer.reset();
-    }
+    }*/
 
     /*if (color::white() != Side::BOTH){
         white_timer.reset();
@@ -362,7 +387,7 @@ void loop(){
     //output.println(match(color::green()));
     //output.println(mpu.getGyroY());
     //output.println();
-    if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
+    /*if ((!digitalRead(T_L) || !digitalRead(T_R)) && !button_failure){ // check for obstacle using the buttons // TODO: slow down using the TOF-sensors
         motor::rev(100);
         output.println("LFE: OBSTACLE detected");
         motor::gyro(-80);
@@ -377,5 +402,5 @@ void loop(){
         delay(350);
         motor::gyro(-60);
         white_timer.reset();
-    }
+    }*/
 }

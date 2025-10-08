@@ -48,6 +48,7 @@ class that controls a single color light sensor
     private:
         uint8_t led_pin;
         uint32_t delay;
+        uint8_t pwm;
         
         virtual void led_on();
         virtual void led_off();
@@ -68,7 +69,7 @@ class that controls a single color light sensor
     public:
         
         lightSensor();
-        lightSensor(uint8_t led_pin, uint8_t sensor_pin, uint32_t delay=LED_DELAY);
+        lightSensor(uint8_t led_pin, uint8_t sensor_pin,uint8_t pwm=0, uint32_t delay=LED_DELAY);
         /*
         create a lightSensor object
         */

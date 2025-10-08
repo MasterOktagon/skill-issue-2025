@@ -5,7 +5,7 @@
 // implementation of the gyro interface for the mpu6050
 //
 
-#define byte uint8_t
+//#define byte uint8_t
 #include <sys/_types.h>
 #include <sys/_stdint.h>
 #include <esp32-hal.h>
@@ -32,7 +32,7 @@ bool gyro::init() {
 /*
 Setup and initialize the MPU6050 
 */
-    byte status = mpu.begin();
+    uint8_t status = mpu.begin();
     if(status != 0){
         output.println(F("ERROR: Fail to detect MPU6050!"));
         return false;

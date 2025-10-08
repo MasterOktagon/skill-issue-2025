@@ -24,10 +24,10 @@ using namespace std;
 
 #define INNER_FACTOR 2
 #define OUTER_FACTOR 4
-#define BACK_FACTOR  1
-#define GREEN_FACTOR 10
+#define BACK_FACTOR  0
+#define GREEN_FACTOR 7
 
-#define P            1.5
+#define P            1.0
 #define D            0.6
 #define I            -0.01
 

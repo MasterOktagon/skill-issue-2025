@@ -38,10 +38,11 @@ void fs::setup(){
     }
 }
 
-lightSensor::lightSensor(uint8_t led_pin, uint8_t sensor_pin, uint32_t delay){
+lightSensor::lightSensor(uint8_t led_pin, uint8_t sensor_pin, uint8_t pwm, uint32_t delay){
     this->led_pin = led_pin;
     this->sensor_pin = sensor_pin;
     this->delay = delay;
+    this->pwm = pwm;
 }
 
 lightSensor::lightSensor(){
@@ -53,7 +54,11 @@ void lightSensor::led_on(){
     //if (led_pin != last_led){
         //digitalWrite(last_led, LOW);
         //delayMicroseconds(delay);
-        digitalWrite(led_pin, HIGH);
+        if (pwm == 0)
+            digitalWrite(led_pin, HIGH);
+        else {
+            analogWrite(led_pin, pwm);
+        }
         delayMicroseconds(delay); // Delay because your LED needs time to turn on
 
         //last_led = led_pin;
@@ -247,10 +252,10 @@ namespace ls{
     );
 
     lightSensorArray green(
-        lightSensor(PT_GREEN, PT_L_1),
-        lightSensor(PT_GREEN, PT_L_0),
-        lightSensor(PT_GREEN, PT_R_0),
-        lightSensor(PT_GREEN, PT_R_1)
+        lightSensor(PT_GREEN, PT_L_1, 100),
+        lightSensor(PT_GREEN, PT_L_0, 100),
+        lightSensor(PT_GREEN, PT_R_0, 100),
+        lightSensor(PT_GREEN, PT_R_1, 100)
     );
 
     lightSensorArray green_b(
@@ -279,7 +284,7 @@ namespace ls{
 
 const void ls::read(bool doupdate){
     white.read();
-    white_b.read();
+    //white_b.read();
 
     red.read();
     red_b.read();
